@@ -1,9 +1,9 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
-import { FilterBar } from "./FilterBar";
-import { CoinRow } from "./CoinRow";
 import { useI18n } from "@/i18n/context";
+import { useStore } from "@/store/useStore";
+import { CoinRow } from "./CoinRow";
+import { FilterBar } from "./FilterBar";
 
 export function CoinTable() {
   const { filteredCoins, coins } = useStore();
@@ -39,7 +39,7 @@ export function CoinTable() {
       <FilterBar />
 
       <div className="bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden">
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1.2fr_0.5fr] gap-2 px-4 py-3 text-xs font-medium text-gray-400 border-b border-gray-800">
+        <div className="overflow-x-auto grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1.2fr_0.5fr] gap-2 px-4 py-3 text-xs font-medium text-gray-400 border-b border-gray-800">
           <span className="flex items-center gap-1">
             <span className="text-[9px] text-gray-600">#</span>
             {t("table.columns.name")}
@@ -52,7 +52,7 @@ export function CoinTable() {
           <span className="text-center">{t("table.columns.risk")}</span>
         </div>
 
-        <div className="divide-y divide-gray-800/50">
+        <div className="divide-y divide-gray-800/50 divide-y divide-gray-800/50">
           {filteredCoins.map((coin) => (
             <CoinRow key={coin.coinId} coin={coin} />
           ))}
