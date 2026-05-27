@@ -1,0 +1,150 @@
+"use client";
+
+import { useStore } from "@/store/useStore";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useI18n, Locale } from "@/i18n/context";
+import { useTheme } from "@/lib/theme";
+import { useState, useRef, useEffect } from "react";
+
+function Flag({ locale }: { locale: Locale }) {
+  if (locale === "en") return <span className="text-base leading-none">🇬🇧</span>;
+  if (locale === "tr") return <span className="text-base leading-none">🇹🇷</span>;
+  return <span className="text-base leading-none">🇮🇷</span>;
+}
+
+export function Header() {
+  const { lastUpdated, refreshData, isLoading } = useStore();
+  const pathname = usePathname();
+  const { t, locale, setLocale } = useI18n();
+  const { theme, toggleTheme } = useTheme();
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const locales: { value: Locale; label: string }[] = [
+    { value: "en", label: t("locale.en") },
+    { value: "tr", label: t("locale.tr") },
+    { value: "fa", label: t("locale.fa") },
+  ];
+
+  return (
+    <header className="border-b border-theme bg-theme-secondary backdrop-blur-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 group">
+            <Image src="/logo.svg" alt="CryptoSense" width={32} height={32} className="w-8 h-8 rounded-lg" />
+            <div className="hidden sm:block">
+              <h1 className="text-lg font-bold text-theme-text group-hover:text-emerald-400 transition-colors">{t("brand.name")}</h1>
+              <p className="text-xs text-theme-secondary">{t("brand.tagline")}</p>
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-3">
+            {/* Navigation */}
+            <nav className="hidden sm:flex items-center gap-1 text-xs">
+              <Link
+                href="/"
+                className={`px-2.5 py-1.5 rounded-lg transition-colors ${
+                  pathname === "/"
+                    ? "bg-emerald-500/15 text-emerald-400 font-medium"
+                    : "text-theme-secondary hover:text-theme-text"
+                }`}
+              >
+                {t("nav.coins")}
+              </Link>
+              <Link
+                href="/indicators"
+                className={`px-2.5 py-1.5 rounded-lg transition-colors ${
+                  pathname === "/indicators"
+                    ? "bg-emerald-500/15 text-emerald-400 font-medium"
+                    : "text-theme-secondary hover:text-theme-text"
+                }`}
+              >
+                {t("nav.indicators")}
+              </Link>
+            </nav>
+
+            {/* Language Dropdown */}
+            <div className="relative" ref={langRef}>
+              <button
+                onClick={() => setLangOpen(!langOpen)}
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-theme-card border border-theme text-xs text-theme-text hover:bg-theme-hover transition-colors"
+              >
+                <Flag locale={locale} />
+                <span className="hidden md:inline">{locales.find((l) => l.value === locale)?.label}</span>
+                <svg className={`w-3 h-3 text-theme-secondary transition-transform ${langOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {langOpen && (
+                <div className="absolute right-0 mt-1.5 w-36 bg-theme-secondary border border-theme rounded-lg shadow-xl py-1 z-50">
+                  {locales.map((l) => (
+                    <button
+                      key={l.value}
+                      onClick={() => { setLocale(l.value); setLangOpen(false); }}
+                      className={`flex items-center gap-2 w-full px-3 py-2 text-xs text-left transition-colors ${
+                        locale === l.value
+                          ? "text-emerald-400 bg-emerald-500/10"
+                          : "text-theme-text hover:bg-theme-hover"
+                      }`}
+                    >
+                      <Flag locale={l.value} />
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center justify-center w-8 h-8 rounded-lg bg-theme-card border border-theme text-theme-secondary hover:text-theme-text hover:bg-theme-hover transition-colors"
+              title={theme === "dark" ? t("header.light_mode") : t("header.dark_mode")}
+            >
+              {theme === "dark" ? (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
+
+            {/* Live indicator + Refresh */}
+            <div className="hidden sm:flex items-center gap-2 text-xs text-theme-secondary">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{t("header.live")}</span>
+              {lastUpdated && (
+                <span className="text-theme-secondary opacity-60">
+                  | {new Date(lastUpdated).toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={refreshData}
+              disabled={isLoading}
+              className="px-3 py-1.5 text-xs font-medium bg-theme-card border border-theme text-theme-text rounded-lg hover:bg-theme-hover transition-colors disabled:opacity-50"
+            >
+              {isLoading ? t("header.refreshing") : t("header.refresh")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}

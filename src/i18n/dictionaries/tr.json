@@ -1,0 +1,254 @@
+{
+  "brand": {
+    "name": "CryptoSense",
+    "tagline": "Akıllı Kripto Analizi",
+    "initials": "CS"
+  },
+  "nav": {
+    "coins": "Coinler",
+    "indicators": "Göstergeler"
+  },
+  "header": {
+    "live": "Canlı",
+    "refresh": "Yenile",
+    "refreshing": "Yenileniyor...",
+    "light_mode": "Açık mod",
+    "dark_mode": "Koyu mod"
+  },
+  "dashboard": {
+    "title": "Kripto Piyasa Analizi",
+    "subtitle_live": "Binance'den canlı veri — WebSocket ile gerçek zamanlı fiyat güncellemeleri",
+    "subtitle_simulated": "Simüle edilmiş veri kullanılıyor — canlı fiyatlar için Binance API'ye bağlanın",
+    "stats": {
+      "total_coins": "Takip Edilen Coinler",
+      "long_opportunities": "Long Fırsatları",
+      "short_opportunities": "Short Fırsatları",
+      "data_source": "Veri Kaynağı",
+      "binance_api": "Binance API",
+      "simulated": "Simüle"
+    }
+  },
+  "filters": {
+    "position": "Pozisyon",
+    "all": "Tümü",
+    "long": "Long",
+    "short": "Short",
+    "neutral": "Nötr",
+    "sort_by": "Sıralama",
+    "score": "Puan",
+    "volume": "Hacim",
+    "price_change": "Fiyat Değişimi",
+    "name": "İsim",
+    "order": "Sıra",
+    "desc": "↓ Azalan",
+    "asc": "↑ Artan",
+    "min_score": "Min Puan"
+  },
+  "table": {
+    "columns": {
+      "name": "İsim",
+      "price": "Fiyat",
+      "24h_pct": "24s %",
+      "vol_mcap": "Hac/Piy.D.",
+      "rsi": "RSI",
+    "signal": "Sinyal",
+    "risk": "Risk",
+    "rank_tooltip": "Piyasa Değeri Sırası"
+    },
+    "empty": "Filtrelere uygun coin bulunamadı",
+    "showing": "{visible} / {total} coin gösteriliyor",
+    "market_overview": "Piyasa Genel Görünümü",
+    "legend_long": "Long",
+    "legend_short": "Short",
+    "legend_neutral": "Nötr"
+  },
+  "coin_row": {
+    "long": "LONG",
+    "short": "SHORT",
+    "neutral": "NÖTR",
+    "strong_buy": "Güçlü Al",
+    "buy": "Al",
+    "sell": "Sat",
+    "strong_sell": "Güçlü Sat",
+    "accumulate": "Biriktir",
+    "hold": "Tut",
+    "reduce": "Azalt",
+    "avoid": "KAÇIN",
+    "strong_short": "Güçlü Short",
+    "short_entry": "Short",
+    "watch": "İzle",
+    "vol_tooltip": "24s Hacim / Piyasa Değeri — yüksek = daha likit",
+    "rsi_tooltip": "Göreceli Güç Endeksi (14)"
+  },
+  "indicators": {
+    "back": "Panoya Dön",
+    "title": "Piyasa Göstergeleri",
+    "subtitle": "Temel piyasa metrikleri — dominans, oranlar ve toplam piyasa değeri",
+    "live": "Canlı",
+    "columns": {
+      "indicator": "Gösterge",
+      "value": "Değer",
+      "signal": "Sinyal"
+    },
+    "rows": {
+      "total": "TOTAL (Toplam Kripto Piyasa Değeri)",
+      "total2": "TOTAL2 (BTC Hariç Toplam)",
+      "total3": "TOTAL3 (BTC ve ETH Hariç Toplam)",
+      "btc_d": "BTC.D (Bitcoin Dominansı)",
+      "eth_d": "ETH.D (Ethereum Dominansı)",
+      "bnb_d": "BNB.D (BNB Dominansı)",
+      "usdt_d": "USDT.D (Tether Dominansı)",
+      "others_d": "OTHERS.D (İlk 10 Hariç)",
+      "eth_btc": "ETH.BTC",
+      "bnb_btc": "BNB.BTC",
+      "volume_24h": "24s Hacim"
+    },
+    "signals": {
+      "risk_off": "Riskten Kaçın",
+      "risk_on": "Risk Al",
+      "neutral": "Nötr",
+      "strong": "Güçlü",
+      "weak": "Zayıf",
+      "stable": "İstikrarlı",
+      "caution": "Dikkat",
+      "normal": "Normal",
+      "eth_up": "ETH ↑",
+      "btc_up": "BTC ↑",
+      "flat": "Yatay",
+      "bullish": "Yükseliş",
+      "bearish": "Düşüş",
+      "altseason": "Alt Sezonu",
+      "btc_season": "BTC Sezonu",
+      "none": "—"
+    },
+    "footnote": "BTC.D = BTC Piyasa Değeri ÷ Toplam Piyasa Değeri · ETH.BTC = ETH Fiyatı ÷ BTC Fiyatı · OTHERS.D = İlk 10 dışındaki coinlerin Piyasa Değeri ÷ Toplam Piyasa Değeri",
+    "estimated": "Tahmini veri kullanılıyor",
+    "screener": {
+      "title": "Coin Tarayıcı (Hacim ≥ 1000 BTC)",
+      "filter_vol": "24s BTC hacmi",
+      "loading": "Yükleniyor...",
+      "empty": "Veri yok",
+      "col_pair": "Sembol",
+      "col_price": "Fiyat",
+      "col_chg": "24s Değ. %",
+      "col_vol": "Hacim (BTC)",
+      "footer": "{count} coin, ≥ 1.000 BTC 24s hacim"
+    }
+  },
+  "chart": {
+      "1h": "1 Saatlik",
+      "4h": "4 Saatlik",
+    "loading": "Yükleniyor",
+    "failed": "Grafik yüklenemedi",
+    "no_data": "Veri yok",
+    "no_chart_data": "Grafik verisi yok",
+    "past_days": "Son {days}g",
+    "simulated": "simüle"
+  },
+  "coin_detail": {
+    "back": "Panoya Dön",
+    "not_found": "Coin bulunamadı",
+    "back_dashboard": "Panoya dön",
+    "rank": "Sıra #{rank}",
+    "updated": "Güncellendi {time}",
+    "24h": "24s",
+    "cards": {
+      "analysis_score": {
+        "title": "Analiz Puanı",
+        "tooltip": "Ağırlıklı puan (0–100): Hacim (%35), Trend (%25), Teknikler (%20), Duyarlılık (%20). ≥60 = LONG, ≤40 = SHORT.",
+        "interpretation": {
+          "zone": "Yön",
+          "conviction": "Güven",
+          "action_strong_buy": "Yüksek güven — tüm faktörler long pozisyon için uyumlu.",
+          "action_buy": "Orta güven — long pozisyon için uygun durum.",
+          "action_hold": "Hafif yükseliş — ama yeterli değil, onay bekleyin.",
+          "action_watch": "Hafif düşüş — net sinyal yok, yönü izleyin.",
+          "action_short_entry": "Orta güven — short pozisyon için uygun durum.",
+          "action_strong_short": "Yüksek güven — tüm faktörler short pozisyon için uyumlu."
+        }
+      },
+      "market_stats": {
+        "title": "Piyasa İstatistikleri",
+        "tooltip": "Binance'den gerçek zamanlı piyasa verileri. Detaylar için her istatistiğin üzerine gelin.",
+        "market_cap": "Piyasa Değeri",
+        "volume_24h": "24s Hacim",
+        "high_24h": "24s En Yüksek",
+        "low_24h": "24s En Düşük",
+        "ath": "Tüm Zamanların En Yükseği",
+        "atl": "Tüm Zamanların En Düşüğü",
+        "circ_supply": "Dolaşımdaki Arz",
+        "vol_mcap": "Hacim / Piy.D.",
+        "tooltips": {
+          "market_cap": "Toplam piyasa değeri = güncelFiyat × dolaşımdakiArz",
+          "volume_24h": "Son 24 saatteki toplam işlem hacmi (USD)",
+          "high_24h": "Son 24 saatteki en yüksek fiyat",
+          "low_24h": "Son 24 saatteki en düşük fiyat",
+          "ath": "Coin'in çıkışından bu yana en yüksek fiyat",
+          "atl": "Coin'in çıkışından bu yana en düşük fiyat",
+          "circ_supply": "Şu anda dolaşımda olan coin sayısı",
+          "vol_mcap": "24s Hacim ÷ Piyasa Değeri — likidite göstergesi; yüksek = daha aktif işlem"
+        }
+      },
+      "technical_indicators": {
+        "title": "Teknik Göstergeler",
+        "tooltip": "Kısa bir açıklama görmek için her göstergenin üzerine gelin.",
+        "rsi": "RSI (14)",
+        "macd": "MACD",
+        "macd_signal": "MACD Sinyali",
+        "macd_histogram": "MACD Histogramı",
+        "ema_9": "EMA 9",
+        "ema_21": "EMA 21",
+        "bb_upper": "Bollinger Üst",
+        "bb_lower": "Bollinger Alt",
+        "tooltips": {
+          "rsi": "Göreceli Güç Endeksi (14 dönem): >70 = aşırı alım, <30 = aşırı satım. Potansiyel dönüş noktalarını belirlemeye yardımcı olur.",
+          "macd": "Hareketli Ortalama Yakınsama Iraksama: trend takip momentum göstergesi. MACD > Sinyal = yükseliş momentumu.",
+          "macd_signal": "MACD çizgisinin 9 dönemlik EMA'sı. MACD ile kesişmeler alım/satım sinyali üretir.",
+          "macd_histogram": "MACD çizgisi − Sinyal çizgisi. Pozitif = artan momentum, negatif = azalan momentum.",
+          "ema_9": "9 dönemlik Üstel Hareketli Ortalama. Kısa vadeli trend göstergesi. Fiyat üstünde = kısa vadeli yükseliş trendi.",
+          "ema_21": "21 dönemlik Üstel Hareketli Ortalama. Orta vadeli trend göstergesi. Fiyat üstünde = orta vadeli yükseliş trendi.",
+          "bb_upper": "Üst bant (orta bandın 2 std sapma üstü). Fiyatın bu banda değmesi aşırı alım koşullarını gösterebilir.",
+          "bb_lower": "Alt bant (orta bandın 2 std sapma altı). Fiyatın bu banda değmesi aşırı satım koşullarını gösterebilir."
+        }
+      },
+      "trend_analysis": {
+        "title": "Trend Analizi",
+        "short_term": "Kısa Vade",
+        "medium_term": "Orta Vade",
+        "long_term": "Uzun Vade",
+        "trend_score": "Trend Puanı",
+        "bullish": "Yükseliş",
+        "bearish": "Düşüş",
+        "neutral": "Nötr",
+        "description_bullish": "Güçlü yükseliş momentumu, artan alım baskısı",
+        "description_bearish": "Düşüş trendi, satış baskısı hakim",
+        "description_neutral": "Net bir yön olmadan konsolidasyon"
+      },
+      "news_sentiment": {
+        "title": "Haber ve Duyarlılık",
+        "positive": "olumlu",
+        "negative": "olumsuz",
+        "positive_ratio": "%{pct} olumlu",
+        "mentions": "{count} bahsedilme",
+        "no_news": "Bu coin için yakın zamanda haber bulunamadı"
+      },
+      "support_resistance": {
+        "support": "Destek {level}",
+        "resistance": "Direnç {level}",
+        "support_levels": "Destek Seviyeleri",
+        "resistance_levels": "Direnç Seviyeleri"
+      }
+    },
+    "subscores": {
+      "volume": "Hacim",
+      "trend": "Trend",
+      "technicals": "Teknikler",
+      "sentiment": "Duyarlılık"
+    }
+  },
+  "locale": {
+    "en": "English",
+    "tr": "Türkçe",
+    "fa": "فارسی"
+  }
+}

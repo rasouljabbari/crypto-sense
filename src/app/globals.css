@@ -1,26 +1,119 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #030712;
+  --color-foreground: #f3f4f6;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #374151 transparent;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
 }
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ── Theme CSS Variable Overrides ──
+   Tailwind v4 utility classes reference CSS variables from @theme default.
+   We only need to change the variables under [data-theme="light"] and
+   every class (bg-gray-*, text-gray-*, border-gray-*, etc.) picks it up. */
+
+:root,
+[data-theme="dark"] {
+  --theme-bg: #030712;
+  --theme-bg-secondary: #111827;
+  --theme-text: #f3f4f6;
+  --theme-text-secondary: #9ca3af;
+  --theme-border: #1f2937;
+  --theme-card: rgba(17, 24, 39, 0.5);
+  --theme-hover: rgba(31, 41, 55, 0.5);
+}
+
+[data-theme="light"] {
+  --theme-bg: #f9fafb;
+  --theme-bg-secondary: #ffffff;
+  --theme-text: #111827;
+  --theme-text-secondary: #6b7280;
+  --theme-border: #e5e7eb;
+  --theme-card: rgba(255, 255, 255, 0.8);
+  --theme-hover: rgba(243, 244, 246, 0.8);
+
+  /* ── Gray scale (swap dark ↔ light) ── */
+  --color-gray-950: #f9fafb;
+  --color-gray-900: #ffffff;
+  --color-gray-800: #f3f4f6;
+  --color-gray-700: #e5e7eb;
+  --color-gray-600: #d1d5db;
+  --color-gray-500: #9ca3af;
+  --color-gray-400: #6b7280;
+  --color-gray-300: #374151;
+  --color-gray-200: #1f2937;
+  --color-gray-100: #111827;
+  --color-gray-50: #030712;
+
+  --color-white: #111827;
+  --color-black: #f9fafb;
+
+  /* ── Signal text — darker for readability on white ── */
+  --color-emerald-400: #059669;
+  --color-emerald-500: #059669;
+  --color-green-400: #16a34a;
+  --color-green-500: #16a34a;
+  --color-red-400: #dc2626;
+  --color-red-500: #dc2626;
+  --color-yellow-400: #ca8a04;
+  --color-yellow-500: #ca8a04;
+  --color-orange-400: #ea580c;
+  --color-cyan-400: #0891b2;
+
+  /* ── Signal background tints ── */
+  --color-emerald-900: #34d399;
+  --color-red-900: #f87171;
+  --color-yellow-900: #facc15;
+  --color-cyan-900: #22d3ee;
+
+  /* ── Input / select ── */
+  input,
+  select {
+    background-color: #ffffff;
+    color: #111827;
+    border-color: #d1d5db;
+  }
+  input::placeholder {
+    color: #9ca3af;
+  }
+  select option {
+    background-color: #ffffff;
+    color: #111827;
+  }
+
+  /* ── Scrollbar ── */
+  * {
+    scrollbar-color: #d1d5db transparent;
+  }
+}
+
+/* Custom theme utility classes */
+.bg-theme-bg { background-color: var(--theme-bg); }
+.bg-theme-secondary { background-color: var(--theme-bg-secondary); }
+.text-theme-text { color: var(--theme-text); }
+.text-theme-secondary { color: var(--theme-text-secondary); }
+.border-theme { border-color: var(--theme-border); }
+.bg-theme-card { background-color: var(--theme-card); }
+.hover-bg-theme-hover:hover { background-color: var(--theme-hover); }

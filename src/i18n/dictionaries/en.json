@@ -1,0 +1,254 @@
+{
+  "brand": {
+    "name": "CryptoSense",
+    "tagline": "Smart Crypto Analysis",
+    "initials": "CS"
+  },
+  "nav": {
+    "coins": "Coins",
+    "indicators": "Indicators"
+  },
+  "header": {
+    "live": "Live",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "light_mode": "Light mode",
+    "dark_mode": "Dark mode"
+  },
+  "dashboard": {
+    "title": "Crypto Market Analysis",
+    "subtitle_live": "Live data from Binance — real-time price updates via WebSocket",
+    "subtitle_simulated": "Using simulated data — connect to Binance API for live prices",
+    "stats": {
+      "total_coins": "Total Coins Tracked",
+      "long_opportunities": "Long Opportunities",
+      "short_opportunities": "Short Opportunities",
+      "data_source": "Data Source",
+      "binance_api": "Binance API",
+      "simulated": "Simulated"
+    }
+  },
+  "filters": {
+    "position": "Position",
+    "all": "All",
+    "long": "Long",
+    "short": "Short",
+    "neutral": "Neutral",
+    "sort_by": "Sort By",
+    "score": "Score",
+    "volume": "Volume",
+    "price_change": "Price Change",
+    "name": "Name",
+    "order": "Order",
+    "desc": "↓ Desc",
+    "asc": "↑ Asc",
+    "min_score": "Min Score"
+  },
+  "table": {
+    "columns": {
+      "name": "Name",
+      "price": "Price",
+      "24h_pct": "24h %",
+      "vol_mcap": "Vol/M.Cap",
+      "rsi": "RSI",
+    "signal": "Signal",
+    "risk": "Risk",
+    "rank_tooltip": "Market Cap Rank"
+    },
+    "empty": "No coins match your filters",
+    "showing": "Showing {visible} of {total} coins",
+    "market_overview": "Market Overview",
+    "legend_long": "Long",
+    "legend_short": "Short",
+    "legend_neutral": "Neutral"
+  },
+  "coin_row": {
+    "long": "LONG",
+    "short": "SHORT",
+    "neutral": "NEUTRAL",
+    "strong_buy": "Strong Buy",
+    "buy": "Buy",
+    "sell": "Sell",
+    "strong_sell": "Strong Sell",
+    "accumulate": "Accumulate",
+    "hold": "Hold",
+    "reduce": "Reduce",
+    "avoid": "AVOID",
+    "strong_short": "Strong Short",
+    "short_entry": "Short",
+    "watch": "Watch",
+    "vol_tooltip": "24h Volume / Market Cap — higher = more liquid",
+    "rsi_tooltip": "Relative Strength Index (14)"
+  },
+  "indicators": {
+    "back": "Back to Dashboard",
+    "title": "Market Indicators",
+    "subtitle": "Key market-wide metrics — dominance, ratios, and total capitalization",
+    "live": "Live",
+    "columns": {
+      "indicator": "Indicator",
+      "value": "Value",
+      "signal": "Signal"
+    },
+    "rows": {
+      "total": "TOTAL (Total Crypto Market Cap)",
+      "total2": "TOTAL2 (Total ex BTC)",
+      "total3": "TOTAL3 (Total ex BTC & ETH)",
+      "btc_d": "BTC.D (Bitcoin Dominance)",
+      "eth_d": "ETH.D (Ethereum Dominance)",
+      "bnb_d": "BNB.D (BNB Dominance)",
+      "usdt_d": "USDT.D (Tether Dominance)",
+      "others_d": "OTHERS.D (ex Top 10)",
+      "eth_btc": "ETH.BTC",
+      "bnb_btc": "BNB.BTC",
+      "volume_24h": "24h Volume"
+    },
+    "signals": {
+      "risk_off": "Risk-Off",
+      "risk_on": "Risk-On",
+      "neutral": "Neutral",
+      "strong": "Strong",
+      "weak": "Weak",
+      "stable": "Stable",
+      "caution": "Caution",
+      "normal": "Normal",
+      "eth_up": "ETH ↑",
+      "btc_up": "BTC ↑",
+      "flat": "Flat",
+      "bullish": "Bullish",
+      "bearish": "Bearish",
+      "altseason": "Altseason",
+      "btc_season": "BTC Season",
+      "none": "—"
+    },
+    "footnote": "BTC.D = BTC Market Cap ÷ Total Market Cap · ETH.BTC = ETH Price ÷ BTC Price · OTHERS.D = Market Cap of coins outside Top 10 ÷ Total Market Cap",
+    "estimated": "Using estimated data",
+    "screener": {
+      "title": "Coin Screener (Vol ≥ 1000 BTC)",
+      "filter_vol": "24h vol in BTC",
+      "loading": "Loading...",
+      "empty": "No data",
+      "col_pair": "Symbol",
+      "col_price": "Price",
+      "col_chg": "24h Chg %",
+      "col_vol": "Vol (BTC)",
+      "footer": "{count} coins with ≥ 1,000 BTC 24h volume"
+    }
+  },
+  "chart": {
+      "1h": "1H",
+      "4h": "4H",
+    "loading": "Loading",
+    "failed": "Failed to load chart",
+    "no_data": "No data",
+    "no_chart_data": "No chart data",
+    "past_days": "Past {days}d",
+    "simulated": "simulated"
+  },
+  "coin_detail": {
+    "back": "Back to Dashboard",
+    "not_found": "Coin not found",
+    "back_dashboard": "Back to dashboard",
+    "rank": "Rank #{rank}",
+    "updated": "Updated {time}",
+    "24h": "24h",
+    "cards": {
+      "analysis_score": {
+        "title": "Analysis Score",
+        "tooltip": "Weighted score (0–100): Volume (35%), Trend (25%), Technicals (20%), Sentiment (20%). ≥60 = LONG, ≤40 = SHORT.",
+        "interpretation": {
+          "zone": "Direction",
+          "conviction": "Conviction",
+          "action_strong_buy": "High conviction — all factors align for a long position.",
+          "action_buy": "Moderate conviction — favorable setup for a long position.",
+          "action_hold": "Slightly bullish — but not enough to act, wait for confirmation.",
+          "action_watch": "Slightly bearish — no clear signal, monitor for direction.",
+          "action_short_entry": "Moderate conviction — favorable setup for a short position.",
+          "action_strong_short": "High conviction — all factors align for a short position."
+        }
+      },
+      "market_stats": {
+        "title": "Market Stats",
+        "tooltip": "Real-time market data from Binance. Hover each stat for details.",
+        "market_cap": "Market Cap",
+        "volume_24h": "24h Volume",
+        "high_24h": "24h High",
+        "low_24h": "24h Low",
+        "ath": "All-Time High",
+        "atl": "All-Time Low",
+        "circ_supply": "Circulating Supply",
+        "vol_mcap": "Volume / M.Cap",
+        "tooltips": {
+          "market_cap": "Total market value = currentPrice × circulatingSupply",
+          "volume_24h": "Total trading volume in the last 24 hours (USD)",
+          "high_24h": "Highest price in the last 24 hours",
+          "low_24h": "Lowest price in the last 24 hours",
+          "ath": "Highest price since the coin's launch",
+          "atl": "Lowest price since the coin's launch",
+          "circ_supply": "Number of coins currently in circulation",
+          "vol_mcap": "24h Volume ÷ Market Cap — liquidity indicator; higher = more active trading"
+        }
+      },
+      "technical_indicators": {
+        "title": "Technical Indicators",
+        "tooltip": "Hover each indicator for a brief explanation of what it means.",
+        "rsi": "RSI (14)",
+        "macd": "MACD",
+        "macd_signal": "MACD Signal",
+        "macd_histogram": "MACD Histogram",
+        "ema_9": "EMA 9",
+        "ema_21": "EMA 21",
+        "bb_upper": "Bollinger Upper",
+        "bb_lower": "Bollinger Lower",
+        "tooltips": {
+          "rsi": "Relative Strength Index (14 periods): >70 = overbought, <30 = oversold. Helps identify potential reversal points.",
+          "macd": "Moving Average Convergence Divergence: trend-following momentum indicator. MACD > Signal = bullish momentum.",
+          "macd_signal": "9-period EMA of MACD line. Crossovers with MACD generate trade signals.",
+          "macd_histogram": "MACD line − Signal line. Positive = increasing momentum, negative = decreasing momentum.",
+          "ema_9": "9-period Exponential Moving Average. Shorter-term trend indicator. Price above = short-term uptrend.",
+          "ema_21": "21-period Exponential Moving Average. Medium-term trend indicator. Price above = medium-term uptrend.",
+          "bb_upper": "Upper band (2 std dev above middle). Price touching this may indicate overbought conditions.",
+          "bb_lower": "Lower band (2 std dev below middle). Price touching this may indicate oversold conditions."
+        }
+      },
+      "trend_analysis": {
+        "title": "Trend Analysis",
+        "short_term": "Short Term",
+        "medium_term": "Medium Term",
+        "long_term": "Long Term",
+        "trend_score": "Trend Score",
+        "bullish": "Bullish",
+        "bearish": "Bearish",
+        "neutral": "Neutral",
+        "description_bullish": "Strong upward momentum with increasing buying pressure",
+        "description_bearish": "Downward trend with selling pressure dominating",
+        "description_neutral": "Consolidating with no clear directional bias"
+      },
+      "news_sentiment": {
+        "title": "News & Sentiment",
+        "positive": "positive",
+        "negative": "negative",
+        "positive_ratio": "{pct}% positive",
+        "mentions": "{count} mentions",
+        "no_news": "No recent news for this coin"
+      },
+      "support_resistance": {
+        "support": "Support {level}",
+        "resistance": "Resistance {level}",
+        "support_levels": "Support Levels",
+        "resistance_levels": "Resistance Levels"
+      }
+    },
+    "subscores": {
+      "volume": "Volume",
+      "trend": "Trend",
+      "technicals": "Technicals",
+      "sentiment": "Sentiment"
+    }
+  },
+  "locale": {
+    "en": "English",
+    "tr": "Türkçe",
+    "fa": "فارسی"
+  }
+}
