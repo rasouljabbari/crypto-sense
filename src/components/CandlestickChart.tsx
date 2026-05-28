@@ -9,9 +9,22 @@ import {
   createChart,
   CrosshairMode,
   HistogramSeries,
+  LineSeries,
 } from "lightweight-charts";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useI18n } from "@/i18n/context";
+
+function calcSMA(data: ChartDataPoint[], period: number) {
+  return data
+    .map((_, i) => {
+      if (i < period - 1) return null;
+      let sum = 0;
+      for (let j = 0; j < period; j++) sum += data[i - j].close;
+      return { time: fmtTime(data[i], "1h"), value: sum / period };
+    })
+    .filter((v): v is { time: UTCTimestamp; value: number } => v !== null)
+    .slice(0, -1); // show on previous candle
+}
 
 interface Props {
   coinId: string;
@@ -152,6 +165,23 @@ export function CandlestickChart({ coinId }: Props) {
         color: k.close >= k.open ? "rgba(52, 211, 153, 0.3)" : "rgba(239, 68, 68, 0.3)",
       }))
     );
+
+    const sma7Data = calcSMA(data, 7);
+    const sma21Data = calcSMA(data, 21);
+    const sma99Data = calcSMA(data, 99);
+
+    if (sma7Data.length > 0) {
+      const sma7 = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false });
+      sma7.setData(sma7Data);
+    }
+    if (sma21Data.length > 0) {
+      const sma21 = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false });
+      sma21.setData(sma21Data);
+    }
+    if (sma99Data.length > 0) {
+      const sma99 = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false });
+      sma99.setData(sma99Data);
+    }
 
     const ro = new ResizeObserver(() => {
       if (chartRef.current && container) {
