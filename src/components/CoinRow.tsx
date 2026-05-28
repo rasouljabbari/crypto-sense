@@ -90,7 +90,7 @@ export function CoinRow({ coin }: Props) {
   return (
     <Link
       href={`/coin/${coin.marketData.symbol}`}
-      className="min-w-[640px] grid grid-cols-[2fr_1fr_1fr_1fr_1.2fr_0.5fr] gap-2 items-center px-4 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
+      className="min-w-[640px] grid grid-cols-[2fr_1.2fr_0.5fr_1fr_1fr_1fr] gap-2 items-center px-4 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
     >
       {/* Name with Rank */}
       <div className="flex items-center gap-3">
@@ -103,25 +103,8 @@ export function CoinRow({ coin }: Props) {
         </div>
       </div>
 
-      {/* Price */}
-      <div className="text-right font-mono text-sm text-white">
-        ${coin.marketData.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-      </div>
-
-      {/* 24h % */}
-      <div className="text-right font-mono text-sm">
-        <span className={isPositive ? "text-emerald-400" : "text-red-400"}>
-          {isPositive ? "+" : ""}{coin.marketData.priceChangePercent24h.toFixed(2)}%
-        </span>
-      </div>
-
-      {/* RSI */}
-      <div className={`text-right font-mono text-xs ${rsi.color}`} title={t("coin_row.rsi_tooltip")}>
-        {rsi.value}
-      </div>
-
       {/* Merged Signal: Trend + Position + Score + Action */}
-      <div className="flex items-center gap-1.5 justify-center">
+      <div className="flex items-center gap-1.5 justify-start">
         <span className={`text-[10px] ${coin.trendAnalysis.shortTerm === "bullish" ? "text-emerald-400" : coin.trendAnalysis.shortTerm === "bearish" ? "text-red-400" : "text-yellow-400"}`}>
           {trendIcon(coin.trendAnalysis.shortTerm)}
         </span>
@@ -145,6 +128,23 @@ export function CoinRow({ coin }: Props) {
         <span className={`inline-flex items-center justify-center w-12 px-1.5 py-0.5 rounded text-[10px] font-bold ${risk.color}`}>
           {risk.label}
         </span>
+      </div>
+
+      {/* Price */}
+      <div className="text-right font-mono text-sm text-white">
+        ${coin.marketData.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      </div>
+
+      {/* 24h % */}
+      <div className="text-right font-mono text-sm">
+        <span className={isPositive ? "text-emerald-400" : "text-red-400"}>
+          {isPositive ? "+" : ""}{coin.marketData.priceChangePercent24h.toFixed(2)}%
+        </span>
+      </div>
+
+      {/* RSI */}
+      <div className={`text-right font-mono text-xs ${rsi.color}`} title={t("coin_row.rsi_tooltip")}>
+        {rsi.value}
       </div>
     </Link>
   );

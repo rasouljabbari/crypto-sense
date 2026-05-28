@@ -38,7 +38,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label={t("dashboard.stats.total_coins")} value="15" />
+          <StatCard label={t("dashboard.stats.total_coins")} value={coins.length.toString()} />
           <StatCard label={t("dashboard.stats.long_opportunities")} value={longCount.toString()} gradient="from-emerald-500 to-emerald-600" />
           <StatCard label={t("dashboard.stats.short_opportunities")} value={shortCount.toString()} gradient="from-red-500 to-red-600" />
           <StatCard label={t("dashboard.stats.data_source")} value={isLive ? t("dashboard.stats.binance_api") : t("dashboard.stats.simulated")} />

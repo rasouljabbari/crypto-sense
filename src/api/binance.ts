@@ -32,6 +32,9 @@ export const COIN_SYMBOL_MAP: Record<string, string> = {
   aptos: "APTUSDT",
   arbitrum: "ARBUSDT",
   binancecoin: "BNBUSDT",
+  toncoin: "TONUSDT",
+  "bitcoin-cash": "BCHUSDT",
+  dai: "DAIUSDT",
 };
 
 const SYMBOL_TO_ID = Object.fromEntries(
@@ -58,6 +61,9 @@ export const STATIC_COIN_DATA: Record<string, Omit<MarketData, "currentPrice" | 
   aptos: { id: "aptos", rank: 27, symbol: "APT", name: "Aptos", image: "https://cryptologos.cc/logos/aptos-apt-logo.svg", circulatingSupply: 452000000, totalSupply: null, ath: 19.92, athDate: "2023-01-26", atl: 3.08, atlDate: "2022-12-29" },
   arbitrum: { id: "arbitrum", rank: 32, symbol: "ARB", name: "Arbitrum", image: "https://cryptologos.cc/logos/arbitrum-arb-logo.svg", circulatingSupply: 2650000000, totalSupply: 10000000000, ath: 2.39, athDate: "2024-01-12", atl: 0.521, atlDate: "2023-09-11" },
   binancecoin: { id: "binancecoin", rank: 4, symbol: "BNB", name: "BNB", image: "https://cryptologos.cc/logos/bnb-bnb-logo.svg", circulatingSupply: 145887575, totalSupply: 145887575, ath: 690.87, athDate: "2025-06-06", atl: 0.03982, atlDate: "2017-10-19" },
+  toncoin: { id: "toncoin", rank: 9, symbol: "TON", name: "Toncoin", image: "https://cryptologos.cc/logos/toncoin-ton-logo.svg", circulatingSupply: 5100000000, totalSupply: null, ath: 8.24, athDate: "2024-06-15", atl: 0.39, atlDate: "2021-09-20" },
+  "bitcoin-cash": { id: "bitcoin-cash", rank: 15, symbol: "BCH", name: "Bitcoin Cash", image: "https://cryptologos.cc/logos/bitcoin-cash-bch-logo.svg", circulatingSupply: 19700000, totalSupply: 21000000, ath: 3785.00, athDate: "2017-12-20", atl: 76.93, atlDate: "2018-12-16" },
+  dai: { id: "dai", rank: 23, symbol: "DAI", name: "Dai", image: "https://cryptologos.cc/logos/dai-dai-logo.svg", circulatingSupply: 5300000000, totalSupply: null, ath: 1.22, athDate: "2020-03-13", atl: 0.89, atlDate: "2020-03-13" },
 };
 
 export async function fetchAllTickers(): Promise<BinanceTicker[]> {

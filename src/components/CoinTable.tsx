@@ -41,16 +41,16 @@ export function CoinTable() {
         </div>
 
         <div className="overflow-x-auto">
-          <div className="min-w-[640px] grid grid-cols-[2fr_1fr_1fr_1fr_1.2fr_0.5fr] gap-2 px-4 py-3 text-xs font-medium text-gray-400 border-b border-gray-800">
+          <div className="min-w-[640px] grid grid-cols-[2fr_1.2fr_0.5fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-xs font-medium text-gray-400 border-b border-gray-800">
             <span className="flex items-center gap-1">
               <span className="text-[9px] text-gray-600">#</span>
               {t("table.columns.name")}
             </span>
+            <span>{t("table.columns.signal")}</span>
+            <span className="text-center">{t("table.columns.risk")}</span>
             <span className="text-right">{t("table.columns.price")}</span>
             <span className="text-right">{t("table.columns.24h_pct")}</span>
             <span className="text-right">{t("table.columns.rsi")}</span>
-            <span className="text-center">{t("table.columns.signal")}</span>
-            <span className="text-center">{t("table.columns.risk")}</span>
           </div>
 
         <div className="divide-y divide-gray-800/50 divide-y divide-gray-800/50">
