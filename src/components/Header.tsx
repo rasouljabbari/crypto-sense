@@ -75,16 +75,17 @@ export function Header() {
               >
                 {t("nav.coins")}
               </Link>
-              <Link
-                href="/indicators"
-                className={`px-2.5 py-1.5 rounded-lg transition-colors ${
-                  pathname === "/indicators"
-                    ? "bg-emerald-500/15 text-emerald-400 font-medium"
-                    : "text-theme-secondary hover:text-theme-text"
-                }`}
-              >
-                {t("nav.indicators")}
-              </Link>
+              <div className="relative group">
+                <button
+                  className="px-2.5 py-1.5 rounded-lg text-xs text-theme-secondary cursor-not-allowed opacity-50"
+                  disabled
+                >
+                  {t("nav.indicators")}
+                </button>
+                <span className="absolute top-full mt-1 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-gray-700 text-[10px] text-gray-200 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                  {t("nav.coming_soon")}
+                </span>
+              </div>
               <Link
                 href="/watchlist"
                 className={`px-2.5 py-1.5 rounded-lg transition-colors ${
@@ -216,20 +217,34 @@ export function Header() {
               </div>
             )}
 
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                  pathname === link.href
-                    ? "bg-emerald-500/15 text-emerald-400 font-medium"
-                    : "text-theme-secondary hover:text-theme-text hover:bg-theme-hover"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) =>
+              link.href === "/indicators" ? (
+                <div key={link.href} className="relative group">
+                  <button
+                    disabled
+                    className="w-full text-left px-3 py-2 rounded-lg text-sm text-theme-secondary opacity-50 cursor-not-allowed"
+                  >
+                    {link.label}
+                  </button>
+                  <span className="absolute top-1/2 -translate-y-1/2 right-3 px-2 py-0.5 rounded bg-gray-700 text-[10px] text-gray-200 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {t("nav.coming_soon")}
+                  </span>
+                </div>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                    pathname === link.href
+                      ? "bg-emerald-500/15 text-emerald-400 font-medium"
+                      : "text-theme-secondary hover:text-theme-text hover:bg-theme-hover"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              )
+            )}
           </div>
         </div>
       )}

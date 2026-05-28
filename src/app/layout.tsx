@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@fontsource/vazirmatn/300.css";
+import "@fontsource/vazirmatn/400.css";
+import "@fontsource/vazirmatn/500.css";
+import "@fontsource/vazirmatn/600.css";
+import "@fontsource/vazirmatn/700.css";
 import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/lib/theme";
 import { SessionProvider } from "@/components/SessionProvider";

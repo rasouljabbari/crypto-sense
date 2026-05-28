@@ -7,7 +7,8 @@
   "nav": {
     "coins": "ارزها",
     "indicators": "شاخص‌ها",
-    "watchlist": "لیست نظارت"
+    "watchlist": "لیست پیگیری",
+    "coming_soon": "به زودی..."
   },
   "header": {
     "live": "زنده",

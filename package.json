@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
+    "@fontsource/vazirmatn": "^5.2.8",
     "@prisma/client": "^6.19.3",
     "@tanstack/react-query": "^5.100.14",
     "bcryptjs": "^3.0.3",

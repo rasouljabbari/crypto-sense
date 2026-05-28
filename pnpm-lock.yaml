@@ -11,6 +11,9 @@ importers:
       '@auth/prisma-adapter':
         specifier: ^2.11.2
         version: 2.11.2(@prisma/client@6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3))
+      '@fontsource/vazirmatn':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -212,6 +215,9 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@fontsource/vazirmatn@5.2.8':
+    resolution: {integrity: sha512-WoDgv8R/y1gwgTS8Q2uL8d2ayeSGNv2IrYQ4wHmJkVwYPb8KVODrqbbvEjBqLOo5WP5kLJIrO06FRDMnSFuCaA==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -2458,6 +2464,8 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
+
+  '@fontsource/vazirmatn@5.2.8': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
