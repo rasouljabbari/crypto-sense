@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 
 const BINANCE_REST = "https://api.binance.com/api/v3";
 
+const API_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (compatible; CryptoSense/1.0)",
+  "Accept": "application/json",
+};
+
 interface ExchangePair {
   symbol: string;
   baseAsset: string;
-  quoteAsset: string;
 }
 
 interface SearchResult {
@@ -23,6 +27,29 @@ interface BinanceTicker {
   lastPrice: string;
   priceChangePercent: string;
   quoteVolume: string;
+}
+
+let exchangeInfoCache: ExchangePair[] | null = null;
+let lastFetch = 0;
+
+async function getExchangeInfo(): Promise<ExchangePair[]> {
+  const now = Date.now();
+  if (exchangeInfoCache && now - lastFetch < 3600000) return exchangeInfoCache;
+  const res = await fetch(`${BINANCE_REST}/exchangeInfo`, { headers: API_HEADERS });
+  if (!res.ok) {
+    if (res.status === 451) {
+      // Binance blocked from this region — return nothing
+      return [];
+    }
+    throw new Error(`exchangeInfo error: ${res.status}`);
+  }
+  const json: { symbols: any[] } = await res.json();
+  const pairs: ExchangePair[] = json.symbols
+    .filter((s: any) => s.status === "TRADING" && s.quoteAsset === "USDT")
+    .map((s: any) => ({ symbol: s.symbol, baseAsset: s.baseAsset }));
+  exchangeInfoCache = pairs;
+  lastFetch = now;
+  return pairs;
 }
 
 function calcRSI(prices: number[], period = 14): number {
@@ -45,23 +72,6 @@ function calcRSI(prices: number[], period = 14): number {
   return Math.round(100 - 100 / (1 + rs));
 }
 
-let exchangeInfoCache: ExchangePair[] | null = null;
-let lastFetch = 0;
-
-async function getExchangeInfo(): Promise<ExchangePair[]> {
-  const now = Date.now();
-  if (exchangeInfoCache && now - lastFetch < 3600000) return exchangeInfoCache;
-  const res = await fetch(`${BINANCE_REST}/exchangeInfo`);
-  if (!res.ok) throw new Error(`exchangeInfo error: ${res.status}`);
-  const json: { symbols: any[] } = await res.json();
-  const pairs: ExchangePair[] = json.symbols
-    .filter((s: any) => s.status === "TRADING" && s.quoteAsset === "USDT")
-    .map((s: any) => ({ symbol: s.symbol, baseAsset: s.baseAsset, quoteAsset: s.quoteAsset }));
-  exchangeInfoCache = pairs;
-  lastFetch = now;
-  return pairs;
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.toUpperCase().trim();
@@ -71,8 +81,10 @@ export async function GET(request: Request) {
 
   try {
     const pairs = await getExchangeInfo();
+    if (pairs.length === 0) {
+      return NextResponse.json({ results: [] });
+    }
 
-    // Strip known quote suffixes so "HYPEUSDT" matches baseAsset "HYPER"
     const quoteAssets = ["USDT", "USDC", "BUSD", "FDUSD", "BNB", "BTC", "ETH", "TRY", "DAI"];
     let baseQ = q;
     for (const qa of quoteAssets) {
@@ -92,17 +104,17 @@ export async function GET(request: Request) {
 
     const symbols = matched.map((p) => p.symbol);
     const tickerRes = await fetch(
-      `${BINANCE_REST}/ticker/24hr?symbols=${JSON.stringify(symbols)}`
+      `${BINANCE_REST}/ticker/24hr?symbols=${JSON.stringify(symbols)}`,
+      { headers: API_HEADERS }
     );
     if (!tickerRes.ok) {
       return NextResponse.json({ error: "ticker error" }, { status: 502 });
     }
     const tickers: BinanceTicker[] = await tickerRes.json();
 
-    // Fetch klines for RSI computation (only first 5 results to keep it fast)
     const klinesPromises = tickers.slice(0, 5).map(async (t) => {
       try {
-        const res = await fetch(`${BINANCE_REST}/klines?symbol=${t.symbol}&interval=1h&limit=15`);
+        const res = await fetch(`${BINANCE_REST}/klines?symbol=${t.symbol}&interval=1h&limit=15`, { headers: API_HEADERS });
         if (!res.ok) return { symbol: t.symbol, rsi: 50 };
         const data: string[][] = await res.json();
         return { symbol: t.symbol, rsi: calcRSI(data.map((k) => parseFloat(k[4]))) };
