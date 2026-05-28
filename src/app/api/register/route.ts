@@ -29,9 +29,6 @@ export async function POST(request: Request) {
     console.error("Message:", err?.message);
     console.error("Stack:", err?.stack);
     console.error("======================");
-    if (err?.name === "PrismaClientValidationError") {
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
-    }
-    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Registration failed" }, { status: 500 });
   }
 }
