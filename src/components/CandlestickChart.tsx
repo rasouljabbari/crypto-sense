@@ -49,7 +49,7 @@ export function CandlestickChart({ coinId }: Props) {
     { label: t("chart.4h"), interval: "4h", limit: 168 },
   ];
 
-  const symbol = COIN_SYMBOL_MAP[coinId];
+  const symbol = COIN_SYMBOL_MAP[coinId] ?? (coinId.toUpperCase().endsWith("USDT") ? coinId.toUpperCase() : `${coinId.toUpperCase()}USDT`);
 
   useEffect(() => {
     if (!symbol) return;

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { CoinTable } from "@/components/CoinTable";
+import { SearchBar } from "@/components/SearchBar";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
 import { useI18n } from "@/i18n/context";
@@ -41,6 +42,10 @@ export default function DashboardPage() {
           <StatCard label={t("dashboard.stats.long_opportunities")} value={longCount.toString()} gradient="from-emerald-500 to-emerald-600" />
           <StatCard label={t("dashboard.stats.short_opportunities")} value={shortCount.toString()} gradient="from-red-500 to-red-600" />
           <StatCard label={t("dashboard.stats.data_source")} value={isLive ? t("dashboard.stats.binance_api") : t("dashboard.stats.simulated")} />
+        </div>
+
+        <div className="mb-6">
+          <SearchBar />
         </div>
 
         <CoinTable />

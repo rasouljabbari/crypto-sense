@@ -6,7 +6,8 @@
   },
   "nav": {
     "coins": "Coinler",
-    "indicators": "Göstergeler"
+    "indicators": "Göstergeler",
+    "watchlist": "İzleme Listesi"
   },
   "header": {
     "live": "Canlı",
@@ -43,6 +44,17 @@
     "desc": "↓ Azalan",
     "asc": "↑ Artan",
     "min_score": "Min Puan"
+  },
+  "search": {
+    "placeholder": "Coin ara...",
+    "no_results": "Coin bulunamadı",
+    "add_to_watchlist": "İzleme Listesine Ekle",
+    "remove_from_watchlist": "Kaldır"
+  },
+  "watchlist": {
+    "title": "İzleme Listesi",
+    "empty": "İzleme listeniz boş — eklemek için yukarıdan coin arayın",
+    "remove": "Kaldır"
   },
   "table": {
     "columns": {
@@ -213,6 +225,7 @@
       },
       "trend_analysis": {
         "title": "Trend Analizi",
+        "tooltip": "Son fiyat hareketlerine dayalı kısa, orta ve uzun vadeli fiyat trendlerinin analizi.",
         "short_term": "Kısa Vade",
         "medium_term": "Orta Vade",
         "long_term": "Uzun Vade",
@@ -226,13 +239,17 @@
       },
       "news_sentiment": {
         "title": "Haber ve Duyarlılık",
+        "tooltip": "Haber ve sosyal medya kaynaklarından toplanan duyarlılık verileri.",
         "positive": "olumlu",
         "negative": "olumsuz",
+        "neutral": "nötr",
         "positive_ratio": "%{pct} olumlu",
         "mentions": "{count} bahsedilme",
         "no_news": "Bu coin için yakın zamanda haber bulunamadı"
       },
       "support_resistance": {
+        "title": "Destek ve Direnç",
+        "tooltip": "Coin'in geçmişte destek (alım baskısı) veya direnç (satış baskısı) bulduğu kilit fiyat seviyeleri.",
         "support": "Destek {level}",
         "resistance": "Direnç {level}",
         "support_levels": "Destek Seviyeleri",
@@ -244,7 +261,12 @@
       "trend": "Trend",
       "technicals": "Teknikler",
       "sentiment": "Duyarlılık"
-    }
+    },
+    "data_source": "Binance",
+    "signal": "Sinyal",
+    "score": "Puan: {score}",
+    "price_chart": "Fiyat Grafiği",
+    "fallback_message": "Bu coin için tam analiz mevcut değil. Yalnızca Binance piyasa verileri gösteriliyor."
   },
   "locale": {
     "en": "English",

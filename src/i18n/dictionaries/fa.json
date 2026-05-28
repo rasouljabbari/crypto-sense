@@ -6,7 +6,8 @@
   },
   "nav": {
     "coins": "ارزها",
-    "indicators": "شاخص‌ها"
+    "indicators": "شاخص‌ها",
+    "watchlist": "لیست نظارت"
   },
   "header": {
     "live": "زنده",
@@ -43,6 +44,17 @@
     "desc": "↓ نزولی",
     "asc": "↑ صعودی",
     "min_score": "حداقل امتیاز"
+  },
+  "search": {
+    "placeholder": "جستجوی ارزها...",
+    "no_results": "هیچ ارزی یافت نشد",
+    "add_to_watchlist": "افزودن به لیست نظارت",
+    "remove_from_watchlist": "حذف"
+  },
+  "watchlist": {
+    "title": "لیست نظارت",
+    "empty": "لیست نظارت شما خالی است — برای افزودن ارز، بالای صفحه جستجو کنید",
+    "remove": "حذف"
   },
   "table": {
     "columns": {
@@ -213,6 +225,7 @@
       },
       "trend_analysis": {
         "title": "تحلیل روند",
+        "tooltip": "تحلیل روندهای کوتاه‌مدت، میان‌مدت و بلندمدت قیمت بر اساس حرکت قیمت اخیر.",
         "short_term": "کوتاه‌مدت",
         "medium_term": "میان‌مدت",
         "long_term": "بلندمدت",
@@ -226,13 +239,17 @@
       },
       "news_sentiment": {
         "title": "اخبار و احساسات",
+        "tooltip": "احساسات جمع‌آوری‌شده از خبرگزاری‌ها و شبکه‌های اجتماعی.",
         "positive": "مثبت",
         "negative": "منفی",
+        "neutral": "خنثی",
         "positive_ratio": "%{pct} مثبت",
         "mentions": "{count} اشاره",
         "no_news": "اخبار اخیری برای این ارز یافت نشد"
       },
       "support_resistance": {
+        "title": "حمایت و مقاومت",
+        "tooltip": "سطوح قیمتی کلیدی که ارز در گذشته در آنها حمایت (فشار خرید) یا مقاومت (فشار فروش) داشته است.",
         "support": "حمایت {level}",
         "resistance": "مقاومت {level}",
         "support_levels": "سطوح حمایت",
@@ -244,7 +261,12 @@
       "trend": "روند",
       "technicals": "تکنیکال",
       "sentiment": "احساسات"
-    }
+    },
+    "data_source": "بایننس",
+    "signal": "سیگنال",
+    "score": "امتیاز: {score}",
+    "price_chart": "نمودار قیمت",
+    "fallback_message": "تحلیل کامل برای این ارز در دسترس نیست. فقط داده‌های بازار بایننس نمایش داده می‌شود."
   },
   "locale": {
     "en": "English",

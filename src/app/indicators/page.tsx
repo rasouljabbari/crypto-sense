@@ -154,7 +154,7 @@ export default function IndicatorsPage() {
                     <div key={c.baseAsset} className="grid grid-cols-[1.5fr_1fr_1fr_1.2fr] gap-2 items-center px-4 py-2.5 text-xs hover:bg-gray-800/30 transition-colors">
                       <div>
                         {c.coinId ? (
-                          <Link href={`/coin/${c.coinId}`} className="text-white font-medium hover:text-cyan-400 transition-colors">
+                          <Link href={`/coin/${c.baseAsset}`} className="text-white font-medium hover:text-cyan-400 transition-colors">
                             {c.baseAsset}
                           </Link>
                         ) : (

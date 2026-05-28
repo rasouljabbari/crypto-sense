@@ -6,7 +6,8 @@
   },
   "nav": {
     "coins": "Coins",
-    "indicators": "Indicators"
+    "indicators": "Indicators",
+    "watchlist": "Watchlist"
   },
   "header": {
     "live": "Live",
@@ -43,6 +44,17 @@
     "desc": "↓ Desc",
     "asc": "↑ Asc",
     "min_score": "Min Score"
+  },
+  "search": {
+    "placeholder": "Search coins...",
+    "no_results": "No coins found",
+    "add_to_watchlist": "Add to Watchlist",
+    "remove_from_watchlist": "Remove"
+  },
+  "watchlist": {
+    "title": "Watchlist",
+    "empty": "Your watchlist is empty — search for coins above to add them",
+    "remove": "Remove"
   },
   "table": {
     "columns": {
@@ -213,6 +225,7 @@
       },
       "trend_analysis": {
         "title": "Trend Analysis",
+        "tooltip": "Analysis of short, medium, and long-term price trends based on recent price action.",
         "short_term": "Short Term",
         "medium_term": "Medium Term",
         "long_term": "Long Term",
@@ -226,13 +239,17 @@
       },
       "news_sentiment": {
         "title": "News & Sentiment",
+        "tooltip": "Aggregated sentiment from news and social media sources.",
         "positive": "positive",
         "negative": "negative",
+        "neutral": "neutral",
         "positive_ratio": "{pct}% positive",
         "mentions": "{count} mentions",
         "no_news": "No recent news for this coin"
       },
       "support_resistance": {
+        "title": "Support & Resistance",
+        "tooltip": "Key price levels where the coin has historically found support (buying pressure) or resistance (selling pressure).",
         "support": "Support {level}",
         "resistance": "Resistance {level}",
         "support_levels": "Support Levels",
@@ -244,7 +261,12 @@
       "trend": "Trend",
       "technicals": "Technicals",
       "sentiment": "Sentiment"
-    }
+    },
+    "data_source": "Binance",
+    "signal": "Signal",
+    "score": "Score: {score}",
+    "price_chart": "Price Chart",
+    "fallback_message": "Full analysis not available for this coin. Only Binance market data is shown."
   },
   "locale": {
     "en": "English",

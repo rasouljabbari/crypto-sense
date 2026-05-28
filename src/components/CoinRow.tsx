@@ -13,11 +13,6 @@ function trendIcon(trend: "bullish" | "bearish" | "neutral") {
   }
 }
 
-function volRatio(coin: CoinAnalysis): number {
-  if (!coin.marketData.marketCap) return 0;
-  return (coin.marketData.volume24h / coin.marketData.marketCap) * 100;
-}
-
 function rsiLevel(coin: CoinAnalysis): { value: string; color: string } {
   const rsi = coin.technicalIndicators.rsi;
   const v = rsi.toFixed(0);
@@ -88,15 +83,14 @@ export function CoinRow({ coin }: Props) {
   const pos = positionConfig[coin.position];
   const posLabel = t(pos.labelKey);
   const isPositive = coin.marketData.priceChangePercent24h >= 0;
-  const vr = volRatio(coin);
   const rsi = rsiLevel(coin);
   const risk = calcRiskAllocation(coin);
   const action = calcActionLabel(coin, t);
 
   return (
     <Link
-      href={`/coin/${coin.coinId}`}
-      className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1.2fr_0.5fr] gap-2 items-center px-4 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
+      href={`/coin/${coin.marketData.symbol}`}
+      className="min-w-[640px] grid grid-cols-[2fr_1fr_1fr_1fr_1.2fr_0.5fr] gap-2 items-center px-4 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
     >
       {/* Name with Rank */}
       <div className="flex items-center gap-3">
@@ -118,13 +112,6 @@ export function CoinRow({ coin }: Props) {
       <div className="text-right font-mono text-sm">
         <span className={isPositive ? "text-emerald-400" : "text-red-400"}>
           {isPositive ? "+" : ""}{coin.marketData.priceChangePercent24h.toFixed(2)}%
-        </span>
-      </div>
-
-      {/* Vol/M.Cap */}
-      <div className="text-right font-mono text-xs" title={t("coin_row.vol_tooltip")}>
-        <span className={vr > 15 ? "text-emerald-400" : vr > 5 ? "text-yellow-400" : "text-gray-400"}>
-          {vr.toFixed(1)}%
         </span>
       </div>
 
