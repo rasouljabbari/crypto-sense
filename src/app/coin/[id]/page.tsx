@@ -1,9 +1,10 @@
 "use client";
 
-import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
 import { CandlestickChart } from "@/components/CandlestickChart";
 import { Header } from "@/components/Header";
+import { OrderBook } from "@/components/OrderBook";
 import { useI18n } from "@/i18n/context";
+import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
 import { calcRSI, calculateTechnicalIndicatorsFromKlines, estimatePosition } from "@/lib/indicators";
 import { getPositionLabel } from "@/lib/scoring";
 import { CoinAnalysis, PositionType, TechnicalIndicators } from "@/lib/types";
@@ -356,6 +357,11 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Order Book */}
+        <div className="mt-6">
+          <OrderBook symbol={COIN_SYMBOL_MAP[coin.coinId] || `${md.symbol}USDT`} />
         </div>
       </main>
     </div>

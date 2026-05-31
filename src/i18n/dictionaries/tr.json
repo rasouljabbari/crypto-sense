@@ -269,6 +269,16 @@
     "price_chart": "Fiyat Grafiği",
     "fallback_message": "Bu coin için tam analiz mevcut değil. Yalnızca Binance piyasa verileri gösteriliyor."
   },
+  "order_book": {
+    "title": "Emir Defteri",
+    "price": "Fiyat (USDT)",
+    "amount": "Miktar",
+    "total": "Toplam",
+    "spread": "Spread",
+    "bids": "Alış",
+    "asks": "Satış",
+    "updated": "1 sn güncellenir"
+  },
   "footer": {
     "copyright": "© {year} CryptoSense. Tüm hakları saklıdır.",
     "support": "Destek:"

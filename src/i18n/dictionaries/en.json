@@ -269,6 +269,16 @@
     "price_chart": "Price Chart",
     "fallback_message": "Full analysis not available for this coin. Only Binance market data is shown."
   },
+  "order_book": {
+    "title": "Order Book",
+    "price": "Price (USDT)",
+    "amount": "Amount",
+    "total": "Total",
+    "spread": "Spread",
+    "bids": "Bids",
+    "asks": "Asks",
+    "updated": "Updated 1s"
+  },
   "footer": {
     "copyright": "© {year} CryptoSense. All rights reserved.",
     "support": "Support:"

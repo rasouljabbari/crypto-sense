@@ -269,6 +269,16 @@
     "price_chart": "نمودار قیمت",
     "fallback_message": "تحلیل کامل برای این ارز در دسترس نیست. فقط داده‌های بازار بایننس نمایش داده می‌شود."
   },
+  "order_book": {
+    "title": "دفتر سفارشات",
+    "price": "قیمت (USDT)",
+    "amount": "حجم",
+    "total": "کل",
+    "spread": "اسپرد",
+    "bids": "خرید",
+    "asks": "فروش",
+    "updated": "بروزرسانی ۱ثانیه"
+  },
   "footer": {
     "copyright": "© {year} CryptoSense. تمامی حقوق محفوظ است.",
     "support": "حمایت:"
