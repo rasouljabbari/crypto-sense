@@ -312,7 +312,8 @@
   },
   "footer": {
     "copyright": "© {year} CryptoSense. All rights reserved.",
-    "support": "Support:"
+    "support": "Support:",
+    "copied": "Copied!"
   },
   "locale": {
     "en": "English",
