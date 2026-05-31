@@ -177,6 +177,9 @@ export function CandlestickChart({ coinId }: Props) {
   const hlinesRef = useRef<IPriceLine[]>([]);
   const smaSeriesArrRef = useRef<ISeriesApi<"Line">[]>([]);
   const loadedRef = useRef(false);
+  const dmiDataRef = useRef<ReturnType<typeof calcDMI>>({ plusDI: [], minusDI: [], adx: [] });
+  const rsiDataRef = useRef<{ time: UTCTimestamp; value: number }[]>([]);
+  const [crosshairValues, setCrosshairValues] = useState<{ rsi?: string; pdi?: string; mdi?: string; adx?: string; vol?: string } | null>(null);
 
   const symbol = COIN_SYMBOL_MAP[coinId] ?? (coinId.toUpperCase().endsWith("USDT") ? coinId.toUpperCase() : `${coinId.toUpperCase()}USDT`);
 
@@ -385,20 +388,19 @@ export function CandlestickChart({ coinId }: Props) {
         chart.timeScale().fitContent();
       }
 
+      const volPane = chart.addPane();
+      volPane.setStretchFactor(0.2);
+
       const volSeries = chart.addSeries(HistogramSeries, {
         priceFormat: { type: "volume" },
-        priceScaleId: "volume",
-      });
-
-      chart.priceScale("volume").applyOptions({
-        scaleMargins: { top: 0.8, bottom: 0 },
-      });
+        color: "rgba(52, 211, 153, 0.3)",
+      }, volPane.paneIndex());
 
       volSeries.setData(
         data.map((k) => ({
           time: fmtTime(k),
           value: k.volume,
-          color: k.close >= k.open ? "rgba(52, 211, 153, 0.3)" : "rgba(239, 68, 68, 0.3)",
+          color: k.close >= k.open ? "rgba(52, 211, 153, 0.4)" : "rgba(239, 68, 68, 0.4)",
         }))
       );
 
@@ -424,33 +426,38 @@ export function CandlestickChart({ coinId }: Props) {
       }
       smaSeriesArrRef.current = newSmaSeries;
 
-      const oscillatorPane = chart.addPane();
-      oscillatorPane.setStretchFactor(0.35);
+      const dmiPane = chart.addPane();
+      dmiPane.setStretchFactor(0.25);
+
+      const dmiData = calcDMI(data);
+      dmiDataRef.current = dmiData;
+      const pdiLine = chart.addSeries(LineSeries, {
+        color: "#34d399", lineWidth: 1, visible: showDMI,
+      }, dmiPane.paneIndex());
+      const mdiLine = chart.addSeries(LineSeries, {
+        color: "#ef4444", lineWidth: 1, visible: showDMI,
+      }, dmiPane.paneIndex());
+      const adxLine = chart.addSeries(LineSeries, {
+        color: "#f59e0b", lineWidth: 1, visible: showDMI,
+      }, dmiPane.paneIndex());
+      if (dmiData.plusDI.length > 0) pdiLine.setData(dmiData.plusDI);
+      if (dmiData.minusDI.length > 0) mdiLine.setData(dmiData.minusDI);
+      if (dmiData.adx.length > 0) adxLine.setData(dmiData.adx);
+      dmiSeriesRef.current = [pdiLine, mdiLine, adxLine];
+
+      const rsiPane = chart.addPane();
+      rsiPane.setStretchFactor(0.25);
 
       const rsiData = calcRSI(data);
+      rsiDataRef.current = rsiData;
       const rsiLine = chart.addSeries(LineSeries, {
         color: "#a78bfa", lineWidth: 1, visible: showRSI,
-      }, oscillatorPane.paneIndex());
+      }, rsiPane.paneIndex());
       if (rsiData.length > 0) rsiLine.setData(rsiData);
       rsiLine.createPriceLine({ price: 70, color: "rgba(239,68,68,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
       rsiLine.createPriceLine({ price: 50, color: "rgba(107,114,128,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
       rsiLine.createPriceLine({ price: 30, color: "rgba(52,211,153,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
       rsiSeriesRef.current = rsiLine;
-
-      const dmiData = calcDMI(data);
-      const pdiLine = chart.addSeries(LineSeries, {
-        color: "#34d399", lineWidth: 1, visible: showDMI,
-      }, oscillatorPane.paneIndex());
-      const mdiLine = chart.addSeries(LineSeries, {
-        color: "#ef4444", lineWidth: 1, visible: showDMI,
-      }, oscillatorPane.paneIndex());
-      const adxLine = chart.addSeries(LineSeries, {
-        color: "#f59e0b", lineWidth: 1, visible: showDMI,
-      }, oscillatorPane.paneIndex());
-      if (dmiData.plusDI.length > 0) pdiLine.setData(dmiData.plusDI);
-      if (dmiData.minusDI.length > 0) mdiLine.setData(dmiData.minusDI);
-      if (dmiData.adx.length > 0) adxLine.setData(dmiData.adx);
-      dmiSeriesRef.current = [pdiLine, mdiLine, adxLine];
 
       const newHlines: IPriceLine[] = [];
       for (const price of hlinePricesRef.current) {
@@ -489,6 +496,41 @@ export function CandlestickChart({ coinId }: Props) {
       }
 
       chart.subscribeClick(onClick);
+
+      chart.subscribeCrosshairMove((param) => {
+        if (!param.time || !param.point) {
+          setCrosshairValues(null);
+          return;
+        }
+        if (!candleSeriesRef.current) return;
+        const candleData = param.seriesData.get(candleSeriesRef.current) as { time: UTCTimestamp; open: number; high: number; low: number; close: number } | undefined;
+        if (!candleData) return;
+        const t = Number(candleData.time);
+        const idx = data.findIndex((d) => Number(fmtTime(d)) === t);
+        if (idx === -1) return;
+        const vals: { rsi?: string; pdi?: string; mdi?: string; adx?: string; vol?: string } = {};
+        const candle = data[idx];
+        if (candle) {
+          const v = candle.volume;
+          if (v >= 1e9) vals.vol = (v / 1e9).toFixed(2) + "B";
+          else if (v >= 1e6) vals.vol = (v / 1e6).toFixed(2) + "M";
+          else if (v >= 1e3) vals.vol = (v / 1e3).toFixed(2) + "K";
+          else vals.vol = v.toFixed(0);
+        }
+        const rsiV = rsiDataRef.current.find((r) => Number(r.time) === t);
+        if (rsiV) vals.rsi = rsiV.value.toFixed(1);
+        const dmiV = dmiDataRef.current;
+        const dmiIdx = idx >= 14 ? idx - 14 : -1;
+        if (dmiIdx >= 0 && dmiIdx < dmiV.plusDI.length) {
+          vals.pdi = dmiV.plusDI[dmiIdx].value.toFixed(1);
+          vals.mdi = dmiV.minusDI[dmiIdx].value.toFixed(1);
+        }
+        const adxIdx = dmiIdx >= 14 ? dmiIdx - 14 : -1;
+        if (adxIdx >= 0 && adxIdx < dmiV.adx.length) {
+          vals.adx = dmiV.adx[adxIdx].value.toFixed(1);
+        }
+        setCrosshairValues(Object.keys(vals).length > 0 ? vals : null);
+      });
 
       const ro = new ResizeObserver(() => {
         if (chartRef.current && container) {
@@ -597,6 +639,16 @@ export function CandlestickChart({ coinId }: Props) {
       </div>
       <div className="relative flex-1 min-h-0">
         <div ref={containerRef} className="absolute inset-0 rounded-lg overflow-hidden" />
+        {/* Crosshair tooltip */}
+        {crosshairValues && (
+          <div className="absolute top-2 right-2 z-20 flex flex-col gap-0.5 text-[9px] font-semibold pointer-events-none">
+            {crosshairValues.vol && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">VOL {crosshairValues.vol}</span>}
+            {crosshairValues.rsi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-purple-400 border border-gray-700/50">RSI {crosshairValues.rsi}</span>}
+            {crosshairValues.pdi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-emerald-400 border border-gray-700/50">+DI {crosshairValues.pdi}</span>}
+            {crosshairValues.mdi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-red-400 border border-gray-700/50">-DI {crosshairValues.mdi}</span>}
+            {crosshairValues.adx && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-amber-400 border border-gray-700/50">ADX {crosshairValues.adx}</span>}
+          </div>
+        )}
         {status.type === "loading" && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#0d1117]/60 z-10">
             <div className="flex flex-col items-center gap-3">
