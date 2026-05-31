@@ -1,8 +1,10 @@
 "use client";
 
 import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
+import { useI18n } from "@/i18n/context";
+import { useTheme } from "@/lib/theme";
 import type { ChartDataPoint } from "@/lib/types";
-import type { IChartApi, UTCTimestamp, ISeriesApi, IPriceLine, MouseEventParams, Time } from "lightweight-charts";
+import type { IChartApi, IPriceLine, ISeriesApi, MouseEventParams, Time, UTCTimestamp } from "lightweight-charts";
 import {
   CandlestickSeries,
   ColorType,
@@ -14,8 +16,6 @@ import {
 } from "lightweight-charts";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { useI18n } from "@/i18n/context";
-import { useTheme } from "@/lib/theme";
 
 function calcSMA(data: ChartDataPoint[], period: number) {
   return data
@@ -148,8 +148,8 @@ export function CandlestickChart({ coinId }: Props) {
   isAuthRef.current = isAuth;
 
   const TIMEFRAMES: TimeframeOption[] = [
-    { label: t("chart.1h"), interval: "1h", limit: 1000 },
-    { label: t("chart.4h"), interval: "4h", limit: 1000 },
+    { label: "1H", interval: "1h", limit: 1000 },
+    { label: "4H", interval: "4h", limit: 1000 },
     { label: "1D", interval: "1d", limit: 1000 },
     { label: "1W", interval: "1w", limit: 1000 },
     { label: "1M", interval: "1M", limit: 1000 },
@@ -213,7 +213,7 @@ export function CandlestickChart({ coinId }: Props) {
     if (!cs) return;
 
     for (const hl of hlinesRef.current) {
-      try { cs.removePriceLine(hl); } catch {}
+      try { cs.removePriceLine(hl); } catch { }
     }
     hlinesRef.current = [];
 
@@ -232,13 +232,13 @@ export function CandlestickChart({ coinId }: Props) {
 
   function clearAllDrawings() {
     for (const hl of hlinesRef.current) {
-      try { candleSeriesRef.current?.removePriceLine(hl); } catch {}
+      try { candleSeriesRef.current?.removePriceLine(hl); } catch { }
     }
     hlinesRef.current = [];
     hlinePricesRef.current = [];
 
     if (isAuthRef.current) {
-      fetch(`/api/chart-drawings?coinId=${encodeURIComponent(coinId)}`, { method: "DELETE" }).catch(() => {});
+      fetch(`/api/chart-drawings?coinId=${encodeURIComponent(coinId)}`, { method: "DELETE" }).catch(() => { });
     }
   }
 
@@ -248,7 +248,7 @@ export function CandlestickChart({ coinId }: Props) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ coinId, lines: prices }),
-    }).catch(() => {});
+    }).catch(() => { });
   }
 
   function toggleFullscreen() {
@@ -279,7 +279,7 @@ export function CandlestickChart({ coinId }: Props) {
           redrawHLines();
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [authStatus, coinId]);
 
   useEffect(() => {
@@ -308,200 +308,200 @@ export function CandlestickChart({ coinId }: Props) {
 
     try {
 
-    if (chartRef.current) {
-      chartRef.current.remove();
-      chartRef.current = null;
-    }
-    while (container.firstChild) container.removeChild(container.firstChild);
-
-    const rect = container.getBoundingClientRect();
-    const width = rect.width || 800;
-    const height = rect.height || 480;
-
-    const bgColor = isDark ? "#0d1117" : "#ffffff";
-    const textColor = isDark ? "#9ca3af" : "#6b7280";
-    const gridColor = isDark ? "rgba(55, 65, 81, 0.4)" : "rgba(209, 213, 219, 0.5)";
-    const borderColor = isDark ? "#374151" : "#d1d5db";
-    const crosshairLabelBg = isDark ? "#1f2937" : "#f3f4f6";
-    const crosshairLine = isDark ? "#6b7280" : "#9ca3af";
-
-    const chart = createChart(container, {
-      width,
-      height,
-      layout: {
-        background: { type: ColorType.Solid, color: bgColor },
-        textColor,
-        fontSize: 11,
-      },
-      grid: {
-        vertLines: { color: gridColor },
-        horzLines: { color: gridColor },
-      },
-      crosshair: {
-        mode: CrosshairMode.Normal,
-        vertLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
-        horzLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
-      },
-      timeScale: {
-        borderColor,
-        timeVisible: tf.interval === "1h" || tf.interval === "4h",
-        secondsVisible: false,
-      },
-      rightPriceScale: {
-        borderColor,
-      },
-    });
-
-    chartRef.current = chart;
-
-    const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "#34d399",
-      downColor: "#ef4444",
-      borderUpColor: "#34d399",
-      borderDownColor: "#ef4444",
-      wickUpColor: "#34d399",
-      wickDownColor: "#ef4444",
-    });
-
-    candleSeriesRef.current = candleSeries;
-
-    candleSeries.setData(
-      data.map((k) => ({
-        time: fmtTime(k),
-        open: k.open,
-        high: k.high,
-        low: k.low,
-        close: k.close,
-      }))
-    );
-
-    chart.timeScale().fitContent();
-
-    const volSeries = chart.addSeries(HistogramSeries, {
-      priceFormat: { type: "volume" },
-      priceScaleId: "volume",
-    });
-
-    chart.priceScale("volume").applyOptions({
-      scaleMargins: { top: 0.8, bottom: 0 },
-    });
-
-    volSeries.setData(
-      data.map((k) => ({
-        time: fmtTime(k),
-        value: k.volume,
-        color: k.close >= k.open ? "rgba(52, 211, 153, 0.3)" : "rgba(239, 68, 68, 0.3)",
-      }))
-    );
-
-    const sma7Data = calcSMA(data, 7);
-    const sma21Data = calcSMA(data, 21);
-    const sma99Data = calcSMA(data, 99);
-
-    const newSmaSeries: ISeriesApi<"Line">[] = [];
-    if (sma7Data.length > 0) {
-      const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
-      s.setData(sma7Data);
-      newSmaSeries.push(s);
-    }
-    if (sma21Data.length > 0) {
-      const s = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
-      s.setData(sma21Data);
-      newSmaSeries.push(s);
-    }
-    if (sma99Data.length > 0) {
-      const s = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
-      s.setData(sma99Data);
-      newSmaSeries.push(s);
-    }
-    smaSeriesArrRef.current = newSmaSeries;
-
-    const oscillatorPane = chart.addPane();
-    oscillatorPane.setStretchFactor(0.35);
-
-    const rsiData = calcRSI(data);
-    const rsiLine = chart.addSeries(LineSeries, {
-      color: "#a78bfa", lineWidth: 1, visible: showRSI,
-    }, oscillatorPane.paneIndex());
-    if (rsiData.length > 0) rsiLine.setData(rsiData);
-    rsiLine.createPriceLine({ price: 70, color: "rgba(239,68,68,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
-    rsiLine.createPriceLine({ price: 50, color: "rgba(107,114,128,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
-    rsiLine.createPriceLine({ price: 30, color: "rgba(52,211,153,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
-    rsiSeriesRef.current = rsiLine;
-
-    const dmiData = calcDMI(data);
-    const pdiLine = chart.addSeries(LineSeries, {
-      color: "#34d399", lineWidth: 1, visible: showDMI,
-    }, oscillatorPane.paneIndex());
-    const mdiLine = chart.addSeries(LineSeries, {
-      color: "#ef4444", lineWidth: 1, visible: showDMI,
-    }, oscillatorPane.paneIndex());
-    const adxLine = chart.addSeries(LineSeries, {
-      color: "#f59e0b", lineWidth: 1, visible: showDMI,
-    }, oscillatorPane.paneIndex());
-    if (dmiData.plusDI.length > 0) pdiLine.setData(dmiData.plusDI);
-    if (dmiData.minusDI.length > 0) mdiLine.setData(dmiData.minusDI);
-    if (dmiData.adx.length > 0) adxLine.setData(dmiData.adx);
-    dmiSeriesRef.current = [pdiLine, mdiLine, adxLine];
-
-    const newHlines: IPriceLine[] = [];
-    for (const price of hlinePricesRef.current) {
-      const hl = candleSeries.createPriceLine({
-        price,
-        color: "#06b6d4",
-        lineWidth: 1,
-        lineStyle: LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: price.toFixed(2),
-      });
-      newHlines.push(hl);
-    }
-    hlinesRef.current = newHlines;
-
-    function onClick(param: MouseEventParams<Time>) {
-      if (!hLineActiveRef.current || !param.point) return;
-      if (!chartRef.current || !candleSeriesRef.current) return;
-
-      const y = param.point.y;
-      const price = candleSeriesRef.current.coordinateToPrice(y);
-      if (price === null) return;
-
-      hlinePricesRef.current.push(price);
-      const hl = candleSeriesRef.current.createPriceLine({
-        price,
-        color: "#06b6d4",
-        lineWidth: 1,
-        lineStyle: LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: price.toFixed(2),
-      });
-      hlinesRef.current.push(hl);
-
-      saveHLines(hlinePricesRef.current);
-    }
-
-    chart.subscribeClick(onClick);
-
-    const ro = new ResizeObserver(() => {
-      if (chartRef.current && container) {
-        const r = container.getBoundingClientRect();
-        chartRef.current.applyOptions({ width: r.width, height: r.height });
-      }
-    });
-    ro.observe(container);
-
-    return () => {
-      ro.disconnect();
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;
       }
-      candleSeriesRef.current = null;
-      smaSeriesArrRef.current = [];
-      hlinesRef.current = [];
-      rsiSeriesRef.current = null;
-      dmiSeriesRef.current = [];
-    };
+      while (container.firstChild) container.removeChild(container.firstChild);
+
+      const rect = container.getBoundingClientRect();
+      const width = rect.width || 800;
+      const height = rect.height || 480;
+
+      const bgColor = isDark ? "#0d1117" : "#ffffff";
+      const textColor = isDark ? "#9ca3af" : "#6b7280";
+      const gridColor = isDark ? "rgba(55, 65, 81, 0.4)" : "rgba(209, 213, 219, 0.5)";
+      const borderColor = isDark ? "#374151" : "#d1d5db";
+      const crosshairLabelBg = isDark ? "#1f2937" : "#f3f4f6";
+      const crosshairLine = isDark ? "#6b7280" : "#9ca3af";
+
+      const chart = createChart(container, {
+        width,
+        height,
+        layout: {
+          background: { type: ColorType.Solid, color: bgColor },
+          textColor,
+          fontSize: 11,
+        },
+        grid: {
+          vertLines: { color: gridColor },
+          horzLines: { color: gridColor },
+        },
+        crosshair: {
+          mode: CrosshairMode.Normal,
+          vertLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
+          horzLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
+        },
+        timeScale: {
+          borderColor,
+          timeVisible: tf.interval === "1h" || tf.interval === "4h",
+          secondsVisible: false,
+        },
+        rightPriceScale: {
+          borderColor,
+        },
+      });
+
+      chartRef.current = chart;
+
+      const candleSeries = chart.addSeries(CandlestickSeries, {
+        upColor: "#34d399",
+        downColor: "#ef4444",
+        borderUpColor: "#34d399",
+        borderDownColor: "#ef4444",
+        wickUpColor: "#34d399",
+        wickDownColor: "#ef4444",
+      });
+
+      candleSeriesRef.current = candleSeries;
+
+      candleSeries.setData(
+        data.map((k) => ({
+          time: fmtTime(k),
+          open: k.open,
+          high: k.high,
+          low: k.low,
+          close: k.close,
+        }))
+      );
+
+      chart.timeScale().fitContent();
+
+      const volSeries = chart.addSeries(HistogramSeries, {
+        priceFormat: { type: "volume" },
+        priceScaleId: "volume",
+      });
+
+      chart.priceScale("volume").applyOptions({
+        scaleMargins: { top: 0.8, bottom: 0 },
+      });
+
+      volSeries.setData(
+        data.map((k) => ({
+          time: fmtTime(k),
+          value: k.volume,
+          color: k.close >= k.open ? "rgba(52, 211, 153, 0.3)" : "rgba(239, 68, 68, 0.3)",
+        }))
+      );
+
+      const sma7Data = calcSMA(data, 7);
+      const sma21Data = calcSMA(data, 21);
+      const sma99Data = calcSMA(data, 99);
+
+      const newSmaSeries: ISeriesApi<"Line">[] = [];
+      if (sma7Data.length > 0) {
+        const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
+        s.setData(sma7Data);
+        newSmaSeries.push(s);
+      }
+      if (sma21Data.length > 0) {
+        const s = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
+        s.setData(sma21Data);
+        newSmaSeries.push(s);
+      }
+      if (sma99Data.length > 0) {
+        const s = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
+        s.setData(sma99Data);
+        newSmaSeries.push(s);
+      }
+      smaSeriesArrRef.current = newSmaSeries;
+
+      const oscillatorPane = chart.addPane();
+      oscillatorPane.setStretchFactor(0.35);
+
+      const rsiData = calcRSI(data);
+      const rsiLine = chart.addSeries(LineSeries, {
+        color: "#a78bfa", lineWidth: 1, visible: showRSI,
+      }, oscillatorPane.paneIndex());
+      if (rsiData.length > 0) rsiLine.setData(rsiData);
+      rsiLine.createPriceLine({ price: 70, color: "rgba(239,68,68,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
+      rsiLine.createPriceLine({ price: 50, color: "rgba(107,114,128,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
+      rsiLine.createPriceLine({ price: 30, color: "rgba(52,211,153,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
+      rsiSeriesRef.current = rsiLine;
+
+      const dmiData = calcDMI(data);
+      const pdiLine = chart.addSeries(LineSeries, {
+        color: "#34d399", lineWidth: 1, visible: showDMI,
+      }, oscillatorPane.paneIndex());
+      const mdiLine = chart.addSeries(LineSeries, {
+        color: "#ef4444", lineWidth: 1, visible: showDMI,
+      }, oscillatorPane.paneIndex());
+      const adxLine = chart.addSeries(LineSeries, {
+        color: "#f59e0b", lineWidth: 1, visible: showDMI,
+      }, oscillatorPane.paneIndex());
+      if (dmiData.plusDI.length > 0) pdiLine.setData(dmiData.plusDI);
+      if (dmiData.minusDI.length > 0) mdiLine.setData(dmiData.minusDI);
+      if (dmiData.adx.length > 0) adxLine.setData(dmiData.adx);
+      dmiSeriesRef.current = [pdiLine, mdiLine, adxLine];
+
+      const newHlines: IPriceLine[] = [];
+      for (const price of hlinePricesRef.current) {
+        const hl = candleSeries.createPriceLine({
+          price,
+          color: "#06b6d4",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: price.toFixed(2),
+        });
+        newHlines.push(hl);
+      }
+      hlinesRef.current = newHlines;
+
+      function onClick(param: MouseEventParams<Time>) {
+        if (!hLineActiveRef.current || !param.point) return;
+        if (!chartRef.current || !candleSeriesRef.current) return;
+
+        const y = param.point.y;
+        const price = candleSeriesRef.current.coordinateToPrice(y);
+        if (price === null) return;
+
+        hlinePricesRef.current.push(price);
+        const hl = candleSeriesRef.current.createPriceLine({
+          price,
+          color: "#06b6d4",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: price.toFixed(2),
+        });
+        hlinesRef.current.push(hl);
+
+        saveHLines(hlinePricesRef.current);
+      }
+
+      chart.subscribeClick(onClick);
+
+      const ro = new ResizeObserver(() => {
+        if (chartRef.current && container) {
+          const r = container.getBoundingClientRect();
+          chartRef.current.applyOptions({ width: r.width, height: r.height });
+        }
+      });
+      ro.observe(container);
+
+      return () => {
+        ro.disconnect();
+        if (chartRef.current) {
+          chartRef.current.remove();
+          chartRef.current = null;
+        }
+        candleSeriesRef.current = null;
+        smaSeriesArrRef.current = [];
+        hlinesRef.current = [];
+        rsiSeriesRef.current = null;
+        dmiSeriesRef.current = [];
+      };
     } catch (err) { console.error("chart creation error:", err); }
   }, [data, tf.interval]);
 
@@ -515,8 +515,8 @@ export function CandlestickChart({ coinId }: Props) {
                 key={t.interval}
                 onClick={() => setTf(t)}
                 className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${tf.interval === t.interval
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-gray-400 hover:text-gray-200 border border-transparent"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "text-gray-400 hover:text-gray-200 border border-transparent"
                   }`}
               >
                 {t.label}
@@ -526,11 +526,10 @@ export function CandlestickChart({ coinId }: Props) {
           <div className="flex items-center gap-1 bg-gray-900 rounded-lg p-0.5 border border-gray-800">
             <button
               onClick={() => setHLineActive(v => !v)}
-              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                hLineActive
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "text-gray-400 hover:text-gray-200 border border-transparent"
-              }`}
+              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${hLineActive
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                : "text-gray-400 hover:text-gray-200 border border-transparent"
+                }`}
               title="Horizontal line"
             >
               ☰ H-Line
@@ -538,32 +537,29 @@ export function CandlestickChart({ coinId }: Props) {
             <div className="w-px h-4 bg-gray-700 mx-1" />
             <button
               onClick={() => setShowSMA(v => !v)}
-              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                showSMA
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "text-gray-400 hover:text-gray-200 border border-transparent"
-              }`}
+              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${showSMA
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                : "text-gray-400 hover:text-gray-200 border border-transparent"
+                }`}
             >
               3SMA
             </button>
             <div className="w-px h-4 bg-gray-700 mx-1" />
             <button
               onClick={() => setShowRSI(v => !v)}
-              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                showRSI
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "text-gray-400 hover:text-gray-200 border border-transparent"
-              }`}
+              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${showRSI
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                : "text-gray-400 hover:text-gray-200 border border-transparent"
+                }`}
             >
               RSI
             </button>
             <button
               onClick={() => setShowDMI(v => !v)}
-              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                showDMI
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "text-gray-400 hover:text-gray-200 border border-transparent"
-              }`}
+              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${showDMI
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                : "text-gray-400 hover:text-gray-200 border border-transparent"
+                }`}
             >
               DMI
             </button>
