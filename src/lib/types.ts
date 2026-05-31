@@ -87,7 +87,7 @@ export interface FilterOptions {
   positionType: PositionType | "all";
   minVolume: number;
   minScore: number;
-  sortBy: "score" | "volume" | "priceChange" | "name";
+  sortBy: "score" | "volume" | "priceChange" | "name" | "position" | "risk";
   sortOrder: "asc" | "desc";
 }
 

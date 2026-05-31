@@ -33,7 +33,7 @@ export const useStore = create<AppState>((set, get) => ({
     positionType: "all",
     minVolume: 0,
     minScore: 0,
-    sortBy: "score",
+    sortBy: "volume",
     sortOrder: "desc",
   },
   isLoading: true,
@@ -103,6 +103,21 @@ export const useStore = create<AppState>((set, get) => ({
       filtered = filtered.filter((c) => c.overallScore >= filters.minScore);
     }
 
+    const posVal = (pos: string) => pos === "long" ? 3 : pos === "neutral" ? 2 : 1;
+    const riskVal = (c: CoinAnalysis) => {
+      let s = 0;
+      const match = (c.position === "long" && c.trendAnalysis.shortTerm === "bullish") ||
+        (c.position === "short" && c.trendAnalysis.shortTerm === "bearish");
+      if (match) s += 30;
+      else if (c.trendAnalysis.shortTerm === "neutral") s += 15;
+      s += (c.overallScore / 100) * 25;
+      const r = c.technicalIndicators.rsi;
+      if (c.position === "long") s += r < 30 ? 25 : r < 50 ? 20 : r < 70 ? 10 : 0;
+      else if (c.position === "short") s += r > 70 ? 25 : r > 50 ? 20 : r > 30 ? 10 : 0;
+      else s += 10;
+      return s >= 85 ? 4 : s >= 65 ? 3 : s >= 40 ? 2 : 1;
+    };
+
     filtered.sort((a, b) => {
       let cmp = 0;
       switch (filters.sortBy) {
@@ -114,6 +129,12 @@ export const useStore = create<AppState>((set, get) => ({
           break;
         case "priceChange":
           cmp = a.marketData.priceChangePercent24h - b.marketData.priceChangePercent24h;
+          break;
+        case "position":
+          cmp = posVal(a.position) - posVal(b.position);
+          break;
+        case "risk":
+          cmp = riskVal(a) - riskVal(b);
           break;
         case "name":
           cmp = a.marketData.name.localeCompare(b.marketData.name);

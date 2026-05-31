@@ -8,7 +8,13 @@
     "coins": "Coinler",
     "indicators": "Göstergeler",
     "watchlist": "İzleme Listesi",
+    "treemap": "Isı Haritası",
     "coming_soon": "Çok yakında..."
+  },
+  "treemap": {
+    "title": "Piyasa Isı Haritası",
+    "subtitle": "Canlı kripto piyasası, piyasa değeri ve fiyat değişimine göre görselleştirildi",
+    "live": "Canlı"
   },
   "header": {
     "live": "Canlı",

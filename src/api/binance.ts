@@ -14,34 +14,60 @@ export interface BinanceTicker {
   count: number;
 }
 
-export const COIN_SYMBOL_MAP: Record<string, string> = {
-  bitcoin: "BTCUSDT",
-  ethereum: "ETHUSDT",
-  solana: "SOLUSDT",
-  ripple: "XRPUSDT",
-  cardano: "ADAUSDT",
-  avalanche: "AVAXUSDT",
-  chainlink: "LINKUSDT",
-  polkadot: "DOTUSDT",
-  polygon: "MATICUSDT",
-  "near-protocol": "NEARUSDT",
-  dogecoin: "DOGEUSDT",
-  litecoin: "LTCUSDT",
-  stellar: "XLMUSDT",
-  cosmos: "ATOMUSDT",
-  aptos: "APTUSDT",
-  arbitrum: "ARBUSDT",
-  binancecoin: "BNBUSDT",
-  toncoin: "TONUSDT",
-  "bitcoin-cash": "BCHUSDT",
-  dai: "DAIUSDT",
+const FUTURES_SYMBOLS = [
+  "BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT", "AVAXUSDT",
+  "DOTUSDT", "LTCUSDT", "BCHUSDT", "ATOMUSDT", "ETCUSDT", "XLMUSDT", "FILUSDT", "ICPUSDT", "APTUSDT", "NEARUSDT",
+  "ARBUSDT", "OPUSDT", "INJUSDT", "TIAUSDT", "SEIUSDT", "SUIUSDT", "WLDUSDT", "TAOUSDT", "AAVEUSDT", "UNIUSDT",
+  "MKRUSDT", "RENDERUSDT", "FETUSDT", "ENAUSDT", "ONDOUSDT", "JUPUSDT", "PYTHUSDT", "BONKUSDT", "PEPEUSDT", "FLOKIUSDT",
+  "SHIBUSDT", "THETAUSDT", "GRTUSDT", "SANDUSDT", "MANAUSDT", "AXSUSDT", "CHZUSDT", "FLOWUSDT", "EGLDUSDT", "ALGOUSDT",
+  "VETUSDT", "HBARUSDT", "TONUSDT", "QNTUSDT", "XTZUSDT", "EOSUSDT", "NEOUSDT", "KAVAUSDT", "ZECUSDT", "IOTAUSDT",
+  "COMPUSDT", "SNXUSDT", "1INCHUSDT", "DYDXUSDT", "LDOUSDT", "STRKUSDT", "CFXUSDT", "ROSEUSDT", "MEMEUSDT", "WIFUSDT",
+  "JASMYUSDT", "RAYUSDT", "CAKEUSDT", "GALAUSDT", "BEAMUSDT", "ORDIUSDT", "ETHFIUSDT", "PENDLEUSDT", "NOTUSDT", "ZKUSDT",
+  "SUPERUSDT", "TWTUSDT", "HOTUSDT", "ANKRUSDT", "WOOUSDT", "RVNUSDT", "LRCUSDT", "BANDUSDT", "SFPUSDT", "SKLUSDT",
+  "OCEANUSDT", "CELOUSDT", "ICXUSDT", "ZENUSDT", "STXUSDT", "ARKMUSDT", "BLURUSDT", "GMXUSDT", "ZRXUSDT"
+];
+
+const ID_OVERRIDES: Record<string, string> = {
+  BTCUSDT: "bitcoin", ETHUSDT: "ethereum", BNBUSDT: "binancecoin", SOLUSDT: "solana",
+  XRPUSDT: "ripple", DOGEUSDT: "dogecoin", ADAUSDT: "cardano", LINKUSDT: "chainlink",
+  AVAXUSDT: "avalanche", DOTUSDT: "polkadot", LTCUSDT: "litecoin", BCHUSDT: "bitcoin-cash",
+  ATOMUSDT: "cosmos", XLMUSDT: "stellar", APTUSDT: "aptos", ARBUSDT: "arbitrum",
+  NEARUSDT: "near-protocol", TONUSDT: "toncoin",
 };
 
-const SYMBOL_TO_ID = Object.fromEntries(
-  Object.entries(COIN_SYMBOL_MAP).map(([id, sym]) => [sym, id])
-);
+export const COIN_SYMBOL_MAP: Record<string, string> = {};
+const SYMBOL_TO_ID: Record<string, string> = {};
+for (const sym of FUTURES_SYMBOLS) {
+  const id = ID_OVERRIDES[sym] ?? `coin-${sym.replace("USDT", "").toLowerCase()}`;
+  COIN_SYMBOL_MAP[id] = sym;
+  SYMBOL_TO_ID[sym] = id;
+}
 
-export const ALL_BINANCE_SYMBOLS = Object.values(COIN_SYMBOL_MAP);
+export const ALL_BINANCE_SYMBOLS = FUTURES_SYMBOLS;
+
+const KWN_NAMES: Record<string, string> = {
+  BTC: "Bitcoin", ETH: "Ethereum", BNB: "BNB", SOL: "Solana", XRP: "XRP",
+  DOGE: "Dogecoin", ADA: "Cardano", TRX: "TRON", LINK: "Chainlink", AVAX: "Avalanche",
+  DOT: "Polkadot", LTC: "Litecoin", BCH: "Bitcoin Cash", ATOM: "Cosmos", ETC: "Ethereum Classic",
+  XLM: "Stellar", FIL: "Filecoin", ICP: "Internet Computer", APT: "Aptos", NEAR: "NEAR Protocol",
+  ARB: "Arbitrum", OP: "Optimism", INJ: "Injective", TIA: "Celestia", SEI: "Sei",
+  SUI: "Sui", WLD: "Worldcoin", TAO: "Bittensor", AAVE: "Aave", UNI: "Uniswap",
+  MKR: "Maker", RENDER: "Render", FET: "Fetch.ai", ENA: "Ethena", ONDO: "Ondo",
+  JUP: "Jupiter", PYTH: "Pyth Network", BONK: "Bonk", PEPE: "Pepe", FLOKI: "Floki",
+  SHIB: "Shiba Inu", THETA: "Theta Network", GRT: "The Graph", SAND: "The Sandbox",
+  MANA: "Decentraland", AXS: "Axie Infinity", CHZ: "Chiliz", FLOW: "Flow",
+  EGLD: "MultiversX", ALGO: "Algorand", VET: "VeChain", KAS: "Kaspa", CRO: "Cronos",
+  QNT: "Quant", XTZ: "Tezos", EOS: "EOS", NEO: "Neo", KAVA: "Kava",
+  ZEC: "Zcash", IOTA: "IOTA", COMP: "Compound", SNX: "Synthetix", "1INCH": "1inch",
+  DYDX: "dYdX", LDO: "Lido DAO", STRK: "StarkNet", CFX: "Conflux", ROSE: "Oasis Network",
+  CORE: "Core DAO", WIF: "dogwifhat", JASMY: "JasmyCoin", RAY: "Raydium", AKT: "Akash Network",
+  GALA: "Gala", BEAM: "Beam", ORDI: "ORDI", ETHFI: "Ether.fi", PENDLE: "Pendle",
+  NOT: "Notcoin", ZK: "zkSync", SUPER: "SuperVerse", TWT: "Trust Wallet", HOT: "Holo",
+  ANKR: "Ankr", WOO: "WOO Network", RVN: "Ravencoin", LRC: "Loopring", BAND: "Band Protocol",
+  SFP: "SafePal", SKL: "SKALE", OCEAN: "Ocean Protocol", CELO: "Celo", ICX: "ICON",
+  ZEN: "Horizen", STX: "Stacks", ARKM: "Arkham", BLUR: "Blur", GMX: "GMX", ZRX: "0x",
+  HBAR: "Hedera", TON: "Toncoin", CAKE: "PancakeSwap", MEME: "Memecoin",
+};
 
 export const STATIC_COIN_DATA: Record<string, Omit<MarketData, "currentPrice" | "marketCap" | "volume24h" | "priceChange24h" | "priceChangePercent24h" | "high24h" | "low24h">> = {
   bitcoin: { id: "bitcoin", rank: 1, symbol: "BTC", name: "Bitcoin", image: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg", circulatingSupply: 19700000, totalSupply: 21000000, ath: 73750, athDate: "2024-03-14", atl: 67.81, atlDate: "2013-07-06" },
@@ -49,10 +75,9 @@ export const STATIC_COIN_DATA: Record<string, Omit<MarketData, "currentPrice" | 
   solana: { id: "solana", rank: 5, symbol: "SOL", name: "Solana", image: "https://cryptologos.cc/logos/solana-sol-logo.svg", circulatingSupply: 463800000, totalSupply: 583900000, ath: 259.96, athDate: "2021-11-07", atl: 0.503, atlDate: "2020-05-11" },
   ripple: { id: "ripple", rank: 7, symbol: "XRP", name: "XRP", image: "https://cryptologos.cc/logos/xrp-xrp-logo.svg", circulatingSupply: 55200000000, totalSupply: 100000000000, ath: 3.84, athDate: "2018-01-07", atl: 0.00282, atlDate: "2014-05-22" },
   cardano: { id: "cardano", rank: 8, symbol: "ADA", name: "Cardano", image: "https://cryptologos.cc/logos/cardano-ada-logo.svg", circulatingSupply: 35400000000, totalSupply: 45000000000, ath: 3.10, athDate: "2021-09-02", atl: 0.01925, atlDate: "2020-03-13" },
-  avalanche: { id: "avalanche", rank: 12, symbol: "AVAX", name: "Avalanche", image: "https://cryptologos.cc/logos/avalanche-avax-logo.svg", circulatingSupply: 394000000, totalSupply: 450000000, ath: 144.96, athDate: "2021-11-21", atl: 2.80, atlDate: "2020-12-31" },
+  avalanche: { id: "avalanche", rank: 12, symbol: "AVAX", name: "Avalanche", image: "https://cryptologos.cc/logos/avalanche-avax-logo.svg", circulatingSupply: 394000000, totalSupply: 450000000, ath: 144.96, athDate: "2021-11-07", atl: 2.80, atlDate: "2020-12-31" },
   chainlink: { id: "chainlink", rank: 14, symbol: "LINK", name: "Chainlink", image: "https://cryptologos.cc/logos/chainlink-link-logo.svg", circulatingSupply: 587000000, totalSupply: 1000000000, ath: 52.88, athDate: "2021-05-10", atl: 0.1947, atlDate: "2019-01-05" },
   polkadot: { id: "polkadot", rank: 15, symbol: "DOT", name: "Polkadot", image: "https://cryptologos.cc/logos/polkadot-new-dot-logo.svg", circulatingSupply: 1428000000, totalSupply: null, ath: 54.98, athDate: "2021-11-04", atl: 2.70, atlDate: "2020-08-20" },
-  polygon: { id: "polygon", rank: 20, symbol: "MATIC", name: "Polygon", image: "https://cryptologos.cc/logos/polygon-matic-logo.svg", circulatingSupply: 9300000000, totalSupply: 10000000000, ath: 2.92, athDate: "2021-12-27", atl: 0.00308, atlDate: "2019-05-10" },
   "near-protocol": { id: "near-protocol", rank: 19, symbol: "NEAR", name: "NEAR Protocol", image: "https://cryptologos.cc/logos/near-protocol-near-logo.svg", circulatingSupply: 1090000000, totalSupply: null, ath: 20.44, athDate: "2022-01-16", atl: 0.527, atlDate: "2021-11-04" },
   dogecoin: { id: "dogecoin", rank: 9, symbol: "DOGE", name: "Dogecoin", image: "https://cryptologos.cc/logos/dogecoin-doge-logo.svg", circulatingSupply: 144700000000, totalSupply: null, ath: 0.7316, athDate: "2021-05-08", atl: 0.000085, atlDate: "2015-05-06" },
   litecoin: { id: "litecoin", rank: 18, symbol: "LTC", name: "Litecoin", image: "https://cryptologos.cc/logos/litecoin-ltc-logo.svg", circulatingSupply: 75000000, totalSupply: 84000000, ath: 410.26, athDate: "2021-05-10", atl: 1.15, atlDate: "2015-01-14" },
@@ -61,9 +86,8 @@ export const STATIC_COIN_DATA: Record<string, Omit<MarketData, "currentPrice" | 
   aptos: { id: "aptos", rank: 27, symbol: "APT", name: "Aptos", image: "https://cryptologos.cc/logos/aptos-apt-logo.svg", circulatingSupply: 452000000, totalSupply: null, ath: 19.92, athDate: "2023-01-26", atl: 3.08, atlDate: "2022-12-29" },
   arbitrum: { id: "arbitrum", rank: 32, symbol: "ARB", name: "Arbitrum", image: "https://cryptologos.cc/logos/arbitrum-arb-logo.svg", circulatingSupply: 2650000000, totalSupply: 10000000000, ath: 2.39, athDate: "2024-01-12", atl: 0.521, atlDate: "2023-09-11" },
   binancecoin: { id: "binancecoin", rank: 4, symbol: "BNB", name: "BNB", image: "https://cryptologos.cc/logos/bnb-bnb-logo.svg", circulatingSupply: 145887575, totalSupply: 145887575, ath: 690.87, athDate: "2025-06-06", atl: 0.03982, atlDate: "2017-10-19" },
-  toncoin: { id: "toncoin", rank: 9, symbol: "TON", name: "Toncoin", image: "https://cryptologos.cc/logos/toncoin-ton-logo.svg", circulatingSupply: 5100000000, totalSupply: null, ath: 8.24, athDate: "2024-06-15", atl: 0.39, atlDate: "2021-09-20" },
   "bitcoin-cash": { id: "bitcoin-cash", rank: 15, symbol: "BCH", name: "Bitcoin Cash", image: "https://cryptologos.cc/logos/bitcoin-cash-bch-logo.svg", circulatingSupply: 19700000, totalSupply: 21000000, ath: 3785.00, athDate: "2017-12-20", atl: 76.93, atlDate: "2018-12-16" },
-  dai: { id: "dai", rank: 23, symbol: "DAI", name: "Dai", image: "https://cryptologos.cc/logos/dai-dai-logo.svg", circulatingSupply: 5300000000, totalSupply: null, ath: 1.22, athDate: "2020-03-13", atl: 0.89, atlDate: "2020-03-13" },
+  toncoin: { id: "toncoin", rank: 9, symbol: "TON", name: "Toncoin", image: "https://cryptologos.cc/logos/toncoin-ton-logo.svg", circulatingSupply: 5100000000, totalSupply: null, ath: 8.24, athDate: "2024-06-15", atl: 0.39, atlDate: "2021-09-20" },
 };
 
 export async function fetchAllTickers(): Promise<BinanceTicker[]> {
@@ -75,23 +99,45 @@ export async function fetchAllTickers(): Promise<BinanceTicker[]> {
 export function tickerToMarketData(ticker: BinanceTicker): MarketData | null {
   const id = SYMBOL_TO_ID[ticker.symbol];
   if (!id) return null;
-  const staticData = STATIC_COIN_DATA[id];
+  const base = ticker.symbol.replace("USDT", "");
   const price = parseFloat(ticker.lastPrice);
   const quoteVolume = parseFloat(ticker.quoteVolume);
   const change = parseFloat(ticker.priceChange);
   const changePercent = parseFloat(ticker.priceChangePercent);
-  const high = parseFloat(ticker.highPrice);
-  const low = parseFloat(ticker.lowPrice);
+  const staticData = STATIC_COIN_DATA[id];
+
+  if (staticData) {
+    return {
+      ...staticData,
+      currentPrice: price,
+      marketCap: price * staticData.circulatingSupply,
+      volume24h: quoteVolume,
+      priceChange24h: change,
+      priceChangePercent24h: changePercent,
+      high24h: parseFloat(ticker.highPrice),
+      low24h: parseFloat(ticker.lowPrice),
+    };
+  }
 
   return {
-    ...staticData,
+    id,
+    rank: 0,
+    symbol: base,
+    name: KWN_NAMES[base] ?? base,
+    image: `https://cryptologos.cc/logos/${base.toLowerCase()}-${base.toLowerCase()}-logo.svg`,
     currentPrice: price,
-    marketCap: price * staticData.circulatingSupply,
+    marketCap: quoteVolume * 10,
     volume24h: quoteVolume,
     priceChange24h: change,
     priceChangePercent24h: changePercent,
-    high24h: high,
-    low24h: low,
+    high24h: parseFloat(ticker.highPrice),
+    low24h: parseFloat(ticker.lowPrice),
+    circulatingSupply: 0,
+    totalSupply: null,
+    ath: 0,
+    athDate: "",
+    atl: 0,
+    atlDate: "",
   };
 }
 
@@ -100,7 +146,7 @@ export async function fetchMarketDataList(): Promise<MarketData[]> {
   return tickers
     .map(tickerToMarketData)
     .filter((d): d is MarketData => d !== null)
-    .sort((a, b) => a.rank - b.rank);
+    .sort((a, b) => b.volume24h - a.volume24h);
 }
 
 export async function fetchKlines(
@@ -277,7 +323,7 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
 
 /** Map from ticker base symbol (e.g. "ETH") to coin ID */
 const BASE_SYMBOL_TO_ID: Record<string, string> = {};
-for (const [id, sym] of Object.entries(COIN_SYMBOL_MAP)) {
+for (const [sym, id] of Object.entries(SYMBOL_TO_ID)) {
   const base = sym.replace("USDT", "");
   BASE_SYMBOL_TO_ID[base] = id;
 }

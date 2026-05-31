@@ -41,6 +41,7 @@ export function Header() {
     { href: "/", label: t("nav.coins") },
     { href: "/indicators", label: t("nav.indicators") },
     { href: "/watchlist", label: t("nav.watchlist") },
+    { href: "/treemap", label: t("nav.treemap") },
   ];
 
   const locales: { value: Locale; label: string }[] = [
@@ -93,6 +94,15 @@ export function Header() {
                   }`}
               >
                 {t("nav.watchlist")}
+              </Link>
+              <Link
+                href="/treemap"
+                className={`px-2.5 py-1.5 rounded-lg transition-colors ${pathname === "/treemap"
+                  ? "bg-emerald-500/15 text-emerald-400 font-medium"
+                  : "text-theme-secondary hover:text-theme-text"
+                  }`}
+              >
+                {t("nav.treemap")}
               </Link>
             </nav>
 
