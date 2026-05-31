@@ -426,38 +426,44 @@ export function CandlestickChart({ coinId }: Props) {
       }
       smaSeriesArrRef.current = newSmaSeries;
 
-      const dmiPane = chart.addPane();
-      dmiPane.setStretchFactor(0.25);
-
       const dmiData = calcDMI(data);
       dmiDataRef.current = dmiData;
-      const pdiLine = chart.addSeries(LineSeries, {
-        color: "#34d399", lineWidth: 1, visible: showDMI,
-      }, dmiPane.paneIndex());
-      const mdiLine = chart.addSeries(LineSeries, {
-        color: "#ef4444", lineWidth: 1, visible: showDMI,
-      }, dmiPane.paneIndex());
-      const adxLine = chart.addSeries(LineSeries, {
-        color: "#f59e0b", lineWidth: 1, visible: showDMI,
-      }, dmiPane.paneIndex());
-      if (dmiData.plusDI.length > 0) pdiLine.setData(dmiData.plusDI);
-      if (dmiData.minusDI.length > 0) mdiLine.setData(dmiData.minusDI);
-      if (dmiData.adx.length > 0) adxLine.setData(dmiData.adx);
-      dmiSeriesRef.current = [pdiLine, mdiLine, adxLine];
-
-      const rsiPane = chart.addPane();
-      rsiPane.setStretchFactor(0.25);
+      if (showDMI) {
+        const dmiPane = chart.addPane();
+        dmiPane.setStretchFactor(0.25);
+        const pdiLine = chart.addSeries(LineSeries, {
+          color: "#34d399", lineWidth: 1,
+        }, dmiPane.paneIndex());
+        const mdiLine = chart.addSeries(LineSeries, {
+          color: "#ef4444", lineWidth: 1,
+        }, dmiPane.paneIndex());
+        const adxLine = chart.addSeries(LineSeries, {
+          color: "#f59e0b", lineWidth: 1,
+        }, dmiPane.paneIndex());
+        if (dmiData.plusDI.length > 0) pdiLine.setData(dmiData.plusDI);
+        if (dmiData.minusDI.length > 0) mdiLine.setData(dmiData.minusDI);
+        if (dmiData.adx.length > 0) adxLine.setData(dmiData.adx);
+        dmiSeriesRef.current = [pdiLine, mdiLine, adxLine];
+      } else {
+        dmiSeriesRef.current = [];
+      }
 
       const rsiData = calcRSI(data);
       rsiDataRef.current = rsiData;
-      const rsiLine = chart.addSeries(LineSeries, {
-        color: "#a78bfa", lineWidth: 1, visible: showRSI,
-      }, rsiPane.paneIndex());
-      if (rsiData.length > 0) rsiLine.setData(rsiData);
-      rsiLine.createPriceLine({ price: 70, color: "rgba(239,68,68,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
-      rsiLine.createPriceLine({ price: 50, color: "rgba(107,114,128,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
-      rsiLine.createPriceLine({ price: 30, color: "rgba(52,211,153,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
-      rsiSeriesRef.current = rsiLine;
+      if (showRSI) {
+        const rsiPane = chart.addPane();
+        rsiPane.setStretchFactor(0.25);
+        const rsiLine = chart.addSeries(LineSeries, {
+          color: "#a78bfa", lineWidth: 1,
+        }, rsiPane.paneIndex());
+        if (rsiData.length > 0) rsiLine.setData(rsiData);
+        rsiLine.createPriceLine({ price: 70, color: "rgba(239,68,68,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
+        rsiLine.createPriceLine({ price: 50, color: "rgba(107,114,128,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
+        rsiLine.createPriceLine({ price: 30, color: "rgba(52,211,153,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
+        rsiSeriesRef.current = rsiLine;
+      } else {
+        rsiSeriesRef.current = null;
+      }
 
       const newHlines: IPriceLine[] = [];
       for (const price of hlinePricesRef.current) {
@@ -553,7 +559,7 @@ export function CandlestickChart({ coinId }: Props) {
         dmiSeriesRef.current = [];
       };
     } catch (err) { console.error("chart creation error:", err); }
-  }, [data, tf.interval]);
+  }, [data, tf.interval, showDMI, showRSI]);
 
   return (
     <div ref={wrapperRef} className={`w-full h-full flex flex-col ${isFullscreen ? `${isDark ? "bg-[#0d1117]" : "bg-white"} p-4` : ""}`}>
