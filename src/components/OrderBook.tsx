@@ -82,7 +82,7 @@ export function OrderBook({ symbol }: { symbol: string }) {
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
       <h3 className="text-sm font-semibold text-gray-400 mb-3">{t("order_book.title")}</h3>
 
-      <div className={`flex gap-4 ${dir === "rtl" ? "flex-row-reverse" : ""}`}>
+      <div className={`flex flex-col sm:flex-row gap-4 ${dir === "rtl" ? "sm:flex-row-reverse" : ""}`}>
         {/* Bids (left) */}
         <div className="flex-1 min-w-0">
           <div className="text-[10px] text-emerald-400 font-semibold mb-1 px-1">{t("order_book.bids")}</div>
