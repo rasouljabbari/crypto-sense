@@ -583,7 +583,7 @@ export function CandlestickChart({ coinId }: Props) {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1 bg-gray-900 rounded-lg p-0.5 border border-gray-800">
+          <div className="hidden sm:flex items-center gap-1 bg-gray-900 rounded-lg p-0.5 border border-gray-800">
             <button
               onClick={() => setHLineActive(v => !v)}
               className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${hLineActive
