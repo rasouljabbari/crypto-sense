@@ -1,10 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="64" y2="64">
-      <stop offset="0%" stop-color="#34d399"/>
-      <stop offset="100%" stop-color="#06b6d4"/>
+    <linearGradient id="cryptoGradient" x1="64" y1="64" x2="448" y2="448">
+      <stop offset="0%" stop-color="#00D4FF"/>
+      <stop offset="100%" stop-color="#00FF88"/>
     </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#g)"/>
-  <path d="M20 44V20h6l6 12 6-12h6v24h-6V32l-6 12-6-12v12h-6z" fill="#0f172a" opacity="0.9"/>
+  <circle cx="256" cy="256" r="190" stroke="url(#cryptoGradient)" stroke-width="18" opacity="0.25"/>
+  <path d="M350 150 C310 110 240 105 185 145 C115 195 115 317 185 367 C240 407 310 402 350 362" stroke="url(#cryptoGradient)" stroke-width="28" stroke-linecap="round" fill="none"/>
+  <g opacity="0.95">
+    <line x1="205" y1="305" x2="205" y2="205" stroke="#00D4FF" stroke-width="4"/>
+    <rect x="193" y="225" width="24" height="55" rx="4" fill="#00D4FF"/>
+    <line x1="255" y1="330" x2="255" y2="170" stroke="#00FF88" stroke-width="4"/>
+    <rect x="243" y="195" width="24" height="95" rx="4" fill="#00FF88"/>
+    <line x1="305" y1="285" x2="305" y2="185" stroke="#00D4FF" stroke-width="4"/>
+    <rect x="293" y="210" width="24" height="45" rx="4" fill="#00D4FF"/>
+  </g>
+  <path d="M170 315 C210 360 280 360 315 320 C345 285 315 250 260 245 C205 240 185 210 205 180 C225 150 275 145 330 185" stroke="url(#cryptoGradient)" stroke-width="14" stroke-linecap="round" fill="none" filter="url(#glow)"/>
+  <path d="M315 185 L355 145 M355 145 L355 180 M355 145 L320 145" stroke="#00FF88" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="465" text-anchor="middle" fill="#EAFBFF" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700">CRYPTO SENSE</text>
 </svg>
