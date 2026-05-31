@@ -45,28 +45,34 @@ async function clientSearch(query: string): Promise<SearchCoin[]> {
     }
 
     const matched = pairs.filter(
-      (p) => p.baseAsset.includes(baseQ) || p.baseAsset.includes(q) || p.symbol.includes(q)
+      (p) =>
+        (p.baseAsset && p.baseAsset.includes(baseQ)) ||
+        (p.baseAsset && p.baseAsset.includes(q)) ||
+        (p.symbol && p.symbol.includes(q))
     ).slice(0, 10);
 
     if (matched.length === 0) return [];
 
     const symbols = matched.map((p) => p.symbol);
-    const tickerRes = await fetch(`${BINANCE_REST}/ticker/24hr?symbols=${JSON.stringify(symbols)}`);
+    const params = new URLSearchParams();
+    params.set("symbols", JSON.stringify(symbols));
+    const tickerRes = await fetch(`${BINANCE_REST}/ticker/24hr?${params}`);
     if (!tickerRes.ok) return [];
     const tickers: any[] = await tickerRes.json();
 
-    return tickers.map((t: any) => {
+    return (Array.isArray(tickers) ? tickers : []).map((t: any) => {
+      if (!t || !t.symbol) return null;
       const pair = matched.find((p) => p.symbol === t.symbol);
-      const baseAsset = pair?.baseAsset ?? t.symbol.replace(/USDT|USDC|BUSD|FDUSD|BNB|BTC|ETH|TRY|DAI$/, "");
+      const baseAsset = pair?.baseAsset ?? (t.symbol ? t.symbol.replace(/USDT|USDC|BUSD|FDUSD|BNB|BTC|ETH|TRY|DAI$/, "") : "?");
       return {
         symbol: baseAsset,
         name: baseAsset,
         binanceSymbol: t.symbol,
-        price: parseFloat(t.lastPrice),
-        changePercent: parseFloat(t.priceChangePercent),
-        volume: parseFloat(t.quoteVolume),
+        price: parseFloat(t.lastPrice ?? "0"),
+        changePercent: parseFloat(t.priceChangePercent ?? "0"),
+        volume: parseFloat(t.quoteVolume ?? "0"),
       };
-    });
+    }).filter((r): r is SearchCoin => r !== null);
   } catch {
     return [];
   }
@@ -111,7 +117,7 @@ export function SearchBar() {
       const clientResults = await clientSearch(query.trim());
       setResults(clientResults);
       setLoading(false);
-    }, 300);
+    }, 500);
     return () => clearTimeout(timerRef.current);
   }, [query]);
 
@@ -124,6 +130,9 @@ export function SearchBar() {
         !inputRef.current.contains(e.target as Node)
       ) {
         setIsOpen(false);
+        setQuery("");
+        setResults([]);
+        inputRef.current.value = "";
       }
     }
     document.addEventListener("mousedown", handleClick);
