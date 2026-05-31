@@ -9,7 +9,32 @@
     "indicators": "Göstergeler",
     "watchlist": "İzleme Listesi",
     "treemap": "Isı Haritası",
+    "fear_greed": "Korku & Açgözlülük",
     "coming_soon": "Çok yakında..."
+  },
+  "fear_greed": {
+    "title": "Korku ve Açgözlülük Endeksi",
+    "subtitle": "Korku ve Açgözlülük Endeksi, piyasa duyarlılığını 0 (Aşırı Korku) ile 100 (Aşırı Açgözlülük) arasında ölçer",
+    "current_title": "Mevcut Endeks",
+    "chart_title": "Korku ve Açgözlülük Grafiği",
+    "btc_price_title": "Bitcoin Fiyatı",
+    "btc_volume_title": "Bitcoin Hacmi",
+    "historical_title": "Geçmiş Değerler",
+    "yearly_title": "Yıllık En Yüksek ve En Düşük",
+    "high": "Yılın En Yükseği",
+    "low": "Yılın En Düşüğü",
+    "now": "Şimdi",
+    "yesterday": "Dün",
+    "last_week": "Geçen Hafta",
+    "last_month": "Geçen Ay",
+    "updated": "Güncellendi {date}",
+    "classes": {
+      "extreme_fear": "Aşırı Korku",
+      "fear": "Korku",
+      "neutral": "Nötr",
+      "greed": "Açgözlülük",
+      "extreme_greed": "Aşırı Açgözlülük"
+    }
   },
   "treemap": {
     "title": "Piyasa Isı Haritası",

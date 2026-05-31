@@ -42,6 +42,7 @@ export function Header() {
     { href: "/indicators", label: t("nav.indicators") },
     { href: "/watchlist", label: t("nav.watchlist") },
     { href: "/treemap", label: t("nav.treemap") },
+    { href: "/fear-greed", label: t("nav.fear_greed") },
   ];
 
   const locales: { value: Locale; label: string }[] = [
@@ -103,6 +104,15 @@ export function Header() {
                   }`}
               >
                 {t("nav.treemap")}
+              </Link>
+              <Link
+                href="/fear-greed"
+                className={`px-2.5 py-1.5 rounded-lg transition-colors ${pathname === "/fear-greed"
+                  ? "bg-emerald-500/15 text-emerald-400 font-medium"
+                  : "text-theme-secondary hover:text-theme-text"
+                  }`}
+              >
+                {t("nav.fear_greed")}
               </Link>
             </nav>
 

@@ -9,7 +9,32 @@
     "indicators": "شاخص‌ها",
     "watchlist": "نظارت پیگیری",
     "treemap": "نقشه حرارتی",
+    "fear_greed": "ترس و طمع",
     "coming_soon": "به زودی..."
+  },
+  "fear_greed": {
+    "title": "شاخص ترس و طمع",
+    "subtitle": "شاخص ترس و طمع احساسات بازار را در مقیاس ۰ (ترس شدید) تا ۱۰۰ (طمع شدید) اندازه‌گیری می‌کند",
+    "current_title": "شاخص فعلی",
+    "chart_title": "نمودار شاخص ترس و طمع",
+    "btc_price_title": "قیمت بیت‌کوین",
+    "btc_volume_title": "حجم بیت‌کوین",
+    "historical_title": "مقادیر تاریخی",
+    "yearly_title": "بیشترین و کمترین سالانه",
+    "high": "بیشترین سال",
+    "low": "کمترین سال",
+    "now": "الان",
+    "yesterday": "دیروز",
+    "last_week": "هفته گذشته",
+    "last_month": "ماه گذشته",
+    "updated": "بروزرسانی در {date}",
+    "classes": {
+      "extreme_fear": "ترس شدید",
+      "fear": "ترس",
+      "neutral": "خنثی",
+      "greed": "طمع",
+      "extreme_greed": "طمع شدید"
+    }
   },
   "treemap": {
     "title": "نقشه حرارتی بازار",

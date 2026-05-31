@@ -9,7 +9,32 @@
     "indicators": "Indicators",
     "watchlist": "Watchlist",
     "treemap": "Heatmap",
+    "fear_greed": "Fear & Greed",
     "coming_soon": "Coming soon..."
+  },
+  "fear_greed": {
+    "title": "Fear & Greed Index",
+    "subtitle": "The Fear and Greed Index measures market sentiment on a scale of 0 (Extreme Fear) to 100 (Extreme Greed)",
+    "current_title": "Current Index",
+    "chart_title": "Fear & Greed Index Chart",
+    "btc_price_title": "Bitcoin Price",
+    "btc_volume_title": "Bitcoin Volume",
+    "historical_title": "Historical Values",
+    "yearly_title": "Yearly High & Low",
+    "high": "Year High",
+    "low": "Year Low",
+    "now": "Now",
+    "yesterday": "Yesterday",
+    "last_week": "Last Week",
+    "last_month": "Last Month",
+    "updated": "Updated {date}",
+    "classes": {
+      "extreme_fear": "Extreme Fear",
+      "fear": "Fear",
+      "neutral": "Neutral",
+      "greed": "Greed",
+      "extreme_greed": "Extreme Greed"
+    }
   },
   "treemap": {
     "title": "Market Heatmap",

@@ -3,8 +3,8 @@
 import { CoinAnalysis, PositionType } from "@/lib/types";
 import { getPositionLabel } from "@/lib/scoring";
 import Link from "next/link";
-import { useState } from "react";
 import { useI18n } from "@/i18n/context";
+import { CoinImage } from "./CoinImage";
 
 function trendIcon(trend: "bullish" | "bearish" | "neutral") {
   switch (trend) {
@@ -80,7 +80,6 @@ interface Props {
 
 export function CoinRow({ coin }: Props) {
   const { t } = useI18n();
-  const [imgErr, setImgErr] = useState(false);
 
   const pos = positionConfig[coin.position];
   const posLabel = t(pos.labelKey);
@@ -97,18 +96,7 @@ export function CoinRow({ coin }: Props) {
       {/* Name with Rank */}
       <div className="flex items-center gap-3">
         <span className="text-[10px] text-gray-500 w-5 text-right font-mono" title={t("table.columns.rank_tooltip")}>#{coin.marketData.rank}</span>
-        {imgErr ? (
-          <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px] font-bold text-emerald-400">
-            {coin.marketData.symbol[0]}
-          </div>
-        ) : (
-          <img
-            src={coin.marketData.image}
-            alt={coin.marketData.symbol}
-            className="w-6 h-6 rounded-full"
-            onError={() => setImgErr(true)}
-          />
-        )}
+        <CoinImage src={coin.marketData.image} alt={coin.marketData.symbol} />
         <div>
           <span className="font-medium text-white">{coin.marketData.symbol}</span>
           <span className="text-gray-400 ml-1.5 text-xs">{coin.marketData.name}</span>

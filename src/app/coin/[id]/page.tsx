@@ -1,6 +1,7 @@
 "use client";
 
 import { CandlestickChart } from "@/components/CandlestickChart";
+import { CoinImage } from "@/components/CoinImage";
 import { Header } from "@/components/Header";
 import { OrderBook } from "@/components/OrderBook";
 import { useI18n } from "@/i18n/context";
@@ -151,7 +152,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
         <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-              <img src={md.image} alt={md.symbol} className="w-10 h-10 sm:w-14 sm:h-14 rounded-full shrink-0" />
+              <CoinImage src={md.image} alt={md.symbol} className="w-10 h-10 sm:w-14 sm:h-14 rounded-full shrink-0" size={56} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   <h1 className="text-lg sm:text-2xl font-bold text-white truncate">{md.name}</h1>
@@ -398,20 +399,12 @@ function FallbackDetail({ data }: { data: FallbackData }) {
         <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <CoinImage
                 src={`https://assets.coincap.io/assets/icons/${data.symbol.toLowerCase()}@2x.png`}
                 alt={data.symbol}
                 className="w-10 h-10 sm:w-14 sm:h-14 rounded-full shrink-0"
-                onError={(e) => {
-                  const el = e.target as HTMLImageElement;
-                  el.style.display = "none";
-                  el.nextElementSibling?.classList.remove("hidden");
-                }}
+                size={56}
               />
-              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-400 shrink-0 hidden">
-                {data.symbol.slice(0, 2)}
-              </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   <h1 className="text-lg sm:text-2xl font-bold text-white truncate">{data.symbol}</h1>
