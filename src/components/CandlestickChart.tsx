@@ -2,7 +2,7 @@
 
 import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
 import type { ChartDataPoint } from "@/lib/types";
-import type { IChartApi, UTCTimestamp } from "lightweight-charts";
+import type { IChartApi, UTCTimestamp, ISeriesApi, IPriceLine, MouseEventParams, Time } from "lightweight-charts";
 import {
   CandlestickSeries,
   ColorType,
@@ -10,9 +10,12 @@ import {
   CrosshairMode,
   HistogramSeries,
   LineSeries,
+  LineStyle,
 } from "lightweight-charts";
+import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useI18n } from "@/i18n/context";
+import { useTheme } from "@/lib/theme";
 
 function calcSMA(data: ChartDataPoint[], period: number) {
   return data
@@ -20,10 +23,99 @@ function calcSMA(data: ChartDataPoint[], period: number) {
       if (i < period - 1) return null;
       let sum = 0;
       for (let j = 0; j < period; j++) sum += data[i - j].close;
-      return { time: fmtTime(data[i], "1h"), value: sum / period };
+      return { time: fmtTime(data[i]), value: sum / period };
     })
     .filter((v): v is { time: UTCTimestamp; value: number } => v !== null)
-    .slice(0, -1); // show on previous candle
+    .slice(0, -1);
+}
+
+function calcRSI(data: ChartDataPoint[], period = 14) {
+  if (data.length < period + 1) return [];
+
+  let avgGain = 0, avgLoss = 0;
+  for (let i = 1; i <= period; i++) {
+    const change = data[i].close - data[i - 1].close;
+    if (change > 0) avgGain += change;
+    else avgLoss += Math.abs(change);
+  }
+  avgGain /= period;
+  avgLoss /= period;
+
+  const result: { time: UTCTimestamp; value: number }[] = [];
+  const firstRS = avgGain / (avgLoss || 0.001);
+  result.push({ time: fmtTime(data[period]), value: 100 - 100 / (1 + firstRS) });
+
+  for (let i = period + 1; i < data.length; i++) {
+    const change = data[i].close - data[i - 1].close;
+    const gain = change > 0 ? change : 0;
+    const loss = change < 0 ? Math.abs(change) : 0;
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+    const rs = avgGain / (avgLoss || 0.001);
+    result.push({ time: fmtTime(data[i]), value: 100 - 100 / (1 + rs) });
+  }
+
+  return result;
+}
+
+function calcDMI(data: ChartDataPoint[], period = 14) {
+  const tr: number[] = [];
+  const plusDM: number[] = [];
+  const minusDM: number[] = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const h = data[i].high, l = data[i].low;
+    const pH = data[i - 1].high, pL = data[i - 1].low, pC = data[i - 1].close;
+    tr.push(Math.max(h - l, Math.abs(h - pC), Math.abs(l - pC)));
+    const up = h - pH, down = pL - l;
+    plusDM.push(up > down && up > 0 ? up : 0);
+    minusDM.push(down > up && down > 0 ? down : 0);
+  }
+
+  const sTR: number[] = [];
+  const sPDM: number[] = [];
+  const sMDM: number[] = [];
+
+  let sumTR = 0, sumPDM = 0, sumMDM = 0;
+  for (let i = 0; i < period; i++) {
+    sumTR += tr[i]; sumPDM += plusDM[i]; sumMDM += minusDM[i];
+  }
+  sTR.push(sumTR / period);
+  sPDM.push(sumPDM / period);
+  sMDM.push(sumMDM / period);
+
+  for (let i = period; i < tr.length; i++) {
+    sTR.push((sTR[sTR.length - 1] * (period - 1) + tr[i]) / period);
+    sPDM.push((sPDM[sPDM.length - 1] * (period - 1) + plusDM[i]) / period);
+    sMDM.push((sMDM[sMDM.length - 1] * (period - 1) + minusDM[i]) / period);
+  }
+
+  const plusDI: { time: UTCTimestamp; value: number }[] = [];
+  const minusDI: { time: UTCTimestamp; value: number }[] = [];
+  const dx: number[] = [];
+
+  for (let i = 0; i < sTR.length; i++) {
+    const tv = sTR[i] || 0.001;
+    const pd = 100 * sPDM[i] / tv;
+    const md = 100 * sMDM[i] / tv;
+    const t = fmtTime(data[i + period]);
+    plusDI.push({ time: t, value: pd });
+    minusDI.push({ time: t, value: md });
+    dx.push(100 * Math.abs(pd - md) / ((pd + md) || 0.001));
+  }
+
+  const adx: { time: UTCTimestamp; value: number }[] = [];
+  if (dx.length >= period) {
+    let sumDX = 0;
+    for (let i = 0; i < period; i++) sumDX += dx[i];
+    adx.push({ time: plusDI[period - 1].time, value: sumDX / period });
+    for (let i = period; i < dx.length; i++) {
+      const val = (adx[adx.length - 1].value * (period - 1) + dx[i]) / period;
+      adx.push({ time: plusDI[i].time, value: val });
+    }
+  }
+
+  return { plusDI, minusDI, adx };
 }
 
 interface Props {
@@ -36,14 +128,10 @@ interface TimeframeOption {
   limit: number;
 }
 
-type ChartStatus = { type: "loading" } | { type: "ready"; data: ChartDataPoint[] } | { type: "error" };
+type ChartStatus = { type: "loading" } | { type: "ready"; data: ChartDataPoint[] } | { type: "error"; message?: string };
 
-function fmtTime(k: ChartDataPoint, interval: string): UTCTimestamp | string {
-  const ms = k.timestamp;
-  if (interval === "1h" || interval === "4h") {
-    return Math.floor(ms / 1000) as UTCTimestamp;
-  }
-  return new Date(ms).toISOString().split("T")[0];
+function fmtTime(k: ChartDataPoint): UTCTimestamp {
+  return Math.floor(k.timestamp / 1000) as UTCTimestamp;
 }
 
 function chartStatusReducer(_: ChartStatus, action: ChartStatus): ChartStatus {
@@ -52,29 +140,64 @@ function chartStatusReducer(_: ChartStatus, action: ChartStatus): ChartStatus {
 
 export function CandlestickChart({ coinId }: Props) {
   const { t } = useI18n();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
-  const [tf, setTf] = useState<TimeframeOption>({ label: t("chart.1h"), interval: "1h", limit: 168 });
-  const [status, dispatch] = useReducer(chartStatusReducer, { type: "loading" } as ChartStatus);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const { data: session, status: authStatus } = useSession();
+  const isAuth = authStatus === "authenticated";
+  const isAuthRef = useRef(isAuth);
+  isAuthRef.current = isAuth;
 
   const TIMEFRAMES: TimeframeOption[] = [
-    { label: t("chart.1h"), interval: "1h", limit: 168 },
-    { label: t("chart.4h"), interval: "4h", limit: 168 },
+    { label: t("chart.1h"), interval: "1h", limit: 1000 },
+    { label: t("chart.4h"), interval: "4h", limit: 1000 },
+    { label: "1D", interval: "1d", limit: 1000 },
+    { label: "1W", interval: "1w", limit: 1000 },
+    { label: "1M", interval: "1M", limit: 1000 },
   ];
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const [tf, setTf] = useState<TimeframeOption>(TIMEFRAMES[0]);
+  const [status, dispatch] = useReducer(chartStatusReducer, { type: "loading" } as ChartStatus);
+
+  const [hLineActive, setHLineActive] = useState(false);
+  const hLineActiveRef = useRef(false);
+  hLineActiveRef.current = hLineActive;
+  const [showSMA, setShowSMA] = useState(true);
+  const [showRSI, setShowRSI] = useState(false);
+  const [showDMI, setShowDMI] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const reloadingRef = useRef(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const rsiSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const dmiSeriesRef = useRef<ISeriesApi<"Line">[]>([]);
+  const hlinePricesRef = useRef<number[]>([]);
+  const hlinesRef = useRef<IPriceLine[]>([]);
+  const smaSeriesArrRef = useRef<ISeriesApi<"Line">[]>([]);
+  const loadedRef = useRef(false);
 
   const symbol = COIN_SYMBOL_MAP[coinId] ?? (coinId.toUpperCase().endsWith("USDT") ? coinId.toUpperCase() : `${coinId.toUpperCase()}USDT`);
 
   useEffect(() => {
     if (!symbol) return;
+    reloadingRef.current = true;
     dispatch({ type: "loading" });
     let cancelled = false;
 
     fetchKlines(symbol, tf.interval, tf.limit)
-      .then((klines) => {
-        if (!cancelled) dispatch({ type: "ready", data: klines.length > 0 ? klines : [] });
+      .then((d) => {
+        if (!cancelled) {
+          reloadingRef.current = false;
+          dispatch({ type: "ready", data: d });
+        }
       })
-      .catch(() => {
-        if (!cancelled) dispatch({ type: "error" });
+      .catch((e: Error) => {
+        if (!cancelled) {
+          reloadingRef.current = false;
+          dispatch({ type: "error", message: e.message });
+        }
       });
 
     return () => { cancelled = true; };
@@ -85,9 +208,105 @@ export function CandlestickChart({ coinId }: Props) {
     [status]
   );
 
+  function redrawHLines() {
+    const cs = candleSeriesRef.current;
+    if (!cs) return;
+
+    for (const hl of hlinesRef.current) {
+      try { cs.removePriceLine(hl); } catch {}
+    }
+    hlinesRef.current = [];
+
+    for (const price of hlinePricesRef.current) {
+      const hl = cs.createPriceLine({
+        price,
+        color: "#06b6d4",
+        lineWidth: 1,
+        lineStyle: LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: price.toFixed(2),
+      });
+      hlinesRef.current.push(hl);
+    }
+  }
+
+  function clearAllDrawings() {
+    for (const hl of hlinesRef.current) {
+      try { candleSeriesRef.current?.removePriceLine(hl); } catch {}
+    }
+    hlinesRef.current = [];
+    hlinePricesRef.current = [];
+
+    if (isAuthRef.current) {
+      fetch(`/api/chart-drawings?coinId=${encodeURIComponent(coinId)}`, { method: "DELETE" }).catch(() => {});
+    }
+  }
+
+  function saveHLines(prices: number[]) {
+    if (!isAuthRef.current) return;
+    fetch("/api/chart-drawings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ coinId, lines: prices }),
+    }).catch(() => {});
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      wrapperRef.current?.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  useEffect(() => {
+    function onChange() {
+      setIsFullscreen(!!document.fullscreenElement);
+    }
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  useEffect(() => {
+    if (authStatus !== "authenticated" || loadedRef.current) return;
+    loadedRef.current = true;
+
+    fetch(`/api/chart-drawings?coinId=${encodeURIComponent(coinId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.lines) && data.lines.length > 0) {
+          hlinePricesRef.current = data.lines;
+          redrawHLines();
+        }
+      })
+      .catch(() => {});
+  }, [authStatus, coinId]);
+
+  useEffect(() => {
+    for (const s of smaSeriesArrRef.current) {
+      s.applyOptions({ visible: showSMA });
+    }
+  }, [showSMA]);
+
+  useEffect(() => {
+    rsiSeriesRef.current?.applyOptions({ visible: showRSI });
+  }, [showRSI]);
+
+  useEffect(() => {
+    for (const s of dmiSeriesRef.current) {
+      s.applyOptions({ visible: showDMI });
+    }
+  }, [showDMI]);
+
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || data.length === 0) return;
+    if (!container) { console.warn("chart: no container"); return; }
+    if (data.length === 0) { console.warn("chart: no data", status.type); return; }
+    if (reloadingRef.current) { console.warn("chart: reloading"); return; }
+
+    console.log("chart: creating chart with", data.length, "points");
+
+    try {
 
     if (chartRef.current) {
       chartRef.current.remove();
@@ -99,30 +318,37 @@ export function CandlestickChart({ coinId }: Props) {
     const width = rect.width || 800;
     const height = rect.height || 480;
 
+    const bgColor = isDark ? "#0d1117" : "#ffffff";
+    const textColor = isDark ? "#9ca3af" : "#6b7280";
+    const gridColor = isDark ? "rgba(55, 65, 81, 0.4)" : "rgba(209, 213, 219, 0.5)";
+    const borderColor = isDark ? "#374151" : "#d1d5db";
+    const crosshairLabelBg = isDark ? "#1f2937" : "#f3f4f6";
+    const crosshairLine = isDark ? "#6b7280" : "#9ca3af";
+
     const chart = createChart(container, {
       width,
       height,
       layout: {
-        background: { type: ColorType.Solid, color: "#0d1117" },
-        textColor: "#9ca3af",
+        background: { type: ColorType.Solid, color: bgColor },
+        textColor,
         fontSize: 11,
       },
       grid: {
-        vertLines: { color: "rgba(55, 65, 81, 0.4)" },
-        horzLines: { color: "rgba(55, 65, 81, 0.4)" },
+        vertLines: { color: gridColor },
+        horzLines: { color: gridColor },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
-        vertLine: { color: "#6b7280", width: 1, style: 2, labelBackgroundColor: "#1f2937" },
-        horzLine: { color: "#6b7280", width: 1, style: 2, labelBackgroundColor: "#1f2937" },
+        vertLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
+        horzLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
       },
       timeScale: {
-        borderColor: "#374151",
+        borderColor,
         timeVisible: tf.interval === "1h" || tf.interval === "4h",
         secondsVisible: false,
       },
       rightPriceScale: {
-        borderColor: "#374151",
+        borderColor,
       },
     });
 
@@ -137,9 +363,11 @@ export function CandlestickChart({ coinId }: Props) {
       wickDownColor: "#ef4444",
     });
 
+    candleSeriesRef.current = candleSeries;
+
     candleSeries.setData(
       data.map((k) => ({
-        time: fmtTime(k, tf.interval),
+        time: fmtTime(k),
         open: k.open,
         high: k.high,
         low: k.low,
@@ -160,7 +388,7 @@ export function CandlestickChart({ coinId }: Props) {
 
     volSeries.setData(
       data.map((k) => ({
-        time: fmtTime(k, tf.interval),
+        time: fmtTime(k),
         value: k.volume,
         color: k.close >= k.open ? "rgba(52, 211, 153, 0.3)" : "rgba(239, 68, 68, 0.3)",
       }))
@@ -170,18 +398,89 @@ export function CandlestickChart({ coinId }: Props) {
     const sma21Data = calcSMA(data, 21);
     const sma99Data = calcSMA(data, 99);
 
+    const newSmaSeries: ISeriesApi<"Line">[] = [];
     if (sma7Data.length > 0) {
-      const sma7 = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false });
-      sma7.setData(sma7Data);
+      const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
+      s.setData(sma7Data);
+      newSmaSeries.push(s);
     }
     if (sma21Data.length > 0) {
-      const sma21 = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false });
-      sma21.setData(sma21Data);
+      const s = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
+      s.setData(sma21Data);
+      newSmaSeries.push(s);
     }
     if (sma99Data.length > 0) {
-      const sma99 = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false });
-      sma99.setData(sma99Data);
+      const s = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
+      s.setData(sma99Data);
+      newSmaSeries.push(s);
     }
+    smaSeriesArrRef.current = newSmaSeries;
+
+    const oscillatorPane = chart.addPane();
+    oscillatorPane.setStretchFactor(0.35);
+
+    const rsiData = calcRSI(data);
+    const rsiLine = chart.addSeries(LineSeries, {
+      color: "#a78bfa", lineWidth: 1, visible: showRSI,
+    }, oscillatorPane.paneIndex());
+    if (rsiData.length > 0) rsiLine.setData(rsiData);
+    rsiLine.createPriceLine({ price: 70, color: "rgba(239,68,68,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
+    rsiLine.createPriceLine({ price: 50, color: "rgba(107,114,128,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
+    rsiLine.createPriceLine({ price: 30, color: "rgba(52,211,153,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
+    rsiSeriesRef.current = rsiLine;
+
+    const dmiData = calcDMI(data);
+    const pdiLine = chart.addSeries(LineSeries, {
+      color: "#34d399", lineWidth: 1, visible: showDMI,
+    }, oscillatorPane.paneIndex());
+    const mdiLine = chart.addSeries(LineSeries, {
+      color: "#ef4444", lineWidth: 1, visible: showDMI,
+    }, oscillatorPane.paneIndex());
+    const adxLine = chart.addSeries(LineSeries, {
+      color: "#f59e0b", lineWidth: 1, visible: showDMI,
+    }, oscillatorPane.paneIndex());
+    if (dmiData.plusDI.length > 0) pdiLine.setData(dmiData.plusDI);
+    if (dmiData.minusDI.length > 0) mdiLine.setData(dmiData.minusDI);
+    if (dmiData.adx.length > 0) adxLine.setData(dmiData.adx);
+    dmiSeriesRef.current = [pdiLine, mdiLine, adxLine];
+
+    const newHlines: IPriceLine[] = [];
+    for (const price of hlinePricesRef.current) {
+      const hl = candleSeries.createPriceLine({
+        price,
+        color: "#06b6d4",
+        lineWidth: 1,
+        lineStyle: LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: price.toFixed(2),
+      });
+      newHlines.push(hl);
+    }
+    hlinesRef.current = newHlines;
+
+    function onClick(param: MouseEventParams<Time>) {
+      if (!hLineActiveRef.current || !param.point) return;
+      if (!chartRef.current || !candleSeriesRef.current) return;
+
+      const y = param.point.y;
+      const price = candleSeriesRef.current.coordinateToPrice(y);
+      if (price === null) return;
+
+      hlinePricesRef.current.push(price);
+      const hl = candleSeriesRef.current.createPriceLine({
+        price,
+        color: "#06b6d4",
+        lineWidth: 1,
+        lineStyle: LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: price.toFixed(2),
+      });
+      hlinesRef.current.push(hl);
+
+      saveHLines(hlinePricesRef.current);
+    }
+
+    chart.subscribeClick(onClick);
 
     const ro = new ResizeObserver(() => {
       if (chartRef.current && container) {
@@ -197,36 +496,134 @@ export function CandlestickChart({ coinId }: Props) {
         chartRef.current.remove();
         chartRef.current = null;
       }
+      candleSeriesRef.current = null;
+      smaSeriesArrRef.current = [];
+      hlinesRef.current = [];
+      rsiSeriesRef.current = null;
+      dmiSeriesRef.current = [];
     };
+    } catch (err) { console.error("chart creation error:", err); }
   }, [data, tf.interval]);
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-1 bg-gray-900 rounded-lg p-0.5 border border-gray-800">
-          {TIMEFRAMES.map((t) => (
+    <div ref={wrapperRef} className={`w-full h-full flex flex-col ${isFullscreen ? `${isDark ? "bg-[#0d1117]" : "bg-white"} p-4` : ""}`}>
+      <div className="flex items-center justify-between mb-3 gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-gray-900 rounded-lg p-0.5 border border-gray-800">
+            {TIMEFRAMES.map((t) => (
+              <button
+                key={t.interval}
+                onClick={() => setTf(t)}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${tf.interval === t.interval
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "text-gray-400 hover:text-gray-200 border border-transparent"
+                  }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1 bg-gray-900 rounded-lg p-0.5 border border-gray-800">
             <button
-              key={t.interval}
-              onClick={() => setTf(t)}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${tf.interval === t.interval
+              onClick={() => setHLineActive(v => !v)}
+              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                hLineActive
                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                   : "text-gray-400 hover:text-gray-200 border border-transparent"
-                }`}
+              }`}
+              title="Horizontal line"
             >
-              {t.label}
+              ☰ H-Line
             </button>
-          ))}
+            <div className="w-px h-4 bg-gray-700 mx-1" />
+            <button
+              onClick={() => setShowSMA(v => !v)}
+              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                showSMA
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "text-gray-400 hover:text-gray-200 border border-transparent"
+              }`}
+            >
+              3SMA
+            </button>
+            <div className="w-px h-4 bg-gray-700 mx-1" />
+            <button
+              onClick={() => setShowRSI(v => !v)}
+              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                showRSI
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "text-gray-400 hover:text-gray-200 border border-transparent"
+              }`}
+            >
+              RSI
+            </button>
+            <button
+              onClick={() => setShowDMI(v => !v)}
+              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                showDMI
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "text-gray-400 hover:text-gray-200 border border-transparent"
+              }`}
+            >
+              DMI
+            </button>
+            {hlinePricesRef.current.length > 0 && (
+              <>
+                <div className="w-px h-4 bg-gray-700 mx-1" />
+                <button
+                  onClick={clearAllDrawings}
+                  className="px-2 py-1 text-xs font-medium rounded-md transition-colors text-gray-400 hover:text-red-400 border border-transparent hover:border-red-500/30"
+                  title="Clear all horizontal lines"
+                >
+                  ✕ Clear
+                </button>
+              </>
+            )}
+          </div>
         </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleFullscreen}
+            className="px-2 py-1 text-xs font-medium rounded-md transition-colors text-gray-400 hover:text-gray-200 border border-transparent hover:border-gray-700"
+            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+          >
+            {isFullscreen ? "⊠" : "⛶"}
+          </button>
+        </div>
+      </div>
+      <div className="relative flex-1 min-h-0">
+        <div ref={containerRef} className="absolute inset-0 rounded-lg overflow-hidden" />
         {status.type === "loading" && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <div className="w-3 h-3 border-2 border-gray-500 border-t-emerald-400 rounded-full animate-spin" />
-            {t("chart.loading")}
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0d1117]/60 z-10">
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative w-10 h-10">
+                <div className="absolute inset-0 rounded-full border-[3px] border-gray-700" />
+                <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-emerald-400 animate-spin" />
+                <div className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-emerald-400 animate-spin" style={{ animationDirection: "reverse", animationDuration: "0.6s" }} />
+              </div>
+              <span className="text-xs text-gray-400">{t("chart.loading")}</span>
+            </div>
           </div>
         )}
-        {status.type === "error" && <span className="text-xs text-red-400">{t("chart.failed")}</span>}
-        {status.type === "ready" && data.length === 0 && <span className="text-xs text-gray-500">{t("chart.no_data")}</span>}
+        {status.type === "error" && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0d1117]/60 z-10 gap-1">
+            <span className="text-xs text-red-400">{t("chart.failed")}</span>
+            {"message" in status && status.message && (
+              <span className="text-[10px] text-zinc-500 max-w-[280px] text-center leading-tight">{status.message}</span>
+            )}
+          </div>
+        )}
+        {status.type === "ready" && data.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0d1117]/60 z-10">
+            <span className="text-xs text-gray-500">{t("chart.no_data")}</span>
+          </div>
+        )}
+        {!symbol && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0d1117]/60 z-10">
+            <span className="text-xs text-gray-500">{t("chart.no_data")}</span>
+          </div>
+        )}
       </div>
-      <div ref={containerRef} className="flex-1 min-h-0 rounded-lg overflow-hidden" />
     </div>
   );
 }

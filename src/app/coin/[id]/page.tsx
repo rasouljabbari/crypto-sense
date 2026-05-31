@@ -2,14 +2,14 @@
 
 import { CandlestickChart } from "@/components/CandlestickChart";
 import { Header } from "@/components/Header";
-import { PositionType, CoinAnalysis } from "@/lib/types";
+import { useI18n } from "@/i18n/context";
+import { calcRSI, estimatePosition } from "@/lib/indicators";
 import { getPositionLabel } from "@/lib/scoring";
+import { CoinAnalysis, PositionType } from "@/lib/types";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
-import { estimatePosition, calcRSI } from "@/lib/indicators";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
-import { useI18n } from "@/i18n/context";
 
 const BINANCE_REST = "https://api.binance.com/api/v3";
 
@@ -83,7 +83,7 @@ export default function CoinDetailPage({ params }: { params: Promise<{ id: strin
     return (
       <div className="min-h-screen bg-gray-950 text-gray-100">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <div className="max-w-[1460px] mx-auto px-4 py-20 text-center">
           <div className="w-6 h-6 mx-auto border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
@@ -94,7 +94,7 @@ export default function CoinDetailPage({ params }: { params: Promise<{ id: strin
     return (
       <div className="min-h-screen bg-gray-950 text-gray-100">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <div className="max-w-[1460px] mx-auto px-4 py-20 text-center">
           <h2 className="text-2xl font-bold mb-2">{t("coin_detail.not_found")}</h2>
           <Link href="/" className="text-emerald-400 hover:underline">{t("coin_detail.back_dashboard")}</Link>
         </div>
@@ -120,7 +120,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button onClick={() => window.history.back()} className="text-gray-400 hover:text-gray-200 text-sm mb-6 inline-flex items-center gap-1">
           <span>{dir === "rtl" ? "→" : "←"}</span>
           {t("coin_detail.back")}
@@ -193,7 +193,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                         style={{ width: `${item.score}%` }}
                       />
                     </div>
-                    <span className="text-gray-300 w-4 text-right font-mono">{item.score}</span>
+                    <span className="text-gray-300 w-4 text-right font-mono">{Number.isInteger(item.score) ? item.score : item.score.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -238,7 +238,12 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
           </div>
         </div>
 
-        <CandlestickChart coinId={coin.coinId} />
+        <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5 mb-6">
+          <h3 className="text-sm font-semibold text-gray-400 mb-4">{t("coin_detail.price_chart")}</h3>
+          <div className="rounded-lg overflow-hidden" style={{ height: 480 }}>
+            <CandlestickChart coinId={coin.coinId} />
+          </div>
+        </div>
 
         {/* Trend Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
@@ -288,8 +293,8 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
             <div className="space-y-3">
               <div className={`px-3 py-1 rounded-lg text-xs font-bold inline-block ${coin.sentiment.overall === "positive" ? "bg-emerald-900/30 text-emerald-400" :
                 coin.sentiment.overall === "negative" ? "bg-red-900/30 text-red-400" :
-                "bg-yellow-900/30 text-yellow-400"
-              }`}>
+                  "bg-yellow-900/30 text-yellow-400"
+                }`}>
                 {t(`coin_detail.cards.news_sentiment.${coin.sentiment.overall}`)}
               </div>
               {coin.sentiment.recentNews.length === 0 ? (
@@ -300,7 +305,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                     <div key={i} className="flex items-start gap-2 text-xs">
                       <span className={`mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 ${n.sentiment === "positive" ? "bg-emerald-500" :
                         n.sentiment === "negative" ? "bg-red-500" : "bg-yellow-500"
-                      }`} />
+                        }`} />
                       <a href={n.url} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-gray-100 transition-colors">{n.title}</a>
                     </div>
                   ))}
@@ -350,14 +355,14 @@ function FallbackDetail({ data }: { data: FallbackData }) {
 
   const rsiColor =
     data.rsi > 70 ? "text-red-400" :
-    data.rsi > 60 ? "text-orange-400" :
-    data.rsi < 30 ? "text-emerald-400" :
-    data.rsi < 40 ? "text-cyan-400" : "text-gray-300";
+      data.rsi > 60 ? "text-orange-400" :
+        data.rsi < 30 ? "text-emerald-400" :
+          data.rsi < 40 ? "text-cyan-400" : "text-gray-300";
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button onClick={() => window.history.back()} className="text-gray-400 hover:text-gray-200 text-sm mb-6 inline-flex items-center gap-1">
           <span>{dir === "rtl" ? "→" : "←"}</span>
           {t("coin_detail.back")}

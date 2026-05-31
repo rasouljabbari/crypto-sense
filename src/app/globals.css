@@ -48,19 +48,23 @@ input[type="number"] {
   --theme-border: #1f2937;
   --theme-card: rgba(17, 24, 39, 0.5);
   --theme-hover: rgba(31, 41, 55, 0.5);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.15);
+  --shadow-card-lg: 0 4px 16px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2);
 }
 
 [data-theme="light"] {
-  --theme-bg: #f9fafb;
+  --theme-bg: #f3f4f6;
   --theme-bg-secondary: #ffffff;
   --theme-text: #111827;
   --theme-text-secondary: #6b7280;
-  --theme-border: #e5e7eb;
-  --theme-card: rgba(255, 255, 255, 0.8);
-  --theme-hover: rgba(243, 244, 246, 0.8);
+  --theme-border: #d1d5db;
+  --theme-card: #ffffff;
+  --theme-hover: #f3f4f6;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card-lg: 0 4px 16px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
 
   /* ── Gray scale (swap dark ↔ light) ── */
-  --color-gray-950: #f9fafb;
+  --color-gray-950: #f3f4f6;
   --color-gray-900: #ffffff;
   --color-gray-800: #f3f4f6;
   --color-gray-700: #e5e7eb;
@@ -122,3 +126,16 @@ input[type="number"] {
 .border-theme { border-color: var(--theme-border); }
 .bg-theme-card { background-color: var(--theme-card); }
 .hover-bg-theme-hover:hover { background-color: var(--theme-hover); }
+.shadow-card { box-shadow: var(--shadow-card); }
+.shadow-card-lg { box-shadow: var(--shadow-card-lg); }
+
+/* ── All cards get shadow + border for separation in both themes ── */
+.bg-gray-900\/50,
+.bg-gray-900\/80,
+.bg-gray-900\/30,
+.bg-gray-900 {
+  box-shadow: var(--shadow-card);
+}
+.bg-gray-900\/80 {
+  box-shadow: var(--shadow-card-lg);
+}

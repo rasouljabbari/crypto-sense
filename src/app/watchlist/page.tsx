@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { SearchBar } from "@/components/SearchBar";
 import { Skeleton } from "@/components/Skeleton";
 import { useI18n } from "@/i18n/context";
-import { estimatePosition, calcRSI } from "@/lib/indicators";
+import { calcRSI, estimatePosition } from "@/lib/indicators";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 interface AugmentedCoin {
   symbol: string;
@@ -145,7 +145,7 @@ export default function WatchlistPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">{t("watchlist.title")}</h2>
           <div className="flex items-center gap-3">
@@ -206,15 +206,15 @@ export default function WatchlistPage() {
                   const isPositive = aug.changePercent >= 0;
                   const rsiColor =
                     aug.rsi > 70 ? "text-red-400" :
-                    aug.rsi > 60 ? "text-orange-400" :
-                    aug.rsi < 30 ? "text-emerald-400" :
-                    aug.rsi < 40 ? "text-cyan-400" : "text-gray-300";
+                      aug.rsi > 60 ? "text-orange-400" :
+                        aug.rsi < 30 ? "text-emerald-400" :
+                          aug.rsi < 40 ? "text-cyan-400" : "text-gray-300";
 
                   const riskScore = aug.score >= 85 ? 1 : aug.score >= 65 ? 0.75 : aug.score >= 40 ? 0.5 : 0.25;
                   const riskColor =
                     riskScore >= 0.75 ? "text-emerald-400 bg-emerald-900/20" :
-                    riskScore >= 0.5 ? "text-yellow-400 bg-yellow-900/20" :
-                    "text-red-400 bg-red-900/20";
+                      riskScore >= 0.5 ? "text-yellow-400 bg-yellow-900/20" :
+                        "text-red-400 bg-red-900/20";
 
                   const posConfig: Record<string, { text: string; bg: string; labelKey: string }> = {
                     long: { text: "text-emerald-400", bg: "bg-emerald-900/30", labelKey: "coin_row.long" },

@@ -76,7 +76,7 @@ function generateTrendAnalysis(priceChangePercent: number): TrendAnalysis {
 }
 
 export function analyzeCoin(marketData: MarketData): CoinAnalysis {
-  const indicators = generateTechnicalIndicators(marketData.currentPrice);
+  const indicators = generateTechnicalIndicators(marketData);
 
   const volumeScore = calculateVolumeScore(marketData.volume24h, marketData.marketCap);
   const trendScore = calculateTrendScore(marketData.priceChangePercent24h, indicators);

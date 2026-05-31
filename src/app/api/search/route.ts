@@ -95,7 +95,10 @@ export async function GET(request: Request) {
     }
 
     const matched = pairs.filter(
-      (p) => p.baseAsset.includes(baseQ) || p.baseAsset.includes(q) || p.symbol.includes(q)
+      (p) =>
+        (p.baseAsset && p.baseAsset.includes(baseQ)) ||
+        (p.baseAsset && p.baseAsset.includes(q)) ||
+        (p.symbol && p.symbol.includes(q))
     ).slice(0, 10);
 
     if (matched.length === 0) {
@@ -104,7 +107,7 @@ export async function GET(request: Request) {
 
     const symbols = matched.map((p) => p.symbol);
     const tickerRes = await fetch(
-      `${BINANCE_REST}/ticker/24hr?symbols=${JSON.stringify(symbols)}`,
+      `${BINANCE_REST}/ticker/24hr?symbols=${encodeURIComponent(JSON.stringify(symbols))}`,
       { headers: API_HEADERS }
     );
     if (!tickerRes.ok) {
@@ -125,19 +128,21 @@ export async function GET(request: Request) {
     const klinesResults = await Promise.all(klinesPromises);
     const rsiMap = new Map(klinesResults.map((k) => [k.symbol, k.rsi]));
 
-    const results: SearchResult[] = tickers.map((t) => {
+    const results: SearchResult[] = (Array.isArray(tickers) ? tickers : []).map((t) => {
+      if (!t || !t.symbol) return null;
       const pair = matched.find((p) => p.symbol === t.symbol);
-      const baseAsset = pair?.baseAsset ?? t.symbol.replace(/USDT|USDC|BUSD|FDUSD|BNB|BTC|ETH|TRY|DAI$/, "");
+      const baseAsset =
+        pair?.baseAsset ?? (t.symbol ? t.symbol.replace(/USDT|USDC|BUSD|FDUSD|BNB|BTC|ETH|TRY|DAI$/, "") : "?");
       return {
         symbol: baseAsset,
         name: baseAsset,
         binanceSymbol: t.symbol,
-        price: t.lastPrice,
-        changePercent: t.priceChangePercent,
-        volume: t.quoteVolume,
+        price: t.lastPrice ?? "0",
+        changePercent: t.priceChangePercent ?? "0",
+        volume: t.quoteVolume ?? "0",
         rsi: rsiMap.get(t.symbol) ?? 50,
       };
-    });
+    }).filter((r): r is SearchResult => r !== null);
 
     return NextResponse.json({ results });
   } catch (err) {

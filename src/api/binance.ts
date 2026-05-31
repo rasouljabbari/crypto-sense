@@ -108,17 +108,37 @@ export async function fetchKlines(
   interval: string = "1h",
   limit: number = 168
 ): Promise<ChartDataPoint[]> {
-  const res = await fetch(`${BINANCE_REST}/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`);
-  if (!res.ok) throw new Error(`Binance klines error: ${res.status}`);
-  const data = await res.json() as string[][];
-  return data.map((k) => ({
-    timestamp: Number(k[0]),
-    open: parseFloat(k[1]),
-    high: parseFloat(k[2]),
-    low: parseFloat(k[3]),
-    close: parseFloat(k[4]),
-    volume: parseFloat(k[5]),
-  }));
+  const MAX = 1000;
+  let allData: ChartDataPoint[] = [];
+  let endTime: string | undefined;
+
+  while (allData.length < limit) {
+    const remaining = limit - allData.length;
+    const batchSize = Math.min(remaining, MAX);
+
+    const params = new URLSearchParams({ symbol, interval, limit: String(batchSize) });
+    if (endTime) params.set("endTime", endTime);
+
+    const res = await fetch(`${BINANCE_REST}/klines?${params}`);
+    if (!res.ok) throw new Error(`Klines API error: ${res.status}`);
+    const batch = await res.json() as string[][];
+    if (batch.length === 0) break;
+
+    const parsed = batch.map((k) => ({
+      timestamp: Number(k[0]),
+      open: parseFloat(k[1]),
+      high: parseFloat(k[2]),
+      low: parseFloat(k[3]),
+      close: parseFloat(k[4]),
+      volume: parseFloat(k[5]),
+    }));
+
+    allData = [...parsed, ...allData];
+    if (batch.length < batchSize) break;
+    endTime = String(Number(batch[0][0]) - 1);
+  }
+
+  return allData;
 }
 
 export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<MarketIndicators> {

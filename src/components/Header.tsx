@@ -1,13 +1,13 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { useI18n, Locale } from "@/i18n/context";
+import { Locale, useI18n } from "@/i18n/context";
 import { useTheme } from "@/lib/theme";
-import { useState, useRef, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useStore } from "@/store/useStore";
+import { signOut, useSession } from "next-auth/react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { ConfirmModal } from "./ConfirmModal";
 
 function Flag({ locale }: { locale: Locale }) {
@@ -51,7 +51,7 @@ export function Header() {
 
   return (
     <header className="border-b border-theme bg-theme-secondary backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
@@ -67,11 +67,10 @@ export function Header() {
             <nav className="hidden lg:flex items-center gap-1 text-xs">
               <Link
                 href="/"
-                className={`px-2.5 py-1.5 rounded-lg transition-colors ${
-                  pathname === "/"
-                    ? "bg-emerald-500/15 text-emerald-400 font-medium"
-                    : "text-theme-secondary hover:text-theme-text"
-                }`}
+                className={`px-2.5 py-1.5 rounded-lg transition-colors ${pathname === "/"
+                  ? "bg-emerald-500/15 text-emerald-400 font-medium"
+                  : "text-theme-secondary hover:text-theme-text"
+                  }`}
               >
                 {t("nav.coins")}
               </Link>
@@ -88,11 +87,10 @@ export function Header() {
               </div>
               <Link
                 href="/watchlist"
-                className={`px-2.5 py-1.5 rounded-lg transition-colors ${
-                  pathname === "/watchlist"
-                    ? "bg-emerald-500/15 text-emerald-400 font-medium"
-                    : "text-theme-secondary hover:text-theme-text"
-                }`}
+                className={`px-2.5 py-1.5 rounded-lg transition-colors ${pathname === "/watchlist"
+                  ? "bg-emerald-500/15 text-emerald-400 font-medium"
+                  : "text-theme-secondary hover:text-theme-text"
+                  }`}
               >
                 {t("nav.watchlist")}
               </Link>
@@ -123,11 +121,10 @@ export function Header() {
                     <button
                       key={l.value}
                       onClick={() => { setLocale(l.value); setLangOpen(false); }}
-                      className={`flex items-center gap-2 w-full px-3 py-2 text-xs text-left transition-colors ${
-                        locale === l.value
-                          ? "text-emerald-400 bg-emerald-500/10"
-                          : "text-theme-text hover:bg-theme-hover"
-                      }`}
+                      className={`flex items-center gap-2 w-full px-3 py-2 text-xs text-left transition-colors ${locale === l.value
+                        ? "text-emerald-400 bg-emerald-500/10"
+                        : "text-theme-text hover:bg-theme-hover"
+                        }`}
                     >
                       <Flag locale={l.value} />
                       {l.label}
@@ -206,7 +203,7 @@ export function Header() {
       {/* Mobile / Tablet Menu */}
       {mobileOpen && (
         <div className="lg:hidden border-t border-theme bg-theme-secondary">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
+          <div className="max-w-[1460px] mx-auto px-4 py-3 flex flex-col gap-1">
             {/* User Info */}
             {status === "authenticated" && session?.user?.email && (
               <div className="flex items-center gap-3 px-3 py-3 border-b border-theme mb-1">
@@ -235,11 +232,10 @@ export function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                    pathname === link.href
-                      ? "bg-emerald-500/15 text-emerald-400 font-medium"
-                      : "text-theme-secondary hover:text-theme-text hover:bg-theme-hover"
-                  }`}
+                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${pathname === link.href
+                    ? "bg-emerald-500/15 text-emerald-400 font-medium"
+                    : "text-theme-secondary hover:text-theme-text hover:bg-theme-hover"
+                    }`}
                 >
                   {link.label}
                 </Link>
