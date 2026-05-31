@@ -523,17 +523,21 @@ export function CandlestickChart({ coinId }: Props) {
           else if (v >= 1e3) vals.vol = (v / 1e3).toFixed(2) + "K";
           else vals.vol = v.toFixed(0);
         }
-        const rsiV = rsiDataRef.current.find((r) => Number(r.time) === t);
-        if (rsiV) vals.rsi = rsiV.value.toFixed(1);
-        const dmiV = dmiDataRef.current;
-        const dmiIdx = idx >= 14 ? idx - 14 : -1;
-        if (dmiIdx >= 0 && dmiIdx < dmiV.plusDI.length) {
-          vals.pdi = dmiV.plusDI[dmiIdx].value.toFixed(1);
-          vals.mdi = dmiV.minusDI[dmiIdx].value.toFixed(1);
+        if (showRSI) {
+          const rsiV = rsiDataRef.current.find((r) => Number(r.time) === t);
+          if (rsiV) vals.rsi = rsiV.value.toFixed(1);
         }
-        const adxIdx = dmiIdx >= 14 ? dmiIdx - 14 : -1;
-        if (adxIdx >= 0 && adxIdx < dmiV.adx.length) {
-          vals.adx = dmiV.adx[adxIdx].value.toFixed(1);
+        if (showDMI) {
+          const dmiV = dmiDataRef.current;
+          const dmiIdx = idx >= 14 ? idx - 14 : -1;
+          if (dmiIdx >= 0 && dmiIdx < dmiV.plusDI.length) {
+            vals.pdi = dmiV.plusDI[dmiIdx].value.toFixed(1);
+            vals.mdi = dmiV.minusDI[dmiIdx].value.toFixed(1);
+          }
+          const adxIdx = dmiIdx >= 14 ? dmiIdx - 14 : -1;
+          if (adxIdx >= 0 && adxIdx < dmiV.adx.length) {
+            vals.adx = dmiV.adx[adxIdx].value.toFixed(1);
+          }
         }
         setCrosshairValues(Object.keys(vals).length > 0 ? vals : null);
       });
