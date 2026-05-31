@@ -1,4 +1,4 @@
-import { MarketData, ChartDataPoint, MarketIndicators } from "@/lib/types";
+import { ChartDataPoint, MarketData, MarketIndicators } from "@/lib/types";
 
 const BINANCE_REST = "https://api.binance.com/api/v3";
 
@@ -18,7 +18,7 @@ const FUTURES_SYMBOLS = [
   "BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT", "AVAXUSDT",
   "DOTUSDT", "LTCUSDT", "BCHUSDT", "ATOMUSDT", "ETCUSDT", "XLMUSDT", "FILUSDT", "ICPUSDT", "APTUSDT", "NEARUSDT",
   "ARBUSDT", "OPUSDT", "INJUSDT", "TIAUSDT", "SEIUSDT", "SUIUSDT", "WLDUSDT", "TAOUSDT", "AAVEUSDT", "UNIUSDT",
-  "MKRUSDT", "RENDERUSDT", "FETUSDT", "ENAUSDT", "ONDOUSDT", "JUPUSDT", "PYTHUSDT", "BONKUSDT", "PEPEUSDT", "FLOKIUSDT",
+  "MKRUSDT", "RENDERUSDT", "FETUSDT", "ENAUSDT", "ONDOUSDT", "JUPUSDT", "PYTHUSDT", "BONKUSDT", "FLOKIUSDT",
   "SHIBUSDT", "THETAUSDT", "GRTUSDT", "SANDUSDT", "MANAUSDT", "AXSUSDT", "CHZUSDT", "FLOWUSDT", "EGLDUSDT", "ALGOUSDT",
   "VETUSDT", "HBARUSDT", "TONUSDT", "QNTUSDT", "XTZUSDT", "EOSUSDT", "NEOUSDT", "KAVAUSDT", "ZECUSDT", "IOTAUSDT",
   "COMPUSDT", "SNXUSDT", "1INCHUSDT", "DYDXUSDT", "LDOUSDT", "STRKUSDT", "CFXUSDT", "ROSEUSDT", "MEMEUSDT", "WIFUSDT",
@@ -53,7 +53,7 @@ const KWN_NAMES: Record<string, string> = {
   ARB: "Arbitrum", OP: "Optimism", INJ: "Injective", TIA: "Celestia", SEI: "Sei",
   SUI: "Sui", WLD: "Worldcoin", TAO: "Bittensor", AAVE: "Aave", UNI: "Uniswap",
   MKR: "Maker", RENDER: "Render", FET: "Fetch.ai", ENA: "Ethena", ONDO: "Ondo",
-  JUP: "Jupiter", PYTH: "Pyth Network", BONK: "Bonk", PEPE: "Pepe", FLOKI: "Floki",
+  JUP: "Jupiter", PYTH: "Pyth Network", BONK: "Bonk", FLOKI: "Floki",
   SHIB: "Shiba Inu", THETA: "Theta Network", GRT: "The Graph", SAND: "The Sandbox",
   MANA: "Decentraland", AXS: "Axie Infinity", CHZ: "Chiliz", FLOW: "Flow",
   EGLD: "MultiversX", ALGO: "Algorand", VET: "VeChain", KAS: "Kaspa", CRO: "Cronos",
@@ -240,8 +240,8 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
 
   // Known stablecoin pairs to exclude
   const stablecoins = new Set([
-    "USDCUSDT","FDUSDUSDT","DAIUSDT","TUSDUSDT","USDPUSDT","BUSDUSDT",
-    "USD1USDT","USDEUSDT","USDSUSDT","XUSDUSDT","RLUSDUSDT","BFUSDUSDT",
+    "USDCUSDT", "FDUSDUSDT", "DAIUSDT", "TUSDUSDT", "USDPUSDT", "BUSDUSDT",
+    "USD1USDT", "USDEUSDT", "USDSUSDT", "XUSDUSDT", "RLUSDUSDT", "BFUSDUSDT",
   ]);
 
   const isStableOrLeveraged = (s: string) =>
@@ -278,10 +278,10 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
 
     // Tiered ratio: larger volume → smaller vol/mcap ratio (more liquid, larger cap)
     const ratio = volume > 1e9 ? 0.003  // mega liquid (>$1B/day)
-                : volume > 1e8 ? 0.008  // highly liquid (>$100M/day)
-                : volume > 1e7 ? 0.025  // mid liquid (>$10M/day)
-                : volume > 1e6 ? 0.07   // low liquid (>$1M/day)
-                : 0.15;                  // illiquid
+      : volume > 1e8 ? 0.008  // highly liquid (>$100M/day)
+        : volume > 1e7 ? 0.025  // mid liquid (>$10M/day)
+          : volume > 1e6 ? 0.07   // low liquid (>$1M/day)
+            : 0.15;                  // illiquid
 
     estimates.push({ symbol: t.symbol, marketCap: volume / ratio, volume });
   }
@@ -339,9 +339,9 @@ export interface CoinVolumeData {
 
 const STABLE_QUOTES = new Set(["USDT", "FDUSD", "USDC"]);
 const EXCLUDED_BASES = new Set([
-  "USDC","FDUSD","DAI","TUSD","USDP","BUSD","USD1","USDE","USDS",
-  "XUSD","RLUSD","BFUSD","EUR","TRY","GBP","AUD","BRL","RUB","BKRW",
-  "BIDR","UP","DOWN","BULL","BEAR",
+  "USDC", "FDUSD", "DAI", "TUSD", "USDP", "BUSD", "USD1", "USDE", "USDS",
+  "XUSD", "RLUSD", "BFUSD", "EUR", "TRY", "GBP", "AUD", "BRL", "RUB", "BKRW",
+  "BIDR", "UP", "DOWN", "BULL", "BEAR",
 ]);
 
 export const COIN_SCREENER_MIN_VOL_BTC = 1000;
