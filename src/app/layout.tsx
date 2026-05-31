@@ -1,4 +1,5 @@
 import { SessionProvider } from "@/components/SessionProvider";
+import { Footer } from "@/components/Footer";
 import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/lib/theme";
 import "@fontsource/vazirmatn/300.css";
@@ -42,12 +43,7 @@ export default function RootLayout({
           <I18nProvider>
             <SessionProvider>
               {children}
-              <footer className="border-t border-theme mt-auto">
-                <div className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-theme-secondary space-y-1">
-                  <p>© {new Date().getFullYear()} CryptoSense. All rights reserved.</p>
-                  <p>Support: <span className="font-mono text-theme-text">0x93Ef70b28846786486A0e9A62e20C300e627040C</span></p>
-                </div>
-              </footer>
+              <Footer />
             </SessionProvider>
           </I18nProvider>
         </ThemeProvider>

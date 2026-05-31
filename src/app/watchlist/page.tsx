@@ -222,8 +222,8 @@ export default function WatchlistPage() {
                     neutral: { text: "text-yellow-400", bg: "bg-yellow-900/30", labelKey: "coin_row.neutral" },
                   };
                   const pc = posConfig[aug.position];
-                  const trendIcon = aug.position === "long" ? "▲" : aug.position === "short" ? "▼" : "◆";
-                  const trendColor = aug.position === "long" ? "text-emerald-400" : aug.position === "short" ? "text-red-400" : "text-yellow-400";
+                  const trendIcon = aug.changePercent >= 0 ? "▲" : "▼";
+                  const trendColor = aug.changePercent >= 0 ? "text-emerald-400" : "text-red-400";
 
                   return (
                     <Link key={item.symbol} href={`/coin/${item.symbol}`} className="group relative block hover:bg-gray-800/30 transition-colors border-b border-gray-800/50 last:border-0">

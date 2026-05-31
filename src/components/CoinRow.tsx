@@ -56,7 +56,7 @@ function calcRiskAllocation(coin: CoinAnalysis): RiskAllocation {
   }
 
   if (score >= 85) return { value: 1.0, label: "1.00", color: "text-emerald-400 bg-emerald-900/20" };
-  if (score >= 65) return { value: 0.75, label: "0.75", color: "text-green-400 bg-green-900/20" };
+  if (score >= 65) return { value: 0.75, label: "0.75", color: "text-emerald-400 bg-emerald-900/20" };
   if (score >= 40) return { value: 0.50, label: "0.50", color: "text-yellow-400 bg-yellow-900/20" };
   return { value: 0.25, label: "0.25", color: "text-red-400 bg-red-900/20" };
 }

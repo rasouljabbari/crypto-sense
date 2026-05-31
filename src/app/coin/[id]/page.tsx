@@ -1,11 +1,12 @@
 "use client";
 
+import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
 import { CandlestickChart } from "@/components/CandlestickChart";
 import { Header } from "@/components/Header";
 import { useI18n } from "@/i18n/context";
-import { calcRSI, estimatePosition } from "@/lib/indicators";
+import { calcRSI, calculateTechnicalIndicatorsFromKlines, estimatePosition } from "@/lib/indicators";
 import { getPositionLabel } from "@/lib/scoring";
-import { CoinAnalysis, PositionType } from "@/lib/types";
+import { CoinAnalysis, PositionType, TechnicalIndicators } from "@/lib/types";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
 import Link from "next/link";
@@ -117,6 +118,26 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
   const md = coin.marketData;
   const ti = coin.technicalIndicators;
 
+  const [realTi, setRealTi] = useState<TechnicalIndicators | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const symbol = COIN_SYMBOL_MAP[coin.coinId] || `${md.symbol}USDT`;
+    fetchKlines(symbol, "1h", 300).then((klines) => {
+      if (cancelled) return;
+      const closes = klines.map((k) => k.close);
+      const computed = calculateTechnicalIndicatorsFromKlines(closes, md.currentPrice);
+      setRealTi({
+        ...computed,
+        supportLevels: ti.supportLevels,
+        resistanceLevels: ti.resistanceLevels,
+      });
+    }).catch(() => { });
+    return () => { cancelled = true; };
+  }, [coin.coinId, md.symbol, md.currentPrice]);
+
+  const display = realTi ?? ti;
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <Header />
@@ -134,7 +155,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   <h1 className="text-lg sm:text-2xl font-bold text-white truncate">{md.name}</h1>
                   <span className="text-gray-400 text-sm sm:text-lg shrink-0">{md.symbol}</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] sm:text-xs font-bold shrink-0 ${pos.text} ${pos.bg}`}>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pos.text} ${pos.bg}`}>
                     {posLabel}
                   </span>
                 </div>
@@ -226,21 +247,21 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
               <InfoTip text={t("coin_detail.cards.technical_indicators.tooltip")} />
             </h3>
             <div className="space-y-3">
-              <TechItem label={t("coin_detail.cards.technical_indicators.rsi")} value={ti.rsi.toFixed(1)} status={ti.rsi > 70 ? "overbought" : ti.rsi < 30 ? "oversold" : "neutral"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.rsi")} />
-              <TechItem label={t("coin_detail.cards.technical_indicators.macd")} value={ti.macd.value.toFixed(2)} status={ti.macd.histogram > 0 ? "bullish" : "bearish"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.macd")} />
-              <TechItem label={t("coin_detail.cards.technical_indicators.macd_signal")} value={ti.macd.signal.toFixed(2)} status="neutral" tooltip={t("coin_detail.cards.technical_indicators.tooltips.macd_signal")} />
-              <TechItem label={t("coin_detail.cards.technical_indicators.macd_histogram")} value={ti.macd.histogram.toFixed(2)} status={ti.macd.histogram > 0 ? "positive" : "negative"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.macd_histogram")} />
-              <TechItem label={t("coin_detail.cards.technical_indicators.ema_9")} value={`$${ti.ema9.toFixed(2)}`} status={ti.ema9 > md.currentPrice ? "above" : "below"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.ema_9")} />
-              <TechItem label={t("coin_detail.cards.technical_indicators.ema_21")} value={`$${ti.ema21.toFixed(2)}`} status={ti.ema21 > md.currentPrice ? "above" : "below"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.ema_21")} />
-              <TechItem label={t("coin_detail.cards.technical_indicators.bb_upper")} value={`$${ti.bollingerBands.upper.toFixed(2)}`} status="neutral" tooltip={t("coin_detail.cards.technical_indicators.tooltips.bb_upper")} />
-              <TechItem label={t("coin_detail.cards.technical_indicators.bb_lower")} value={`$${ti.bollingerBands.lower.toFixed(2)}`} status="neutral" tooltip={t("coin_detail.cards.technical_indicators.tooltips.bb_lower")} />
+              <TechItem label={t("coin_detail.cards.technical_indicators.rsi")} value={display.rsi.toFixed(1)} status={display.rsi > 70 ? "overbought" : display.rsi < 30 ? "oversold" : "neutral"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.rsi")} />
+              <TechItem label={t("coin_detail.cards.technical_indicators.macd")} value={display.macd.value.toFixed(2)} status={display.macd.histogram > 0 ? "bullish" : "bearish"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.macd")} />
+              <TechItem label={t("coin_detail.cards.technical_indicators.macd_signal")} value={display.macd.signal.toFixed(2)} status="neutral" tooltip={t("coin_detail.cards.technical_indicators.tooltips.macd_signal")} />
+              <TechItem label={t("coin_detail.cards.technical_indicators.macd_histogram")} value={display.macd.histogram.toFixed(2)} status={display.macd.histogram > 0 ? "positive" : "negative"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.macd_histogram")} />
+              <TechItem label={t("coin_detail.cards.technical_indicators.ema_9")} value={`$${display.ema9.toFixed(2)}`} status={display.ema9 > md.currentPrice ? "above" : "below"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.ema_9")} />
+              <TechItem label={t("coin_detail.cards.technical_indicators.ema_21")} value={`$${display.ema21.toFixed(2)}`} status={display.ema21 > md.currentPrice ? "above" : "below"} tooltip={t("coin_detail.cards.technical_indicators.tooltips.ema_21")} />
+              <TechItem label={t("coin_detail.cards.technical_indicators.bb_upper")} value={`$${display.bollingerBands.upper.toFixed(2)}`} status="neutral" tooltip={t("coin_detail.cards.technical_indicators.tooltips.bb_upper")} />
+              <TechItem label={t("coin_detail.cards.technical_indicators.bb_lower")} value={`$${display.bollingerBands.lower.toFixed(2)}`} status="neutral" tooltip={t("coin_detail.cards.technical_indicators.tooltips.bb_lower")} />
             </div>
           </div>
         </div>
 
         <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5 mb-6">
           <h3 className="text-sm font-semibold text-gray-400 mb-4">{t("coin_detail.price_chart")}</h3>
-          <div className="rounded-lg overflow-hidden" style={{ height: 480 }}>
+          <div className="rounded-lg overflow-hidden" style={{ height: 750 }}>
             <CandlestickChart coinId={coin.coinId} />
           </div>
         </div>
@@ -347,9 +368,9 @@ function FallbackDetail({ data }: { data: FallbackData }) {
   const pos = estimatePosition(data.changePercent);
 
   const posConfig: Record<string, { text: string; bg: string; labelKey: string }> = {
-    long: { text: "text-emerald-400", bg: "bg-emerald-900/40", labelKey: "coin_row.long" },
-    short: { text: "text-red-400", bg: "bg-red-900/40", labelKey: "coin_row.short" },
-    neutral: { text: "text-yellow-400", bg: "bg-yellow-900/40", labelKey: "coin_row.neutral" },
+    long: { text: "text-emerald-400", bg: "bg-emerald-900/30", labelKey: "coin_row.long" },
+    short: { text: "text-red-400", bg: "bg-red-900/30", labelKey: "coin_row.short" },
+    neutral: { text: "text-yellow-400", bg: "bg-yellow-900/30", labelKey: "coin_row.neutral" },
   };
   const pc = posConfig[pos.position];
 
@@ -389,7 +410,7 @@ function FallbackDetail({ data }: { data: FallbackData }) {
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   <h1 className="text-lg sm:text-2xl font-bold text-white truncate">{data.symbol}</h1>
                   <span className="text-gray-400 text-sm sm:text-lg shrink-0">{data.name}</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] sm:text-xs font-bold shrink-0 ${pc.text} ${pc.bg}`}>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pc.text} ${pc.bg}`}>
                     {t(pc.labelKey)}
                   </span>
                 </div>
@@ -447,7 +468,7 @@ function FallbackDetail({ data }: { data: FallbackData }) {
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
             <h3 className="text-sm font-semibold text-gray-400 mb-4">{t("coin_detail.signal")}</h3>
             <div className="flex items-center gap-3">
-              <span className={`text-xs font-bold px-3 py-1.5 rounded ${pc.bg} ${pc.text}`}>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pc.bg} ${pc.text}`}>
                 {t(pc.labelKey)}
               </span>
               <span className="text-xs text-gray-400">
@@ -460,7 +481,7 @@ function FallbackDetail({ data }: { data: FallbackData }) {
         {/* Price Chart */}
         <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5 mb-6">
           <h3 className="text-sm font-semibold text-gray-400 mb-4">{t("coin_detail.price_chart")}</h3>
-          <div className="rounded-lg overflow-hidden" style={{ height: 480 }}>
+          <div className="rounded-lg overflow-hidden" style={{ height: 750 }}>
             <CandlestickChart coinId={data.symbol} />
           </div>
         </div>
@@ -531,7 +552,7 @@ function ScoreInterpretation({ score, position, t: _t }: { score: number; positi
     <div className="border-t border-gray-800 pt-4 mt-2 space-y-3">
       <div className="flex items-center justify-between text-xs">
         <span className="text-gray-500">{_t("coin_detail.cards.analysis_score.interpretation.zone")}</span>
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${pl.bg} ${pl.text} ${pl.border}`}>
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${pl.bg} ${pl.text} ${pl.border}`}>
           {_t(`coin_row.${position}`)}
         </span>
       </div>

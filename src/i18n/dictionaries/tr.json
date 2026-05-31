@@ -269,6 +269,10 @@
     "price_chart": "Fiyat Grafiği",
     "fallback_message": "Bu coin için tam analiz mevcut değil. Yalnızca Binance piyasa verileri gösteriliyor."
   },
+  "footer": {
+    "copyright": "© {year} CryptoSense. Tüm hakları saklıdır.",
+    "support": "Destek:"
+  },
   "locale": {
     "en": "English",
     "tr": "Türkçe",

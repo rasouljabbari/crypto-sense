@@ -7,7 +7,7 @@
   "nav": {
     "coins": "ارزها",
     "indicators": "شاخص‌ها",
-    "watchlist": "لیست پیگیری",
+    "watchlist": "نظارت پیگیری",
     "coming_soon": "به زودی..."
   },
   "header": {
@@ -268,6 +268,10 @@
     "score": "امتیاز: {score}",
     "price_chart": "نمودار قیمت",
     "fallback_message": "تحلیل کامل برای این ارز در دسترس نیست. فقط داده‌های بازار بایننس نمایش داده می‌شود."
+  },
+  "footer": {
+    "copyright": "© {year} CryptoSense. تمامی حقوق محفوظ است.",
+    "support": "حمایت:"
   },
   "locale": {
     "en": "English",

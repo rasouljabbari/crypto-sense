@@ -269,6 +269,10 @@
     "price_chart": "Price Chart",
     "fallback_message": "Full analysis not available for this coin. Only Binance market data is shown."
   },
+  "footer": {
+    "copyright": "© {year} CryptoSense. All rights reserved.",
+    "support": "Support:"
+  },
   "locale": {
     "en": "English",
     "tr": "Türkçe",

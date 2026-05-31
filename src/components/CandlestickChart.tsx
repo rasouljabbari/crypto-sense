@@ -166,7 +166,7 @@ export function CandlestickChart({ coinId }: Props) {
   hLineActiveRef.current = hLineActive;
   const [showSMA, setShowSMA] = useState(true);
   const [showRSI, setShowRSI] = useState(false);
-  const [showDMI, setShowDMI] = useState(false);
+  const [showDMI, setShowDMI] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const reloadingRef = useRef(false);
@@ -375,7 +375,15 @@ export function CandlestickChart({ coinId }: Props) {
         }))
       );
 
-      chart.timeScale().fitContent();
+      if (data.length > 0) {
+        const from = Math.max(0, data.length - 96);
+        chart.timeScale().setVisibleRange({
+          from: fmtTime(data[from]),
+          to: fmtTime(data[data.length - 1]),
+        });
+      } else {
+        chart.timeScale().fitContent();
+      }
 
       const volSeries = chart.addSeries(HistogramSeries, {
         priceFormat: { type: "volume" },

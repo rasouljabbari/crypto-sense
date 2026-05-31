@@ -1,3 +1,5 @@
+import { TechnicalIndicators } from "./types";
+
 export function calcRSI(prices: number[], period = 14): number {
   if (prices.length < period + 1) return 50;
   const changes: number[] = [];
@@ -18,11 +20,135 @@ export function calcRSI(prices: number[], period = 14): number {
   return Math.round(100 - 100 / (1 + rs));
 }
 
+export function calcSMA(prices: number[], period: number): number[] {
+  const result: number[] = [];
+  for (let i = 0; i < prices.length; i++) {
+    if (i < period - 1) {
+      result.push(NaN);
+      continue;
+    }
+    let sum = 0;
+    for (let j = 0; j < period; j++) sum += prices[i - j];
+    result.push(sum / period);
+  }
+  return result;
+}
+
+export function calcEMA(prices: number[], period: number): number[] {
+  const result: number[] = [];
+  const multiplier = 2 / (period + 1);
+  let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  for (let i = 0; i < prices.length; i++) {
+    if (i < period - 1) {
+      result.push(NaN);
+      continue;
+    }
+    if (i === period - 1) {
+      result.push(ema);
+    } else {
+      ema = (prices[i] - ema) * multiplier + ema;
+      result.push(ema);
+    }
+  }
+  return result;
+}
+
+export function calcMACD(prices: number[]): {
+  macdLine: number[];
+  signalLine: number[];
+  histogram: number[];
+} {
+  const ema12 = calcEMA(prices, 12);
+  const ema26 = calcEMA(prices, 26);
+  const macdLine: number[] = [];
+  for (let i = 0; i < prices.length; i++) {
+    if (isNaN(ema12[i]) || isNaN(ema26[i])) {
+      macdLine.push(NaN);
+    } else {
+      macdLine.push(ema12[i] - ema26[i]);
+    }
+  }
+  const signalLine = calcEMA(macdLine.filter((v) => !isNaN(v)), 9);
+  const histogram: number[] = [];
+  let signalIdx = 0;
+  for (let i = 0; i < macdLine.length; i++) {
+    if (isNaN(macdLine[i])) {
+      histogram.push(NaN);
+    } else {
+      histogram.push(macdLine[i] - (signalLine[signalIdx] ?? 0));
+      signalIdx++;
+    }
+  }
+  return { macdLine, signalLine, histogram };
+}
+
+export function calcBollingerBands(
+  prices: number[],
+  period = 20,
+  stdDev = 2,
+): { upper: number[]; middle: number[]; lower: number[] } {
+  const middle = calcSMA(prices, period);
+  const upper: number[] = [];
+  const lower: number[] = [];
+  for (let i = 0; i < prices.length; i++) {
+    if (isNaN(middle[i])) {
+      upper.push(NaN);
+      lower.push(NaN);
+      continue;
+    }
+    let sumSq = 0;
+    for (let j = 0; j < period; j++) sumSq += (prices[i - j] - middle[i]) ** 2;
+    const std = Math.sqrt(sumSq / period);
+    upper.push(middle[i] + stdDev * std);
+    lower.push(middle[i] - stdDev * std);
+  }
+  return { upper, middle, lower };
+}
+
 export function estimatePosition(changePercent: number): {
   position: "long" | "short" | "neutral";
   score: number;
 } {
-  if (changePercent > 3) return { position: "long", score: Math.min(100, 50 + changePercent * 3) };
-  if (changePercent < -3) return { position: "short", score: Math.max(0, 50 + changePercent * 3) };
+  if (changePercent > 5) return { position: "long", score: Math.min(100, 60 + changePercent * 2) };
+  if (changePercent > 2) return { position: "long", score: 55 + changePercent * 2.5 };
+  if (changePercent < -5) return { position: "short", score: Math.max(0, 60 + Math.abs(changePercent) * 2) };
+  if (changePercent < -2) return { position: "short", score: 55 + Math.abs(changePercent) * 2.5 };
+  if (changePercent > 0.5) return { position: "neutral", score: 55 };
+  if (changePercent < -0.5) return { position: "neutral", score: 45 };
   return { position: "neutral", score: 50 };
+}
+
+export function calculateTechnicalIndicatorsFromKlines(
+  closes: number[],
+  currentPrice: number,
+): TechnicalIndicators {
+  const rsi = calcRSI(closes, 14);
+  const ema9Arr = calcEMA(closes, 9);
+  const ema21Arr = calcEMA(closes, 21);
+  const ema50Arr = calcEMA(closes, 50);
+  const ema200Arr = calcEMA(closes, 200);
+  const bb = calcBollingerBands(closes, 20, 2);
+  const macd = calcMACD(closes);
+
+  const last = (arr: number[]) => arr.filter((v) => !isNaN(v)).pop() ?? 0;
+
+  return {
+    rsi,
+    macd: {
+      value: last(macd.macdLine),
+      signal: last(macd.signalLine),
+      histogram: last(macd.histogram),
+    },
+    ema9: last(ema9Arr),
+    ema21: last(ema21Arr),
+    ema50: last(ema50Arr),
+    ema200: last(ema200Arr),
+    bollingerBands: {
+      upper: last(bb.upper),
+      middle: last(bb.middle),
+      lower: last(bb.lower),
+    },
+    supportLevels: [],
+    resistanceLevels: [],
+  };
 }

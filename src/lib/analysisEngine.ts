@@ -3,16 +3,18 @@ import { generateTechnicalIndicators, MOCK_NEWS } from "./mockData";
 
 function calculateVolumeScore(volume24h: number, marketCap: number): number {
   const ratio = volume24h / marketCap;
-  if (ratio > 0.3) return 95;
-  if (ratio > 0.2) return 85;
-  if (ratio > 0.15) return 75;
+  if (ratio > 0.5) return 95;
+  if (ratio > 0.3) return 85;
+  if (ratio > 0.2) return 75;
   if (ratio > 0.1) return 60;
   if (ratio > 0.05) return 45;
-  return 30;
+  if (ratio > 0.02) return 35;
+  return 25;
 }
 
-function calculateTrendScore(priceChange: number, indicators: TechnicalIndicators): number {
+function calculateTrendScore(priceChange: number, indicators: TechnicalIndicators, marketData: MarketData): number {
   let score = 50;
+
   score += priceChange * 2;
 
   const { rsi, macd } = indicators;
@@ -30,6 +32,15 @@ function calculateTrendScore(priceChange: number, indicators: TechnicalIndicator
   if (indicators.ema21 > indicators.ema50) score += 5;
   else score -= 5;
 
+  const bullishAlign = indicators.ema9 > indicators.ema21 && indicators.ema21 > indicators.ema50;
+  const bearishAlign = indicators.ema9 < indicators.ema21 && indicators.ema21 < indicators.ema50;
+  if (bullishAlign) score += 8;
+  if (bearishAlign) score -= 8;
+
+  const volMcapRatio = marketData.marketCap > 0 ? marketData.volume24h / marketData.marketCap : 0;
+  if (priceChange > 0 && volMcapRatio > 0.1) score += 5;
+  else if (priceChange < 0 && volMcapRatio > 0.1) score -= 5;
+
   return Math.max(0, Math.min(100, score));
 }
 
@@ -45,6 +56,32 @@ function calculateSentimentScore(news: NewsItem[], coinId: string): number {
   return Math.max(0, Math.min(100, score));
 }
 
+function calculateTechnicalScore(indicators: TechnicalIndicators): number {
+  const { rsi, macd } = indicators;
+
+  let score = 50;
+
+  if (rsi <= 30) score = 80;
+  else if (rsi >= 70) score = 20;
+  else if (rsi < 50) score = 50 + (50 - rsi) * 1.5;
+  else score = 50 - (rsi - 50) * 1.5;
+
+  if (macd.histogram > 0) {
+    const mag = Math.min(Math.abs(macd.histogram) / 2, 1);
+    score += 15 * mag;
+  } else {
+    const mag = Math.min(Math.abs(macd.histogram) / 2, 1);
+    score -= 15 * mag;
+  }
+
+  const bullishAlign = indicators.ema9 > indicators.ema21 && indicators.ema21 > indicators.ema50;
+  const bearishAlign = indicators.ema9 < indicators.ema21 && indicators.ema21 < indicators.ema50;
+  if (bullishAlign) score += 10;
+  if (bearishAlign) score -= 10;
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
 function determinePosition(
   trendScore: number,
   volumeScore: number,
@@ -52,7 +89,7 @@ function determinePosition(
   technicalScore: number
 ): { position: PositionType; overallScore: number } {
   const overallScore = Math.round(
-    trendScore * 0.25 + volumeScore * 0.35 + sentimentScore * 0.2 + technicalScore * 0.2
+    trendScore * 0.30 + volumeScore * 0.25 + sentimentScore * 0.15 + technicalScore * 0.30
   );
 
   let position: PositionType;
@@ -79,15 +116,9 @@ export function analyzeCoin(marketData: MarketData): CoinAnalysis {
   const indicators = generateTechnicalIndicators(marketData);
 
   const volumeScore = calculateVolumeScore(marketData.volume24h, marketData.marketCap);
-  const trendScore = calculateTrendScore(marketData.priceChangePercent24h, indicators);
+  const trendScore = calculateTrendScore(marketData.priceChangePercent24h, indicators, marketData);
   const sentimentScore = calculateSentimentScore(MOCK_NEWS, marketData.id);
-
-  const technicalScore = (() => {
-    const rsiScore = indicators.rsi < 30 ? 80 : indicators.rsi > 70 ? 20 : 50;
-    const macdScore = indicators.macd.histogram > 0 ? 70 : 30;
-    const emaScore = indicators.ema9 > indicators.ema21 ? 70 : 30;
-    return Math.round((rsiScore + macdScore + emaScore) / 3);
-  })();
+  const technicalScore = calculateTechnicalScore(indicators);
 
   const { position, overallScore } = determinePosition(trendScore, volumeScore, sentimentScore, technicalScore);
   const trendAnalysis = generateTrendAnalysis(marketData.priceChangePercent24h);

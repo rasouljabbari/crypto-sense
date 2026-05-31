@@ -7,9 +7,9 @@ import type { SearchCoin } from "./SearchBar";
 import { estimatePosition } from "@/lib/indicators";
 
 const positionStyle: Record<string, { text: string; bg: string; label: string }> = {
-  long: { text: "text-emerald-400", bg: "bg-emerald-900/40", label: "LONG" },
-  short: { text: "text-red-400", bg: "bg-red-900/40", label: "SHORT" },
-  neutral: { text: "text-yellow-400", bg: "bg-yellow-900/40", label: "NEUTRAL" },
+  long: { text: "text-emerald-400", bg: "bg-emerald-900/30", label: "LONG" },
+  short: { text: "text-red-400", bg: "bg-red-900/30", label: "SHORT" },
+  neutral: { text: "text-yellow-400", bg: "bg-yellow-900/30", label: "NEUTRAL" },
 };
 
 interface Props {
@@ -93,7 +93,7 @@ export function CoinSearchBox({ coin, onSelect }: Props) {
         </span>
       </div>
 
-      <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded ${ps.text} ${ps.bg}`}>
+      <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${ps.text} ${ps.bg}`}>
         {ps.label}
       </span>
 
