@@ -14,7 +14,7 @@ interface Props {
 export function CoinImage({ src, alt, symbol = "", className = "w-6 h-6 rounded-full", size = 24 }: Props) {
   const [failed, setFailed] = useState(false);
 
-  if (failed) {
+  if (failed || !src) {
     return (
       <div className={`${className} bg-emerald-500/20 flex items-center justify-center overflow-hidden`}>
         <Image
@@ -29,11 +29,14 @@ export function CoinImage({ src, alt, symbol = "", className = "w-6 h-6 rounded-
   }
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
+      width={size}
+      height={size}
       className={className}
       onError={() => setFailed(true)}
+      unoptimized
     />
   );
 }

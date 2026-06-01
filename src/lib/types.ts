@@ -112,6 +112,15 @@ export interface MarketIndicators {
   totalExTop10: number;
   usdtDominance: number;
   othersDominance: number;
+  change?: {
+    totalMarketCap: number;
+    totalExBtc: number;
+    totalExTop10: number;
+    btcDominance: number;
+    ethDominance: number;
+    usdtDominance: number;
+    othersDominance: number;
+  };
 }
 
 export interface WebSocketMessage {

@@ -8,6 +8,22 @@ datasource db {
   directUrl  = env("DIRECT_URL")
 }
 
+model MarketSnapshot {
+  id              String   @id @default(cuid())
+  timestamp       DateTime @default(now())
+  totalMarketCap  Float
+  totalVolume24h  Float
+  btcDominance    Float
+  ethDominance    Float
+  usdtDominance   Float
+  bnbDominance    Float
+  othersDominance Float
+  totalExBtc      Float
+  totalExTop10    Float
+
+  @@index([timestamp])
+}
+
 model User {
   id             String          @id @default(cuid())
   name           String

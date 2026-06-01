@@ -198,15 +198,12 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
   const ethBtcRatio = btcPrice > 0 ? ethPrice / btcPrice : 0;
   const bnbBtcRatio = btcPrice > 0 ? bnbPrice / btcPrice : 0;
 
-  // Try CoinGecko via server-side proxy (fresh data, no cache)
+  // Try CoinGecko via server-side proxy (properly cached)
   try {
     const res = await fetch("/api/global");
     if (res.ok) {
       const g = await res.json();
       if (!g.error) {
-        const othersDominance = Math.max(0, 100 - g.top10DominanceSum);
-        const totalExBtc = g.totalMarketCap * (1 - g.btcDominance / 100);
-        const totalExTop10 = g.totalMarketCap * (1 - g.btcDominance / 100 - g.ethDominance / 100);
         return {
           totalMarketCap: g.totalMarketCap,
           totalVolume24h: g.totalVolume24h,
@@ -214,11 +211,12 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
           ethDominance: g.ethDominance,
           bnbDominance: g.bnbDominance,
           usdtDominance: g.usdtDominance,
-          othersDominance,
+          othersDominance: g.othersDominance ?? 0,
           ethBtcRatio,
           bnbBtcRatio,
-          totalExBtc,
-          totalExTop10,
+          totalExBtc: g.totalExBtc,
+          totalExTop10: g.totalExTop10,
+          change: g.change ?? undefined,
         };
       }
     }
@@ -238,7 +236,6 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
   interface McEst { symbol: string; marketCap: number; volume: number; }
   const estimates: McEst[] = [];
 
-  // Known stablecoin pairs to exclude
   const stablecoins = new Set([
     "USDCUSDT", "FDUSDUSDT", "DAIUSDT", "TUSDUSDT", "USDPUSDT", "BUSDUSDT",
     "USD1USDT", "USDEUSDT", "USDSUSDT", "XUSDUSDT", "RLUSDUSDT", "BFUSDUSDT",
@@ -249,7 +246,7 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
     s.includes("BULL") || s.includes("BEAR") || s.includes("BKRW") ||
     s.includes("EUR") || s.includes("GBP") || s.includes("TRY") || s.includes("BIDR");
 
-  // First pass: known coins (exact)
+  // Known coins with exact market cap from Binance price * circulating supply
   for (const t of allUsdtTickers) {
     const coinId = symToId[t.symbol];
     const staticData = coinId ? STATIC_COIN_DATA[coinId] : null;
@@ -267,21 +264,20 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
     }
   }
 
-  // Second pass: unknown non-stablecoins (estimate with tiered ratio)
+  // Unknown non-stablecoins: estimate with tiered volume-to-market-cap ratio
   for (const t of allUsdtTickers) {
     const coinId = symToId[t.symbol];
-    if (coinId) continue; // skip known coins
+    if (coinId) continue;
     if (isStableOrLeveraged(t.symbol)) continue;
 
     const volume = parseFloat(t.quoteVolume);
     if (volume <= 0) continue;
 
-    // Tiered ratio: larger volume → smaller vol/mcap ratio (more liquid, larger cap)
-    const ratio = volume > 1e9 ? 0.003  // mega liquid (>$1B/day)
-      : volume > 1e8 ? 0.008  // highly liquid (>$100M/day)
-        : volume > 1e7 ? 0.025  // mid liquid (>$10M/day)
-          : volume > 1e6 ? 0.07   // low liquid (>$1M/day)
-            : 0.15;                  // illiquid
+    const ratio = volume > 1e9 ? 0.003
+      : volume > 1e8 ? 0.008
+        : volume > 1e7 ? 0.025
+          : volume > 1e6 ? 0.07
+            : 0.15;
 
     estimates.push({ symbol: t.symbol, marketCap: volume / ratio, volume });
   }

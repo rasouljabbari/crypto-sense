@@ -68,8 +68,21 @@ export function OrderBook({ symbol }: { symbol: string }) {
   useEffect(() => {
     load();
     intervalRef.current = setInterval(load, 1000);
+
+    const onVisibility = () => {
+      if (document.hidden && intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      } else if (!document.hidden && !intervalRef.current) {
+        load();
+        intervalRef.current = setInterval(load, 1000);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [load]);
 

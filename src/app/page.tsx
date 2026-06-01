@@ -68,35 +68,32 @@ export default function MarketOverviewPage() {
 
   useEffect(() => {
     loadFromBinance();
-  }, [loadFromBinance]);
 
-  useEffect(() => {
     const end = Math.floor(Date.now() / 1000);
-    const start = end - 7 * 86400;
-    fetch(`/api/fear-greed?start=${start}&end=${end}`)
-      .then((r) => r.json())
-      .then((json: { data: { historicalValues: { now: { score: number; name: string } } } }) => {
-        setFng({
-          value: json.data.historicalValues.now.score,
-          classification: json.data.historicalValues.now.name,
-        });
-      })
-      .catch(() => { });
-  }, []);
+    const start7d = end - 7 * 86400;
+    const start1y = end - 365 * 86400;
 
-  useEffect(() => {
-    Promise.all(
-      TOP_COINS.map((coin) =>
-        fetchKlines(coin.symbolB, "1h", 168)
-          .then((klines) => ({ id: coin.id, closes: klines.map((k) => k.close) }))
-          .catch(() => ({ id: coin.id, closes: [] }))
-      )
-    ).then((results) => {
+    Promise.all([
+      fetch(`/api/fear-greed?start=${start7d}&end=${end}`).then((r) => r.json()).catch(() => null),
+      Promise.all(
+        TOP_COINS.map((coin) =>
+          fetchKlines(coin.symbolB, "1h", 168)
+            .then((klines) => ({ id: coin.id, closes: klines.map((k) => k.close) }))
+            .catch(() => ({ id: coin.id, closes: [] }))
+        )
+      ),
+    ]).then(([fngJson, klineResults]) => {
+      if (fngJson?.data?.historicalValues?.now) {
+        setFng({
+          value: fngJson.data.historicalValues.now.score,
+          classification: fngJson.data.historicalValues.now.name,
+        });
+      }
       const map: Record<string, number[]> = {};
-      for (const r of results) map[r.id] = r.closes;
+      for (const r of klineResults) map[r.id] = r.closes;
       setWeeklyData(map);
     });
-  }, []);
+  }, [loadFromBinance]);
 
   useEffect(() => {
     setMcLoading(true);
@@ -180,18 +177,18 @@ export default function MarketOverviewPage() {
       color: "text-cyan-400",
       bg: "bg-cyan-500/10",
     },
-    // {
-    //   href: "/indicators",
-    //   title: t("nav.indicators"),
-    //   desc: "Market indicators and coin screener",
-    //   icon: (
-    //     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    //       <path d="M3 3v18h18" /><path d="M7 16l4-8 4 4 4-6" />
-    //     </svg>
-    //   ),
-    //   color: "text-violet-400",
-    //   bg: "bg-violet-500/10",
-    // },
+    {
+      href: "/indicators",
+      title: t("nav.indicators"),
+      desc: "Market indicators and coin screener",
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 3v18h18" /><path d="M7 16l4-8 4 4 4-6" />
+        </svg>
+      ),
+      color: "text-violet-400",
+      bg: "bg-violet-500/10",
+    },
     {
       href: "/fear-greed",
       title: t("nav.fear_greed"),

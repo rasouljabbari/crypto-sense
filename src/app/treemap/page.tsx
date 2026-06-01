@@ -1,7 +1,9 @@
 "use client";
 
 import { Header } from "@/components/Header";
-import { TreemapChart } from "@/components/TreemapChart";
+import dynamic from "next/dynamic";
+
+const TreemapChart = dynamic(() => import("@/components/TreemapChart").then(m => m.TreemapChart), { ssr: false });
 import { useI18n } from "@/i18n/context";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";

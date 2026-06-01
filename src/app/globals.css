@@ -9,7 +9,7 @@
 
 /* Persian / Arabic font override */
 [dir="rtl"] {
-  --font-sans: "Vazirmatn", system-ui, sans-serif;
+  --font-sans: var(--font-vazirmatn), system-ui, sans-serif;
 }
 
 @layer base {
