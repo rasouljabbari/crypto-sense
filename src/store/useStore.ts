@@ -12,6 +12,7 @@ interface AppState {
   filters: FilterOptions;
   isLoading: boolean;
   isLive: boolean;
+  initialized: boolean;
   lastUpdated: string | null;
   indicators: MarketIndicators;
 
@@ -38,6 +39,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
   isLoading: true,
   isLive: false,
+  initialized: false,
   lastUpdated: null,
   indicators: {
     totalMarketCap: 0, totalVolume24h: 0, btcDominance: 0, ethDominance: 0, bnbDominance: 0,
@@ -72,7 +74,7 @@ export const useStore = create<AppState>((set, get) => ({
       const marketData = await fetchMarketDataList();
       const coins = analyzeAllCoins(marketData);
       const indicators = await fetchGlobalMarketData(marketData);
-      set({ coins, indicators, isLoading: false, isLive: true, lastUpdated: new Date().toISOString() });
+      set({ coins, indicators, initialized: true, isLoading: false, isLive: true, lastUpdated: new Date().toISOString() });
       get().applyFilters();
     } catch {
       set({ isLoading: false });
@@ -147,12 +149,14 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   loadFromBinance: async () => {
+    const { initialized } = get();
+    if (initialized) return;
     set({ isLoading: true });
     try {
       const marketData = await fetchMarketDataList();
       const coins = analyzeAllCoins(marketData);
       const indicators = await fetchGlobalMarketData(marketData);
-      set({ coins, indicators, isLive: true, isLoading: false, lastUpdated: new Date().toISOString() });
+      set({ coins, indicators, isLive: true, initialized: true, isLoading: false, lastUpdated: new Date().toISOString() });
       get().applyFilters();
     } catch {
       set({ isLoading: false, isLive: false });

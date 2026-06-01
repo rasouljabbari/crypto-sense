@@ -39,24 +39,25 @@ function tickerToCoinUpdate(ticker: BinanceTickerData) {
   return { coinId, marketData };
 }
 
+let wsSingleton: WebSocket | null = null;
+let analysisInterval: NodeJS.Timeout | null = null;
+let connectCount = 0;
+
 export function useBinanceWebSocket() {
   const { updateCoin, reanalyze, isLive } = useStore();
-  const wsRef = useRef<WebSocket | null>(null);
-  const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const reconnectRef = useRef<NodeJS.Timeout | null>(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    if (!isLive) return;
+    mountedRef.current = true;
 
-    let mounted = true;
+    if (!isLive || connectCount > 0) return;
+    connectCount++;
 
     function connect() {
-      if (!mounted) return;
-      if (wsRef.current?.readyState === WebSocket.OPEN) return;
-
+      if (wsSingleton?.readyState === WebSocket.OPEN) return;
       try {
         const ws = createBinanceWebSocket((data: BinanceTickerData) => {
-          if (!mounted) return;
+          if (!mountedRef.current) return;
           const update = tickerToCoinUpdate(data);
           if (update) {
             updateCoin(update.coinId, {
@@ -65,30 +66,22 @@ export function useBinanceWebSocket() {
             });
           }
         });
-        wsRef.current = ws;
-
-        ws.onclose = () => {
-          if (mounted) reconnectRef.current = setTimeout(connect, 5000);
-        };
-        ws.onerror = () => {
-          if (mounted) reconnectRef.current = setTimeout(connect, 5000);
-        };
+        wsSingleton = ws;
+        ws.onclose = () => { if (mountedRef.current) setTimeout(connect, 5000); };
+        ws.onerror = () => { if (mountedRef.current) setTimeout(connect, 5000); };
       } catch {
-        if (mounted) reconnectRef.current = setTimeout(connect, 5000);
+        if (mountedRef.current) setTimeout(connect, 5000);
       }
     }
 
     connect();
 
-    analysisIntervalRef.current = setInterval(() => {
-      reanalyze();
-    }, 30000);
+    if (!analysisInterval) {
+      analysisInterval = setInterval(() => { reanalyze(); }, 30000);
+    }
 
     return () => {
-      mounted = false;
-      if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
-      if (analysisIntervalRef.current) clearInterval(analysisIntervalRef.current);
-      if (reconnectRef.current) clearTimeout(reconnectRef.current);
+      mountedRef.current = false;
     };
   }, [updateCoin, reanalyze, isLive]);
 }
