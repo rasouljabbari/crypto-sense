@@ -5,12 +5,35 @@
     "initials": "CS"
   },
   "nav": {
+    "overview": "Genel Bakış",
     "coins": "Coinler",
     "indicators": "Göstergeler",
     "watchlist": "İzleme Listesi",
     "treemap": "Isı Haritası",
     "fear_greed": "Korku & Açgözlülük",
     "coming_soon": "Çok yakında..."
+  },
+  "overview": {
+    "title": "Kripto Piyasa Genel Görünümü",
+    "subtitle": "Gerçek zamanlı piyasa metrikleri, dominans ve duyarlılık bir bakışta",
+    "total_mcap": "Toplam Piyasa Değeri",
+    "volume_24h": "24s Hacim",
+    "btc_d": "BTC Dominansı (24s)",
+    "eth_d": "ETH Dominansı (24s)",
+    "dominance_title": "Piyasa Değeri Dağılımı (24s)",
+    "fear_greed": "Korku ve Açgözlülük Endeksi",
+    "loading_fng": "Yükleniyor...",
+    "long_signals": "long sinyal",
+    "short_signals": "short sinyal",
+    "total_coins": "Toplam Coin",
+    "neutral": "Nötr Sinyaller",
+    "total_volume": "Toplam Hacim",
+    "quick_nav": "Hızlı Navigasyon",
+    "mcap_chart": "Kripto Piyasa Değeri",
+    "mcap_30d": "30G",
+    "mcap_1y": "1Y",
+    "mcap_all": "Tümü",
+    "footnote": "Veriler Binance ve CoinGecko'dan alınmıştır — gerçek zamanlı güncellenir"
   },
   "fear_greed": {
     "title": "Korku ve Açgözlülük Endeksi",

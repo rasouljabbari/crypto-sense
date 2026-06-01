@@ -5,12 +5,35 @@
     "initials": "CS"
   },
   "nav": {
+    "overview": "نمای کلی",
     "coins": "ارزها",
     "indicators": "شاخص‌ها",
     "watchlist": "نظارت پیگیری",
     "treemap": "نقشه حرارتی",
     "fear_greed": "ترس و طمع",
     "coming_soon": "به زودی..."
+  },
+  "overview": {
+    "title": "نمای کلی بازار ارزهای دیجیتال",
+    "subtitle": "معیارهای لحظه‌ای بازار، تسلط و احساسات در یک نگاه",
+    "total_mcap": "ارزش کل بازار",
+    "volume_24h": "حجم ۲۴ ساعت",
+    "btc_d": "تسلط بیت‌کوین (۲۴h)",
+    "eth_d": "تسلط اتریوم (۲۴h)",
+    "dominance_title": "توزیع ارزش بازار (۲۴h)",
+    "fear_greed": "شاخص ترس و طمع",
+    "loading_fng": "در حال بارگذاری...",
+    "long_signals": "سیگنال لانگ",
+    "short_signals": "سیگنال شورت",
+    "total_coins": "تعداد ارزها",
+    "neutral": "سیگنال خنثی",
+    "total_volume": "حجم کل",
+    "quick_nav": "ناوبری سریع",
+    "mcap_chart": "ارزش کل بازار کریپتو",
+    "mcap_30d": "۳۰ روز",
+    "mcap_1y": "۱ سال",
+    "mcap_all": "همه",
+    "footnote": "داده‌ها از بایننس و کوین‌گکو — بروزرسانی لحظه‌ای"
   },
   "fear_greed": {
     "title": "شاخص ترس و طمع",

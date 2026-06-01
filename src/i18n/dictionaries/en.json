@@ -5,12 +5,35 @@
     "initials": "CS"
   },
   "nav": {
+    "overview": "Overview",
     "coins": "Coins",
     "indicators": "Indicators",
     "watchlist": "Watchlist",
     "treemap": "Heatmap",
     "fear_greed": "Fear & Greed",
     "coming_soon": "Coming soon..."
+  },
+  "overview": {
+    "title": "Crypto Market Overview",
+    "subtitle": "Real-time market-wide metrics, dominance, and sentiment at a glance",
+    "total_mcap": "Total Market Cap",
+    "volume_24h": "24h Volume",
+    "btc_d": "BTC Dominance (24h)",
+    "eth_d": "ETH Dominance (24h)",
+    "dominance_title": "Market Cap Distribution (24h)",
+    "fear_greed": "Fear & Greed Index",
+    "loading_fng": "Loading...",
+    "long_signals": "long signals",
+    "short_signals": "short signals",
+    "total_coins": "Total Coins",
+    "neutral": "Neutral Signals",
+    "total_volume": "Total Volume",
+    "quick_nav": "Quick Navigation",
+    "mcap_chart": "Crypto Market Cap",
+    "mcap_30d": "30D",
+    "mcap_1y": "1Y",
+    "mcap_all": "All",
+    "footnote": "Data sourced from Binance & CoinGecko — updated in real-time"
   },
   "fear_greed": {
     "title": "Fear & Greed Index",

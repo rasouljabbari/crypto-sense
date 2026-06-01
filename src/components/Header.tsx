@@ -38,7 +38,8 @@ export function Header() {
   }, []);
 
   const navLinks = [
-    { href: "/", label: t("nav.coins") },
+    { href: "/", label: t("nav.overview") },
+    { href: "/coins", label: t("nav.coins") },
     { href: "/indicators", label: t("nav.indicators") },
     { href: "/watchlist", label: t("nav.watchlist") },
     { href: "/treemap", label: t("nav.treemap") },
@@ -70,6 +71,15 @@ export function Header() {
               <Link
                 href="/"
                 className={`px-2.5 py-1.5 rounded-lg transition-colors ${pathname === "/"
+                  ? "bg-emerald-500/15 text-emerald-400 font-medium"
+                  : "text-theme-secondary hover:text-theme-text"
+                  }`}
+              >
+                {t("nav.overview")}
+              </Link>
+              <Link
+                href="/coins"
+                className={`px-2.5 py-1.5 rounded-lg transition-colors ${pathname === "/coins"
                   ? "bg-emerald-500/15 text-emerald-400 font-medium"
                   : "text-theme-secondary hover:text-theme-text"
                   }`}
