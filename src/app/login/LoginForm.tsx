@@ -1,50 +1,22 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-function LoginContent() {
+export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
   const { data: session } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    setReady(true);
-  }, []);
 
   useEffect(() => {
     if (session) router.replace(callbackUrl);
   }, [session, router, callbackUrl]);
-
-  if (!ready) {
-    return (
-      <div style={{
-        minHeight: "100vh",
-        backgroundColor: "#030712",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}>
-        <div style={{
-          width: "24px",
-          height: "24px",
-          border: "2px solid rgba(16, 185, 129, 0.3)",
-          borderTopColor: "#10b981",
-          borderRadius: "50%",
-          animation: "spin 0.6s linear infinite",
-        }} />
-      </div>
-    );
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,14 +37,19 @@ function LoginContent() {
 
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
+      {/* Animated grid background */}
+      <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         backgroundSize: "60px 60px",
       }} />
 
-      <div className="w-full max-w-sm relative">
+      {/* Glow orbs */}
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="w-full max-w-sm relative animate-in fade-in duration-700">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 mb-4 shadow-lg shadow-emerald-500/20">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 mb-4 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400/20">
             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
@@ -81,9 +58,9 @@ function LoginContent() {
           <p className="text-gray-500 text-sm mt-1">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-6 space-y-4 shadow-xl shadow-black/20">
           {error && (
-            <div className="bg-red-900/20 border border-red-500/30 text-red-400 text-sm rounded-lg px-4 py-2.5 text-center">
+            <div className="bg-red-900/20 border border-red-500/30 text-red-400 text-sm rounded-lg px-4 py-2.5 text-center animate-in slide-in-from-top-2 duration-200">
               {error}
             </div>
           )}
@@ -96,7 +73,7 @@ function LoginContent() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full bg-gray-800/80 text-gray-200 text-sm rounded-xl px-4 py-2.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder-gray-600 transition-colors"
+              className="w-full bg-gray-800/80 text-gray-200 text-sm rounded-xl px-4 py-2.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder-gray-600 transition-all duration-200"
             />
           </div>
 
@@ -109,7 +86,7 @@ function LoginContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full bg-gray-800/80 text-gray-200 text-sm rounded-xl pl-4 pr-10 py-2.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder-gray-600 transition-colors"
+                className="w-full bg-gray-800/80 text-gray-200 text-sm rounded-xl pl-4 pr-10 py-2.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder-gray-600 transition-all duration-200"
               />
               <button
                 type="button"
@@ -133,14 +110,17 @@ function LoginContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-medium rounded-xl px-4 py-2.5 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-emerald-500/20"
+            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-medium rounded-xl px-4 py-2.5 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-emerald-500/20 relative overflow-hidden group"
           >
+            <span className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/10 to-emerald-400/0 group-hover:via-emerald-400/20 transition-all duration-500" />
             {loading ? (
-              <span className="flex items-center justify-center gap-2">
+              <span className="flex items-center justify-center gap-2 relative">
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Signing in...
               </span>
-            ) : "Sign in"}
+            ) : (
+              <span className="relative">Sign in</span>
+            )}
           </button>
 
           <p className="text-center text-sm text-gray-500">
@@ -152,30 +132,5 @@ function LoginContent() {
         </form>
       </div>
     </div>
-  );
-}
-
-export function LoginForm() {
-  return (
-    <Suspense fallback={
-      <div style={{
-        minHeight: "100vh",
-        backgroundColor: "#030712",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}>
-        <div style={{
-          width: "24px",
-          height: "24px",
-          border: "2px solid rgba(16, 185, 129, 0.3)",
-          borderTopColor: "#10b981",
-          borderRadius: "50%",
-          animation: "spin 0.6s linear infinite",
-        }} />
-      </div>
-    }>
-      <LoginContent />
-    </Suspense>
   );
 }

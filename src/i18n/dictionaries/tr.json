@@ -69,7 +69,8 @@
     "refresh": "Yenile",
     "refreshing": "Yenileniyor...",
     "light_mode": "Açık mod",
-    "dark_mode": "Koyu mod"
+    "dark_mode": "Koyu mod",
+    "login": "Giriş yap"
   },
   "dashboard": {
     "title": "Kripto Piyasa Analizi",

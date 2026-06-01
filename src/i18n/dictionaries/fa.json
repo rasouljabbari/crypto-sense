@@ -69,7 +69,8 @@
     "refresh": "بروزرسانی",
     "refreshing": "در حال بروزرسانی...",
     "light_mode": "حالت روز",
-    "dark_mode": "حالت شب"
+    "dark_mode": "حالت شب",
+    "login": "ورود"
   },
   "dashboard": {
     "title": "تحلیل بازار ارزهای دیجیتال",

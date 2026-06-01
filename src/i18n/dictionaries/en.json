@@ -69,7 +69,8 @@
     "refresh": "Refresh",
     "refreshing": "Refreshing...",
     "light_mode": "Light mode",
-    "dark_mode": "Dark mode"
+    "dark_mode": "Dark mode",
+    "login": "Sign in"
   },
   "dashboard": {
     "title": "Crypto Market Analysis",

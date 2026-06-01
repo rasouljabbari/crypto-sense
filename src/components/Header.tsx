@@ -3,7 +3,8 @@
 import { Locale, useI18n } from "@/i18n/context";
 import { useTheme } from "@/lib/theme";
 import { useStore } from "@/store/useStore";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import type { Session } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,7 +24,6 @@ export function Header() {
   const { theme, toggleTheme } = useTheme();
   const { data: session, status } = useSession();
   const [langOpen, setLangOpen] = useState(false);
-  const [logoutOpen, setLogoutOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
@@ -126,11 +126,19 @@ export function Header() {
               </Link>
             </nav>
 
-            {/* Desktop Email */}
-            {status === "authenticated" && session?.user?.email && (
-              <span className="hidden lg:inline text-xs text-theme-secondary px-2 truncate max-w-[120px]">
-                {session.user.email}
-              </span>
+            {/* User Icon / Login */}
+            {status === "authenticated" ? (
+              <UserMenu session={session} />
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center justify-center w-8 h-8 rounded-lg bg-theme-card border border-theme text-theme-secondary hover:text-emerald-400 hover:border-emerald-500/30 transition-colors"
+                title={t("header.login")}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+              </Link>
             )}
 
             {/* Language Dropdown */}
@@ -181,19 +189,6 @@ export function Header() {
               )}
             </button>
 
-            {/* Logout */}
-            {status === "authenticated" && (
-              <button
-                onClick={() => setLogoutOpen(true)}
-                className="flex items-center justify-center w-8 h-8 rounded-lg bg-theme-card border border-theme text-theme-secondary hover:text-red-400 hover:bg-red-900/20 hover:border-red-500/30 transition-colors"
-                title="Sign out"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-                </svg>
-              </button>
-            )}
-
             {/* Live indicator + Refresh */}
             <div className="hidden lg:flex items-center gap-2 text-xs text-theme-secondary">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -234,16 +229,6 @@ export function Header() {
       {mobileOpen && (
         <div className="lg:hidden border-t border-theme bg-theme-secondary">
           <div className="max-w-[1460px] mx-auto px-4 py-3 flex flex-col gap-1">
-            {/* User Info */}
-            {status === "authenticated" && session?.user?.email && (
-              <div className="flex items-center gap-3 px-3 py-3 border-b border-theme mb-1">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm font-bold">
-                  {session.user.email[0].toUpperCase()}
-                </div>
-                <span className="text-sm text-theme-text truncate">{session.user.email}</span>
-              </div>
-            )}
-
             {navLinks.map((link) =>
               link.href === "/indicators" ? (
                 <div key={link.href} className="relative group">
@@ -274,6 +259,53 @@ export function Header() {
           </div>
         </div>
       )}
+    </header>
+  );
+}
+
+function UserMenu({ session }: { session: Session }) {
+  const [open, setOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const initial = session.user?.email?.[0]?.toUpperCase() ?? "?";
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-sm font-bold hover:bg-emerald-500/30 transition-colors"
+        title={session.user?.email ?? ""}
+      >
+        {initial}
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-1.5 w-48 bg-theme-secondary border border-theme rounded-lg shadow-xl py-1 z-50">
+          <div className="px-3 py-2 text-xs text-theme-secondary border-b border-theme truncate">
+            {session.user?.email}
+          </div>
+          <button
+            onClick={() => { setOpen(false); setLogoutOpen(true); }}
+            className="flex items-center gap-2 w-full px-3 py-2 text-xs text-left text-red-400 hover:bg-red-900/20 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+            </svg>
+            Sign out
+          </button>
+        </div>
+      )}
 
       <ConfirmModal
         open={logoutOpen}
@@ -281,13 +313,26 @@ export function Header() {
         message="Are you sure you want to sign out?"
         confirmLabel="Sign out"
         cancelLabel="Cancel"
-        onConfirm={() => {
+        onConfirm={async () => {
           setLogoutOpen(false);
           localStorage.clear();
-          signOut({ callbackUrl: "/login" });
+          try {
+            const res = await fetch("/api/auth/csrf");
+            const { csrfToken } = await res.json();
+            await fetch("/api/auth/signout", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({ csrfToken, callbackUrl: "/" }),
+            });
+          } catch {}
+          if (pathname.startsWith("/watchlist")) {
+            window.location.href = "/";
+          } else {
+            window.location.reload();
+          }
         }}
         onCancel={() => setLogoutOpen(false)}
       />
-    </header>
+    </div>
   );
 }

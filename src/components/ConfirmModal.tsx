@@ -21,12 +21,14 @@ export function ConfirmModal({ open, title, message, confirmLabel = "Confirm", c
         <p className="text-sm text-gray-400 mb-6">{message}</p>
         <div className="flex gap-3">
           <button
+            type="button"
             onClick={onCancel}
             className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors"
           >
             {cancelLabel}
           </button>
           <button
+            type="button"
             onClick={onConfirm}
             className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl bg-red-600 hover:bg-red-500 text-white transition-colors"
           >
