@@ -337,7 +337,8 @@
   "footer": {
     "copyright": "© {year} CryptoSense. All rights reserved.",
     "support": "Support:",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "contact": "Bugs & suggestions:"
   },
   "locale": {
     "en": "English",

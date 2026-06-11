@@ -337,7 +337,8 @@
   "footer": {
     "copyright": "© {year} CryptoSense. Tüm hakları saklıdır.",
     "support": "Destek:",
-    "copied": "Kopyalandı!"
+    "copied": "Kopyalandı!",
+    "contact": "Hata ve öneriler:"
   },
   "locale": {
     "en": "English",
