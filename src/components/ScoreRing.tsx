@@ -15,14 +15,6 @@ function scoreColor(value: number): string {
   return "#f87171";
 }
 
-function scoreLabel(value: number): string {
-  if (value >= 80) return "very_bullish";
-  if (value >= 60) return "bullish";
-  if (value >= 40) return "neutral";
-  if (value >= 20) return "bearish";
-  return "very_bearish";
-}
-
 export function ScoreRing({
   value,
   size = 120,
@@ -36,7 +28,7 @@ export function ScoreRing({
 
   return (
     <div
-      className="relative flex flex-col items-center gap-1.5"
+      className="relative flex flex-col items-center justify-center gap-1.5"
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} className="-rotate-90 absolute">
