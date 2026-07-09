@@ -28,13 +28,13 @@ const mockFetchError = (status: number, body: string) => {
 describe("GeminiProvider", () => {
   it("returns text from successful response", async () => {
     mockFetchOk({
-      candidates: [{ content: { parts: [{ text: '{"summary":"test"}' }] } }],
+      candidates: [{ content: { parts: [{ text: '{"executiveSummary":"test"}' }] } }],
     });
 
     const provider = new GeminiProvider({ apiKey: "test-key" });
     const result = await provider.generate("test prompt");
 
-    expect(result).toBe('{"summary":"test"}');
+    expect(result).toBe('{"executiveSummary":"test"}');
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
@@ -56,13 +56,13 @@ describe("GeminiProvider", () => {
 describe("ClaudeProvider", () => {
   it("returns text from successful response", async () => {
     mockFetchOk({
-      content: [{ text: '{"summary":"test"}' }],
+      content: [{ text: '{"executiveSummary":"test"}' }],
     });
 
     const provider = new ClaudeProvider({ apiKey: "test-key" });
     const result = await provider.generate("test prompt");
 
-    expect(result).toBe('{"summary":"test"}');
+    expect(result).toBe('{"executiveSummary":"test"}');
   });
 
   it("throws on API error", async () => {
@@ -94,13 +94,13 @@ describe("ClaudeProvider", () => {
 describe("OllamaProvider", () => {
   it("returns text from successful response", async () => {
     mockFetchOk({
-      message: { content: '{"summary":"test"}' },
+      message: { content: '{"executiveSummary":"test"}' },
     });
 
     const provider = new OllamaProvider({ apiKey: "" });
     const result = await provider.generate("test prompt");
 
-    expect(result).toBe('{"summary":"test"}');
+    expect(result).toBe('{"executiveSummary":"test"}');
   });
 
   it("throws on API error", async () => {
@@ -130,14 +130,12 @@ describe("OllamaProvider", () => {
 
 describe("OpenAIProvider", () => {
   it("throws when openai client returns empty choices", async () => {
-    vi.mock("openai", () => ({
-      default: vi.fn().mockImplementation(() => ({
-        chat: {
-          completions: {
-            create: vi.fn().mockResolvedValue({ choices: [] }),
-          },
-        },
-      })),
+    const mockCreate = vi.fn().mockResolvedValue({ choices: [] });
+
+    vi.doMock("openai", () => ({
+      default: class {
+        chat = { completions: { create: mockCreate } };
+      },
     }));
 
     const { OpenAIProvider: OAI } = await import("../providers/openai");
@@ -147,14 +145,12 @@ describe("OpenAIProvider", () => {
   });
 
   it("throws when openai returns no content", async () => {
-    vi.mock("openai", () => ({
-      default: vi.fn().mockImplementation(() => ({
-        chat: {
-          completions: {
-            create: vi.fn().mockResolvedValue({ choices: [{ message: { content: null } }] }),
-          },
-        },
-      })),
+    const mockCreate = vi.fn().mockResolvedValue({ choices: [{ message: { content: null } }] });
+
+    vi.doMock("openai", () => ({
+      default: class {
+        chat = { completions: { create: mockCreate } };
+      },
     }));
 
     const { OpenAIProvider: OAI } = await import("../providers/openai");

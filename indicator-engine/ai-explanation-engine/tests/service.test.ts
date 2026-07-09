@@ -68,12 +68,13 @@ describe("AnalysisExplanationService", () => {
   it("returns parsed explanation from provider response", async () => {
     const provider = makeMockProvider(
       JSON.stringify({
-        summary: "Bullish momentum with moderate risk",
+        executiveSummary: "Bullish momentum with moderate risk",
         whyBuy: ["RSI in neutral zone leaving room for upside", "MACD bullish crossover"],
         whySell: ["Resistance near 51000"],
+        marketSituation: "Price trading above key moving averages",
+        mainRisks: ["ADX below 30 suggests weak trend conviction"],
         opportunities: ["Breakout above 51000 could trigger momentum"],
-        risks: ["ADX below 30 suggests weak trend conviction"],
-        newsSummary: "",
+        shortConclusion: "Favorable setup with manageable risk",
         disclaimer: "This is not financial advice.",
       })
     );
@@ -81,32 +82,36 @@ describe("AnalysisExplanationService", () => {
     const service = new AnalysisExplanationService(provider);
     const result = await service.generate(makeMinimalAnalysis());
 
-    expect(result.summary).toBe("Bullish momentum with moderate risk");
+    expect(result.executiveSummary).toBe("Bullish momentum with moderate risk");
     expect(result.whyBuy).toHaveLength(2);
     expect(result.whySell).toHaveLength(1);
+    expect(result.marketSituation).toBe("Price trading above key moving averages");
+    expect(result.mainRisks).toHaveLength(1);
+    expect(result.opportunities).toHaveLength(1);
+    expect(result.shortConclusion).toBe("Favorable setup with manageable risk");
     expect(result.disclaimer).toBe("This is not financial advice.");
   });
 
   it("handles markdown-wrapped JSON in response", async () => {
     const provider = makeMockProvider(
-      "```json\n{\"summary\":\"test\"}\n```"
+      '```json\n{"executiveSummary":"test","marketSituation":"","shortConclusion":"","whyBuy":[],"whySell":[],"mainRisks":[],"opportunities":[]}\n```'
     );
 
     const service = new AnalysisExplanationService(provider);
     const result = await service.generate(makeMinimalAnalysis());
 
-    expect(result.summary).toBe("test");
+    expect(result.executiveSummary).toBe("test");
   });
 
   it("handles code-fence without language tag", async () => {
     const provider = makeMockProvider(
-      "```\n{\"summary\":\"test\"}\n```"
+      '```\n{"executiveSummary":"test","marketSituation":"","shortConclusion":"","whyBuy":[],"whySell":[],"mainRisks":[],"opportunities":[]}\n```'
     );
 
     const service = new AnalysisExplanationService(provider);
     const result = await service.generate(makeMinimalAnalysis());
 
-    expect(result.summary).toBe("test");
+    expect(result.executiveSummary).toBe("test");
   });
 
   it("provides default values when fields are missing", async () => {
@@ -115,9 +120,12 @@ describe("AnalysisExplanationService", () => {
     const service = new AnalysisExplanationService(provider);
     const result = await service.generate(makeMinimalAnalysis());
 
-    expect(result.summary).toBe("");
+    expect(result.executiveSummary).toBe("");
     expect(result.whyBuy).toEqual([]);
     expect(result.whySell).toEqual([]);
+    expect(result.marketSituation).toBe("");
+    expect(result.mainRisks).toEqual([]);
+    expect(result.shortConclusion).toBe("");
     expect(result.disclaimer).toBeTruthy();
   });
 

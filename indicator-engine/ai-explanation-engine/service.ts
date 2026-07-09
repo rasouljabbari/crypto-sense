@@ -21,12 +21,13 @@ function parseExplanation(raw: string): AnalysisExplanation {
   const parsed = JSON.parse(cleaned) as Partial<AnalysisExplanation>;
 
   return {
-    summary: parsed.summary ?? "",
+    executiveSummary: parsed.executiveSummary ?? "",
     whyBuy: Array.isArray(parsed.whyBuy) ? parsed.whyBuy : [],
     whySell: Array.isArray(parsed.whySell) ? parsed.whySell : [],
+    marketSituation: parsed.marketSituation ?? "",
+    mainRisks: Array.isArray(parsed.mainRisks) ? parsed.mainRisks : [],
     opportunities: Array.isArray(parsed.opportunities) ? parsed.opportunities : [],
-    risks: Array.isArray(parsed.risks) ? parsed.risks : [],
-    newsSummary: parsed.newsSummary ?? "",
+    shortConclusion: parsed.shortConclusion ?? "",
     disclaimer: parsed.disclaimer ?? "Trading carries substantial risk. This analysis is for informational purposes only and does not constitute financial advice.",
   };
 }

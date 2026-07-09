@@ -62,15 +62,16 @@ function makeSampleAnalysis(): MarketAnalysisResult {
 describe("buildPrompt", () => {
   it("contains the instruction rules", () => {
     const prompt = buildPrompt(makeSampleAnalysis());
-    expect(prompt).toContain("Never invent numbers");
-    expect(prompt).toContain("Never change calculated values");
-    expect(prompt).toContain("Maximum 250 words");
+    expect(prompt).toContain("NEVER invent numbers");
+    expect(prompt).toContain("NEVER change any provided value");
+    expect(prompt).toContain("NEVER calculate indicators");
+    expect(prompt).toContain("Maximum 200 words");
     expect(prompt).toContain("Return ONLY valid JSON");
   });
 
   it("contains all indicator values", () => {
     const prompt = buildPrompt(makeSampleAnalysis());
-    expect(prompt).toContain("RSI: 55");
+    expect(prompt).toContain("RSI(14): 55");
     expect(prompt).toContain("MACD");
     expect(prompt).toContain("ADX");
     expect(prompt).toContain("Trend Direction: bullish");
@@ -93,12 +94,26 @@ describe("buildPrompt", () => {
   });
 
   it("skips trade setup section when entry is 0", () => {
-    const analysis = makeSampleAnalysis();
-    analysis.tradeSetup.entry = 0;
-    analysis.tradeSetup.validation.isValid = false;
+    const base = makeSampleAnalysis();
+    const analysis: MarketAnalysisResult = {
+      ...base,
+      tradeSetup: {
+        ...base.tradeSetup,
+        entry: 0,
+        validation: { ...base.tradeSetup.validation, isValid: false },
+      },
+    };
 
     const prompt = buildPrompt(analysis);
-    expect(prompt).not.toContain("Trade Setup:");
+    expect(prompt).not.toContain("TRADE SETUP:");
+  });
+
+  it("includes new output schema fields", () => {
+    const prompt = buildPrompt(makeSampleAnalysis());
+    expect(prompt).toContain("executiveSummary");
+    expect(prompt).toContain("marketSituation");
+    expect(prompt).toContain("shortConclusion");
+    expect(prompt).toContain("mainRisks");
   });
 
   it("does not mutate input", () => {
