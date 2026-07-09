@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "indicator-engine": ["./indicator-engine/index.ts"],
+      "indicator-engine/*": ["./indicator-engine/*"]
     }
   },
   "include": [

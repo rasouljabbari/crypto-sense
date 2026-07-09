@@ -72,10 +72,8 @@
     "dark_mode": "حالت شب",
     "login": "ورود"
   },
-  "dashboard": {
+  "coins_page": {
     "title": "تحلیل بازار ارزهای دیجیتال",
-    "subtitle_live": "داده‌های زنده از بایننس — بروزرسانی لحظه‌ای قیمت از طریق WebSocket",
-    "subtitle_simulated": "استفاده از داده‌های شبیه‌سازی‌شده — برای قیمت‌های زنده به API بایننس متصل شوید",
     "stats": {
       "total_coins": "تعداد ارزهای تحت نظر",
       "long_opportunities": "فرصت‌های لانگ",
@@ -339,6 +337,118 @@
     "support": "حمایت:",
     "copied": "کپی شد!",
     "contact": "باگ و پیشنهادات:"
+  },
+  "dashboard": {
+    "title": "داشبورد تحلیل",
+    "subtitle": "تحلیل تکنیکال بلادرنگ، امتیازدهی و بینش‌های مبتنی بر هوش مصنوعی",
+    "cards": {
+      "crypto_score": "امتیاز رمزارز",
+      "signal": "سیگنال",
+      "confidence": "اطمینان",
+      "trend": "روند",
+      "risk": "ریسک",
+      "entry": "ورود",
+      "take_profit": "حد سود",
+      "stop_loss": "حد ضرر",
+      "indicators": "شاخص‌ها"
+    },
+    "score": {
+      "overall": "امتیاز کلی",
+      "technical": "تکنیکال",
+      "trend": "روند",
+      "momentum": "شتاب",
+      "volume": "حجم",
+      "sentiment": "احساسات",
+      "risk": "ریسک",
+      "confidence": "اطمینان"
+    },
+    "signal": {
+      "strong_buy": "خرید قوی",
+      "buy": "خرید",
+      "neutral": "خنثی",
+      "sell": "فروش",
+      "strong_sell": "فروش قوی",
+      "confidence": "اطمینان",
+      "no_data": "داده سیگنال موجود نیست"
+    },
+    "trend": {
+      "direction": "جهت",
+      "strength": "قدرت",
+      "strong": "قوی",
+      "weak": "ضعیف",
+      "ranging": "رِِنج",
+      "trending": "رونددار",
+      "bullish": "صعودی",
+      "bearish": "نزولی",
+      "neutral": "خنثی",
+      "ema_alignment": "هم‌راستایی EMA"
+    },
+    "risk": {
+      "score": "امتیاز ریسک",
+      "volatility": "نوسان",
+      "liquidity": "نقدشوندگی",
+      "sr_levels": "سطوح مقاومت/حمایت",
+      "support": "حمایت",
+      "resistance": "مقاومت",
+      "safer": "ایمن‌تر",
+      "riskier": "پرریسک‌تر"
+    },
+    "market": {
+      "price": "قیمت",
+      "change_24h": "تغییر ۲۴ ساعته",
+      "volume_24h": "حجم ۲۴ ساعته",
+      "high_24h": "بیشترین ۲۴ ساعت",
+      "low_24h": "کمترین ۲۴ ساعت"
+    },
+    "technical": {
+      "rsi": "RSI (۱۴)",
+      "macd": "MACD",
+      "bollinger": "بولیگر",
+      "overbought": "خرید بیش از حد",
+      "oversold": "فروش بیش از حد",
+      "bullish": "صعودی",
+      "bearish": "نزولی",
+      "above": "بالاتر",
+      "below": "پایین‌تر",
+      "inside": "داخل"
+    },
+    "trade": {
+      "long": "لانگ",
+      "short": "شورت",
+      "risk_reward": "R:R",
+      "risk_amount": "ریسک",
+      "risk_percent": "درصد ریسک",
+      "invalid": "سیگنال فعلی قابل معامله نیست"
+    },
+    "indicators": {
+      "status": {
+        "positive": "صعودی",
+        "negative": "نزولی",
+        "neutral": "خنثی",
+        "warning": "هشدار"
+      }
+    },
+    "news": {
+      "articles": "مقالات",
+      "duplicates_removed": "تکراری‌های حذف شده",
+      "topics": "موضوعات",
+      "no_news": "خبری موجود نیست"
+    },
+    "ai_summary": {
+      "no_key": "برای تحلیل هوش مصنوعی OPENAI_API_KEY را تنظیم کنید",
+      "no_data": "داده تحلیلی موجود نیست",
+      "loading": "در حال تولید تحلیل...",
+      "error": "تولید تحلیل ناموفق بود",
+      "generate": "تولید تحلیل هوش مصنوعی"
+    },
+    "loading": "در حال بارگذاری...",
+    "no_data": "داده‌ای موجود نیست",
+    "enter_coin": "یک نماد رمزارز وارد کنید",
+    "search": {
+      "placeholder": "BTCUSDT, bitcoin, BTC...",
+      "examples": "BTCUSDT, bitcoin, ETH, solana...",
+      "analyze": "تحلیل"
+    }
   },
   "locale": {
     "en": "English",

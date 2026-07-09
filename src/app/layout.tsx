@@ -2,6 +2,7 @@ import { SessionProvider } from "@/components/SessionProvider";
 import { Footer } from "@/components/Footer";
 import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/lib/theme";
+import { QueryProvider } from "@/components/QueryProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Vazirmatn } from "next/font/google";
 import "./globals.css";
@@ -40,14 +41,16 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${vazirmatn.variable}`}>
       <body className="min-h-screen bg-theme-bg text-theme-text antialiased">
-        <ThemeProvider>
-          <I18nProvider>
-            <SessionProvider>
-              {children}
-              <Footer />
-            </SessionProvider>
-          </I18nProvider>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <I18nProvider>
+              <SessionProvider>
+                {children}
+                <Footer />
+              </SessionProvider>
+            </I18nProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

@@ -72,10 +72,8 @@
     "dark_mode": "Koyu mod",
     "login": "Giriş yap"
   },
-  "dashboard": {
+  "coins_page": {
     "title": "Kripto Piyasa Analizi",
-    "subtitle_live": "Binance'den canlı veri — WebSocket ile gerçek zamanlı fiyat güncellemeleri",
-    "subtitle_simulated": "Simüle edilmiş veri kullanılıyor — canlı fiyatlar için Binance API'ye bağlanın",
     "stats": {
       "total_coins": "Takip Edilen Coinler",
       "long_opportunities": "Long Fırsatları",
@@ -339,6 +337,118 @@
     "support": "Destek:",
     "copied": "Kopyalandı!",
     "contact": "Hata ve öneriler:"
+  },
+  "dashboard": {
+    "title": "Analiz Paneli",
+    "subtitle": "Gerçek zamanlı teknik analiz, puanlama ve AI destekli içgörüler",
+    "cards": {
+      "crypto_score": "Kripto Puanı",
+      "signal": "Sinyal",
+      "confidence": "Güven",
+      "trend": "Trend",
+      "risk": "Risk",
+      "entry": "Giriş",
+      "take_profit": "Kar Al",
+      "stop_loss": "Zarar Durdur",
+      "indicators": "Göstergeler"
+    },
+    "score": {
+      "overall": "Genel Puan",
+      "technical": "Teknik",
+      "trend": "Trend",
+      "momentum": "Momentum",
+      "volume": "Hacim",
+      "sentiment": "Duygu",
+      "risk": "Risk",
+      "confidence": "Güven"
+    },
+    "signal": {
+      "strong_buy": "Güçlü Al",
+      "buy": "Al",
+      "neutral": "Nötr",
+      "sell": "Sat",
+      "strong_sell": "Güçlü Sat",
+      "confidence": "Güven",
+      "no_data": "Sinyal verisi yok"
+    },
+    "trend": {
+      "direction": "Yön",
+      "strength": "Güç",
+      "strong": "Güçlü",
+      "weak": "Zayıf",
+      "ranging": "Yatay",
+      "trending": "Trendli",
+      "bullish": "Yükseliş",
+      "bearish": "Düşüş",
+      "neutral": "Nötr",
+      "ema_alignment": "EMA Hizalaması"
+    },
+    "risk": {
+      "score": "Risk Puanı",
+      "volatility": "Oynaklık",
+      "liquidity": "Likidite",
+      "sr_levels": "D/D Seviyeleri",
+      "support": "Destek",
+      "resistance": "Direnç",
+      "safer": "Daha Güvenli",
+      "riskier": "Daha Riskli"
+    },
+    "market": {
+      "price": "Fiyat",
+      "change_24h": "24s Değişim",
+      "volume_24h": "24s Hacim",
+      "high_24h": "24s En Yüksek",
+      "low_24h": "24s En Düşük"
+    },
+    "technical": {
+      "rsi": "RSI (14)",
+      "macd": "MACD",
+      "bollinger": "Bollinger",
+      "overbought": "Aşırı Alım",
+      "oversold": "Aşırı Satım",
+      "bullish": "Yükseliş",
+      "bearish": "Düşüş",
+      "above": "Üstünde",
+      "below": "Altında",
+      "inside": "İçinde"
+    },
+    "trade": {
+      "long": "Long",
+      "short": "Short",
+      "risk_reward": "R:R",
+      "risk_amount": "Risk",
+      "risk_percent": "Risk %",
+      "invalid": "Mevcut sinyal için geçerli işlem kurulumu yok"
+    },
+    "indicators": {
+      "status": {
+        "positive": "Yükseliş",
+        "negative": "Düşüş",
+        "neutral": "Nötr",
+        "warning": "Uyarı"
+      }
+    },
+    "news": {
+      "articles": "Makaleler",
+      "duplicates_removed": "Kopyalar silindi",
+      "topics": "Konular",
+      "no_news": "Haber bulunamadı"
+    },
+    "ai_summary": {
+      "no_key": "AI analizi için OPENAI_API_KEY yapılandırın",
+      "no_data": "Analiz verisi yok",
+      "loading": "Analiz oluşturuluyor...",
+      "error": "Analiz oluşturulamadı",
+      "generate": "AI Analizi Oluştur"
+    },
+    "loading": "Yükleniyor...",
+    "no_data": "Veri mevcut değil",
+    "enter_coin": "Bir coin sembolü girin",
+    "search": {
+      "placeholder": "BTCUSDT, bitcoin, BTC...",
+      "examples": "BTCUSDT, bitcoin, ETH, solana...",
+      "analyze": "Analiz Et"
+    }
   },
   "locale": {
     "en": "English",

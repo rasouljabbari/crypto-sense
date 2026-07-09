@@ -72,10 +72,8 @@
     "dark_mode": "Dark mode",
     "login": "Sign in"
   },
-  "dashboard": {
+  "coins_page": {
     "title": "Crypto Market Analysis",
-    "subtitle_live": "Live data from Binance — real-time price updates via WebSocket",
-    "subtitle_simulated": "Using simulated data — connect to Binance API for live prices",
     "stats": {
       "total_coins": "Total Coins Tracked",
       "long_opportunities": "Long Opportunities",
@@ -339,6 +337,118 @@
     "support": "Support:",
     "copied": "Copied!",
     "contact": "Bugs & suggestions:"
+  },
+  "dashboard": {
+    "title": "Analysis Dashboard",
+    "subtitle": "Real-time technical analysis, scoring, and AI-powered insights",
+    "cards": {
+      "crypto_score": "Crypto Score",
+      "signal": "Signal",
+      "confidence": "Confidence",
+      "trend": "Trend",
+      "risk": "Risk",
+      "entry": "Entry",
+      "take_profit": "Take Profit",
+      "stop_loss": "Stop Loss",
+      "indicators": "Indicators"
+    },
+    "score": {
+      "overall": "Overall Score",
+      "technical": "Technical",
+      "trend": "Trend",
+      "momentum": "Momentum",
+      "volume": "Volume",
+      "sentiment": "Sentiment",
+      "risk": "Risk",
+      "confidence": "Confidence"
+    },
+    "signal": {
+      "strong_buy": "Strong Buy",
+      "buy": "Buy",
+      "neutral": "Neutral",
+      "sell": "Sell",
+      "strong_sell": "Strong Sell",
+      "confidence": "Confidence",
+      "no_data": "No signal data"
+    },
+    "trend": {
+      "direction": "Direction",
+      "strength": "Strength",
+      "strong": "Strong",
+      "weak": "Weak",
+      "ranging": "Ranging",
+      "trending": "Trending",
+      "bullish": "Bullish",
+      "bearish": "Bearish",
+      "neutral": "Neutral",
+      "ema_alignment": "EMA Alignment"
+    },
+    "risk": {
+      "score": "Risk Score",
+      "volatility": "Volatility",
+      "liquidity": "Liquidity",
+      "sr_levels": "S/R Levels",
+      "support": "Support",
+      "resistance": "Resistance",
+      "safer": "Safer",
+      "riskier": "Riskier"
+    },
+    "market": {
+      "price": "Price",
+      "change_24h": "24h Change",
+      "volume_24h": "24h Volume",
+      "high_24h": "24h High",
+      "low_24h": "24h Low"
+    },
+    "technical": {
+      "rsi": "RSI (14)",
+      "macd": "MACD",
+      "bollinger": "Bollinger",
+      "overbought": "Overbought",
+      "oversold": "Oversold",
+      "bullish": "Bullish",
+      "bearish": "Bearish",
+      "above": "Above",
+      "below": "Below",
+      "inside": "Inside"
+    },
+    "trade": {
+      "long": "Long",
+      "short": "Short",
+      "risk_reward": "R:R",
+      "risk_amount": "Risk",
+      "risk_percent": "Risk %",
+      "invalid": "No valid trade setup for current signal"
+    },
+    "indicators": {
+      "status": {
+        "positive": "Bullish",
+        "negative": "Bearish",
+        "neutral": "Neutral",
+        "warning": "Alert"
+      }
+    },
+    "news": {
+      "articles": "Articles",
+      "duplicates_removed": "Duplicates removed",
+      "topics": "Topics",
+      "no_news": "No news available"
+    },
+    "ai_summary": {
+      "no_key": "Configure OPENAI_API_KEY for AI analysis",
+      "no_data": "No analysis data",
+      "loading": "Generating analysis...",
+      "error": "Failed to generate analysis",
+      "generate": "Generate AI Analysis"
+    },
+    "loading": "Loading...",
+    "no_data": "No data available",
+    "enter_coin": "Enter a coin symbol to begin",
+    "search": {
+      "placeholder": "BTCUSDT, bitcoin, BTC...",
+      "examples": "BTCUSDT, bitcoin, ETH, solana...",
+      "analyze": "Analyze"
+    }
   },
   "locale": {
     "en": "English",

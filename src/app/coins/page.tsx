@@ -27,7 +27,7 @@ export default function CoinsPage() {
       <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-white">{t("dashboard.title")}</h2>
+            <h2 className="text-2xl font-bold text-white">{t("coins_page.title")}</h2>
             {isLive && (
               <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-400 bg-emerald-900/20 px-2 py-0.5 rounded-full border border-emerald-500/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -38,10 +38,10 @@ export default function CoinsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label={t("dashboard.stats.total_coins")} value={coins.length.toString()} icon={<CoinsIcon />} />
-          <StatCard label={t("dashboard.stats.long_opportunities")} value={longCount.toString()} gradient="from-emerald-500 to-emerald-600" icon={<LongIcon />} />
-          <StatCard label={t("dashboard.stats.short_opportunities")} value={shortCount.toString()} gradient="from-red-500 to-red-600" icon={<ShortIcon />} />
-          <StatCard label={t("dashboard.stats.data_source")} value={isLive ? t("dashboard.stats.binance_api") : t("dashboard.stats.simulated")} icon={<BinanceIcon />} />
+          <StatCard label={t("coins_page.stats.total_coins")} value={coins.length.toString()} icon={<CoinsIcon />} />
+          <StatCard label={t("coins_page.stats.long_opportunities")} value={longCount.toString()} gradient="from-emerald-500 to-emerald-600" icon={<LongIcon />} />
+          <StatCard label={t("coins_page.stats.short_opportunities")} value={shortCount.toString()} gradient="from-red-500 to-red-600" icon={<ShortIcon />} />
+          <StatCard label={t("coins_page.stats.data_source")} value={isLive ? t("coins_page.stats.binance_api") : t("coins_page.stats.simulated")} icon={<BinanceIcon />} />
         </div>
 
         <div className="mb-6">
