@@ -53,6 +53,7 @@ export interface ValidationResult {
 }
 
 export interface TradeSetupResult {
+  readonly hasTrade: boolean;
   readonly direction: TradeDirection;
   readonly entry: number;
   readonly stopLoss: number;

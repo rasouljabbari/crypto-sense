@@ -2,8 +2,8 @@
 
 import { CandlestickChart } from "@/components/CandlestickChart";
 import { CoinImage } from "@/components/CoinImage";
-import { Header } from "@/components/Header";
 import { OrderBook } from "@/components/OrderBook";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
 import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
 import { calcRSI, calculateTechnicalIndicatorsFromKlines, estimatePosition } from "@/lib/indicators";
@@ -84,24 +84,22 @@ export default function CoinDetailPage({ params }: { params: Promise<{ id: strin
 
   if (!storeCoin && fbLoading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-gray-100">
-        <Header />
-        <div className="max-w-[1460px] mx-auto px-4 py-20 text-center">
+      <DashboardLayout>
+        <div className="py-20 text-center">
           <div className="w-6 h-6 mx-auto border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!storeCoin && !fallback && !fbLoading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-gray-100">
-        <Header />
-        <div className="max-w-[1460px] mx-auto px-4 py-20 text-center">
+      <DashboardLayout>
+        <div className="py-20 text-center">
           <h2 className="text-2xl font-bold mb-2">{t("coin_detail.not_found")}</h2>
           <Link href="/" className="text-emerald-400 hover:underline">{t("coin_detail.back_dashboard")}</Link>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -141,9 +139,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
   const display = realTi ?? ti;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <Header />
-      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
         <button onClick={() => window.history.back()} className="text-gray-400 hover:text-gray-200 text-sm mb-6 inline-flex items-center gap-1">
           <span>{dir === "rtl" ? "→" : "←"}</span>
           {t("coin_detail.back")}
@@ -364,8 +360,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
         <div className="mt-6">
           <OrderBook symbol={COIN_SYMBOL_MAP[coin.coinId] || `${md.symbol}USDT`} />
         </div>
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }
 
@@ -388,9 +383,7 @@ function FallbackDetail({ data }: { data: FallbackData }) {
           data.rsi < 40 ? "text-cyan-400" : "text-gray-300";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <Header />
-      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
         <button onClick={() => window.history.back()} className="text-gray-400 hover:text-gray-200 text-sm mb-6 inline-flex items-center gap-1">
           <span>{dir === "rtl" ? "→" : "←"}</span>
           {t("coin_detail.back")}
@@ -488,8 +481,7 @@ function FallbackDetail({ data }: { data: FallbackData }) {
         <div className="text-center py-8 text-sm text-gray-600">
           {t("coin_detail.fallback_message")}
         </div>
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }
 

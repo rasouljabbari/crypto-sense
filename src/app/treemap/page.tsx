@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@/components/Header";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import dynamic from "next/dynamic";
 
 const TreemapChart = dynamic(() => import("@/components/TreemapChart").then(m => m.TreemapChart), { ssr: false });
@@ -20,9 +20,7 @@ export default function TreemapPage() {
   }, [loadFromBinance]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <Header />
-      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
         <Link href="/" className="text-gray-400 hover:text-gray-200 text-sm mb-6 inline-flex items-center gap-1">
           <span>{dir === "rtl" ? "→" : "←"}</span>
           {t("indicators.back")}
@@ -52,7 +50,6 @@ export default function TreemapPage() {
             <TreemapChart coins={coins} />
           </div>
         )}
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }

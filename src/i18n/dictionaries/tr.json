@@ -11,7 +11,10 @@
     "watchlist": "İzleme Listesi",
     "treemap": "Isı Haritası",
     "fear_greed": "Korku & Açgözlülük",
-    "coming_soon": "Çok yakında..."
+    "coming_soon": "Çok yakında...",
+    "coin_analysis": "Coin Analizi",
+    "sidebar_section_main": "Ana Menü",
+    "sidebar_section_market": "Piyasa"
   },
   "overview": {
     "title": "Kripto Piyasa Genel Görünümü",
@@ -449,6 +452,58 @@
       "examples": "BTCUSDT, bitcoin, ETH, solana...",
       "analyze": "Analiz Et"
     }
+  },
+  "coin_analysis": {
+    "title": "Coin Analizi",
+    "subtitle": "Detaylı piyasa analizi ve öneriler için bir kripto para arayın",
+    "empty_title": "Analize başlamak için bir coin seçin",
+    "empty_description": "Yukarıda bir coin adı veya sembolü yazın ya da popüler coinlerden birine tıklayın.",
+    "analyzing_title": "{{coin}} analiz ediliyor...",
+    "analyzing_description": "Piyasa verisi alınıyor ve analiz hazırlanıyor.",
+    "error_title": "Analiz kullanılamıyor",
+    "no_result_title": "Coin bulunamadı",
+    "no_result_description": "{{coin}} için veri mevcut değil. Sembolü kontrol edin ve tekrar deneyin.",
+    "score": {
+      "overall": "Genel Skor",
+      "signal": "Sinyal",
+      "confidence": "Güven"
+    },
+    "trade": {
+      "entry": "İşlem Kurulumu",
+      "stop_loss": "Zarar Durdur",
+      "tp1": "KP 1",
+      "tp2": "KP 2",
+      "tp3": "KP 3",
+      "direction": "Yön"
+    },
+    "market": {
+      "title": "Piyasa",
+      "price": "Güncel Fiyat",
+      "trend": "Trend",
+      "volume": "Hacim (24s)",
+      "high": "En Yüksek",
+      "low": "En Düşük"
+    },
+    "indicators": {
+      "title": "Teknik Göstergeler"
+    },
+    "explanation": {
+      "title": "Analiz Açıklaması",
+      "strengths": "Güçlü Yönler",
+      "weaknesses": "Zayıf Yönler",
+      "risks": "Ana Riskler",
+      "opportunities": "Fırsatlar",
+      "recommendation": "Öneri"
+    }
+  },
+  "coin_search": {
+    "label": "Kripto Para Ara",
+    "placeholder": "BTC, ETH, SOL ara...",
+    "button": "Analiz Et",
+    "popular": "Popüler",
+    "recent": "Son Aramalar",
+    "no_results": "Aramanızla eşleşen coin bulunamadı",
+    "clear_all": "Tümünü temizle"
   },
   "locale": {
     "en": "English",

@@ -16,4 +16,4 @@ export { calculateRiskReward } from "./riskreward-engine";
 export { calculatePositionSize } from "./position-size-engine";
 export { calculateTradeQuality } from "./trade-quality-engine";
 export { calculateExpectedProfit } from "./expected-profit-engine";
-export { validateSetup } from "./validation-engine";
+export { validatePreConditions, validateSetup } from "./validation-engine";

@@ -156,7 +156,7 @@ export function buildDashboardViewModel(
   ] as const;
 
   const riskPercent =
-    tradeSetup.entry > 0
+    tradeSetup.hasTrade && tradeSetup.entry > 0
       ? (Math.abs(tradeSetup.entry - tradeSetup.stopLoss) / tradeSetup.entry) * 100
       : 0;
 
@@ -193,39 +193,84 @@ export function buildDashboardViewModel(
       directionLabel: t(`dashboard.trend.${indicators.trendDirection}`),
       factors: mapFactors(trend.factors.slice(0, 3), "pts"),
     },
+    dimensionScores: {
+      trend: {
+        label: t("dashboard.score.trend"),
+        value: scores.breakdown.trend.value,
+        status: scores.breakdown.trend.status,
+        explanation: scores.breakdown.trend.explanation,
+        reasons: scores.breakdown.trend.factors.map((f) => f.reason),
+      },
+      momentum: {
+        label: t("dashboard.score.momentum"),
+        value: scores.breakdown.momentum.value,
+        status: scores.breakdown.momentum.status,
+        explanation: scores.breakdown.momentum.explanation,
+        reasons: scores.breakdown.momentum.factors.map((f) => f.reason),
+      },
+      volume: {
+        label: t("dashboard.score.volume"),
+        value: scores.breakdown.volume.value,
+        status: scores.breakdown.volume.status,
+        explanation: scores.breakdown.volume.explanation,
+        reasons: scores.breakdown.volume.factors.map((f) => f.reason),
+      },
+      volatility: {
+        label: "Volatility",
+        value: Math.max(0, Math.min(100, Math.round(50 + (100 - scores.breakdown.volume.value)))),
+        status: "—",
+        explanation: "",
+        reasons: [],
+      },
+      risk: {
+        label: t("dashboard.score.risk"),
+        value: scores.breakdown.risk.value,
+        status: scores.breakdown.risk.status,
+        explanation: scores.breakdown.risk.explanation,
+        reasons: scores.breakdown.risk.factors.map((f) => f.reason),
+      },
+    },
     entry: {
-      price: formatPrice(tradeSetup.entry),
-      direction: tradeSetup.direction,
-      directionLabel: t(`dashboard.trade.${tradeSetup.direction}`),
-      isValid: tradeSetup.validation.isValid,
+      price: tradeSetup.hasTrade ? formatPrice(tradeSetup.entry) : "—",
+      direction: tradeSetup.hasTrade ? tradeSetup.direction : "long",
+      directionLabel: tradeSetup.hasTrade
+        ? t(`dashboard.trade.${tradeSetup.direction}`)
+        : "—",
+      isValid: tradeSetup.hasTrade,
       reason: tradeSetup.validation.reason,
     },
     takeProfit: {
-      levels: [
-        {
-          label: "TP1",
-          price: formatPrice(tradeSetup.takeProfit.tp1),
-          riskReward: formatRiskReward(tradeSetup.riskReward.tp1),
-        },
-        {
-          label: "TP2",
-          price: formatPrice(tradeSetup.takeProfit.tp2),
-          riskReward: formatRiskReward(tradeSetup.riskReward.tp2),
-        },
-        {
-          label: "TP3",
-          price: formatPrice(tradeSetup.takeProfit.tp3),
-          riskReward: formatRiskReward(tradeSetup.riskReward.tp3),
-        },
-      ],
-      isValid: tradeSetup.validation.isValid,
+      levels: tradeSetup.hasTrade
+        ? [
+            {
+              label: "TP1",
+              price: formatPrice(tradeSetup.takeProfit.tp1),
+              riskReward: formatRiskReward(tradeSetup.riskReward.tp1),
+            },
+            {
+              label: "TP2",
+              price: formatPrice(tradeSetup.takeProfit.tp2),
+              riskReward: formatRiskReward(tradeSetup.riskReward.tp2),
+            },
+            {
+              label: "TP3",
+              price: formatPrice(tradeSetup.takeProfit.tp3),
+              riskReward: formatRiskReward(tradeSetup.riskReward.tp3),
+            },
+          ]
+        : [
+            { label: "TP1", price: "—", riskReward: "—" },
+            { label: "TP2", price: "—", riskReward: "—" },
+            { label: "TP3", price: "—", riskReward: "—" },
+          ],
+      isValid: tradeSetup.hasTrade,
       reason: tradeSetup.validation.reason,
     },
     stopLoss: {
-      price: formatPrice(tradeSetup.stopLoss),
-      riskAmount: formatPrice(tradeSetup.risk),
-      riskPercent: formatPercent(riskPercent),
-      isValid: tradeSetup.validation.isValid,
+      price: tradeSetup.hasTrade ? formatPrice(tradeSetup.stopLoss) : "—",
+      riskAmount: tradeSetup.hasTrade ? formatPrice(tradeSetup.risk) : "—",
+      riskPercent: tradeSetup.hasTrade ? formatPercent(riskPercent) : "—",
+      isValid: tradeSetup.hasTrade,
       reason: tradeSetup.validation.reason,
     },
     indicators: {

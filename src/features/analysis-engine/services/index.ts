@@ -32,12 +32,5 @@ export type {
 export { buildTradeSetup } from "./tradeSetup";
 export type { TradeSetupResult } from "indicator-engine/risk-management-engine";
 
-export { analyzeNewsWithGpt, getApiKeyStatus, writeAnalysis } from "./ai";
-export type {
-  GptNewsSentiment,
-  GptNewsAnalysisInput,
-  GptNewsAnalysisOutput,
-  AnalysisWriterInput,
-  AnalysisWriterOutput,
-  GptErrorResult,
-} from "./ai";
+export { generateExplanation } from "./explanation";
+export type { ExplanationData } from "./explanation";

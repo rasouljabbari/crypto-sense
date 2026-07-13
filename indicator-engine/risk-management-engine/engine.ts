@@ -6,7 +6,7 @@ import { calculateRiskReward } from "./riskreward-engine";
 import { calculatePositionSize } from "./position-size-engine";
 import { calculateTradeQuality } from "./trade-quality-engine";
 import { calculateExpectedProfit } from "./expected-profit-engine";
-import { validateSetup } from "./validation-engine";
+import { validatePreConditions, validateSetup } from "./validation-engine";
 
 function determineDirection(input: TradeSetupRawInput): TradeDirection | null {
   if (input.signal === "strong_buy" || input.signal === "buy") return "long";
@@ -14,22 +14,32 @@ function determineDirection(input: TradeSetupRawInput): TradeDirection | null {
   return null;
 }
 
+function noTrade(reason: string): TradeSetupResult {
+  return {
+    hasTrade: false,
+    direction: "long",
+    entry: 0,
+    stopLoss: 0,
+    risk: 0,
+    takeProfit: { tp1: 0, tp2: 0, tp3: 0 },
+    riskReward: calculateRiskReward(),
+    position: calculatePositionSize(0, 0),
+    expectedProfit: { tp1: 0, tp2: 0, tp3: 0 },
+    tradeQuality: 0,
+    validation: { isValid: false, reason },
+  };
+}
+
 export function generateTradeSetup(input: TradeSetupRawInput): TradeSetupResult {
   const direction = determineDirection(input);
 
   if (direction === null) {
-    return {
-      direction: "long",
-      entry: 0,
-      stopLoss: 0,
-      risk: 0,
-      takeProfit: { tp1: 0, tp2: 0, tp3: 0 },
-      riskReward: calculateRiskReward(),
-      position: calculatePositionSize(input.accountBalance, 0, input.riskPercent),
-      expectedProfit: { tp1: 0, tp2: 0, tp3: 0 },
-      tradeQuality: 0,
-      validation: { isValid: false, reason: "Signal is neutral; cannot determine direction" },
-    };
+    return noTrade("Signal is neutral — cannot determine trade direction");
+  }
+
+  const preCheck = validatePreConditions(input);
+  if (!preCheck.isValid) {
+    return noTrade(preCheck.reason!);
   }
 
   const entry = calculateEntry(direction, input);
@@ -40,9 +50,14 @@ export function generateTradeSetup(input: TradeSetupRawInput): TradeSetupResult 
   const position = calculatePositionSize(input.accountBalance, risk, input.riskPercent);
   const tradeQuality = calculateTradeQuality(direction, input);
   const expectedProfit = calculateExpectedProfit(direction, entry, takeProfit, position.positionSize);
-  const validation = validateSetup(direction, entry, stopLoss, risk, takeProfit.tp1, tradeQuality, input);
+
+  const postCheck = validateSetup(direction, entry, stopLoss, risk, takeProfit.tp1, tradeQuality, input);
+  if (!postCheck.isValid) {
+    return noTrade(postCheck.reason!);
+  }
 
   return {
+    hasTrade: true,
     direction,
     entry,
     stopLoss,
@@ -52,6 +67,6 @@ export function generateTradeSetup(input: TradeSetupRawInput): TradeSetupResult 
     position,
     expectedProfit,
     tradeQuality,
-    validation,
+    validation: { isValid: true, reason: null },
   };
 }

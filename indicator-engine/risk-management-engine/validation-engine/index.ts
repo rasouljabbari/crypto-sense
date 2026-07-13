@@ -1,1 +1,1 @@
-export { validateSetup } from "./engine";
+export { validatePreConditions, validateSetup } from "./engine";

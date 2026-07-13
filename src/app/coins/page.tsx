@@ -1,8 +1,8 @@
 "use client";
 
 import { CoinTable } from "@/components/CoinTable";
-import { Header } from "@/components/Header";
 import { SearchBar } from "@/components/SearchBar";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
@@ -21,10 +21,7 @@ export default function CoinsPage() {
   const shortCount = coins.filter((c) => c.position === "short").length;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <Header />
-
-      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
         <div className="mb-8">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-white">{t("coins_page.title")}</h2>
@@ -49,8 +46,7 @@ export default function CoinsPage() {
         </div>
 
         <CoinTable />
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }
 

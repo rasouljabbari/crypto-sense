@@ -1,8 +1,8 @@
 "use client";
 
-import { Header } from "@/components/Header";
 import { SearchBar } from "@/components/SearchBar";
 import { Skeleton } from "@/components/Skeleton";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
 import { calcRSI, estimatePosition } from "@/lib/indicators";
 import { useSession } from "next-auth/react";
@@ -143,9 +143,7 @@ export default function WatchlistPage() {
   if (status !== "authenticated") return null;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <Header />
-      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">{t("watchlist.title")}</h2>
           <div className="flex items-center gap-3">
@@ -295,7 +293,6 @@ export default function WatchlistPage() {
             </div>
           </div>
         )}
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }

@@ -45,6 +45,7 @@ function makeSampleAnalysis(): MarketAnalysisResult {
     signal: { action: "buy", score: 62 },
     risk: { riskScore: 35, riskLevel: "low", suggestedStopLoss: 48500, riskPercentage: 0.01 },
     tradeSetup: {
+      hasTrade: true,
       direction: "long",
       entry: 50000,
       stopLoss: 48500,

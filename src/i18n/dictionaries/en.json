@@ -11,7 +11,10 @@
     "watchlist": "Watchlist",
     "treemap": "Heatmap",
     "fear_greed": "Fear & Greed",
-    "coming_soon": "Coming soon..."
+    "coming_soon": "Coming soon...",
+    "coin_analysis": "Coin Analysis",
+    "sidebar_section_main": "Main",
+    "sidebar_section_market": "Market"
   },
   "overview": {
     "title": "Crypto Market Overview",
@@ -449,6 +452,58 @@
       "examples": "BTCUSDT, bitcoin, ETH, solana...",
       "analyze": "Analyze"
     }
+  },
+  "coin_analysis": {
+    "title": "Coin Analysis",
+    "subtitle": "Search for a cryptocurrency to view detailed market analysis and insights",
+    "empty_title": "Select a coin to start the analysis",
+    "empty_description": "Type a coin name or symbol above, or click one of the popular coins to begin.",
+    "analyzing_title": "Analyzing {{coin}}...",
+    "analyzing_description": "Fetching market data and preparing analysis.",
+    "error_title": "Analysis unavailable",
+    "no_result_title": "Coin not found",
+    "no_result_description": "No data available for {{coin}}. Check the symbol and try again.",
+    "score": {
+      "overall": "Overall Score",
+      "signal": "Signal",
+      "confidence": "Confidence"
+    },
+    "trade": {
+      "entry": "Trade Setup",
+      "stop_loss": "Stop Loss",
+      "tp1": "TP 1",
+      "tp2": "TP 2",
+      "tp3": "TP 3",
+      "direction": "Direction"
+    },
+    "market": {
+      "title": "Market",
+      "price": "Current Price",
+      "trend": "Trend",
+      "volume": "Volume (24h)",
+      "high": "High",
+      "low": "Low"
+    },
+    "indicators": {
+      "title": "Technical Indicators"
+    },
+    "explanation": {
+      "title": "Analysis Explanation",
+      "strengths": "Strengths",
+      "weaknesses": "Weaknesses",
+      "risks": "Key Risks",
+      "opportunities": "Opportunities",
+      "recommendation": "Recommendation"
+    }
+  },
+  "coin_search": {
+    "label": "Search Cryptocurrency",
+    "placeholder": "Search BTC, ETH, SOL...",
+    "button": "Analyze",
+    "popular": "Popular",
+    "recent": "Recent",
+    "no_results": "No coins match your search",
+    "clear_all": "Clear all"
   },
   "locale": {
     "en": "English",

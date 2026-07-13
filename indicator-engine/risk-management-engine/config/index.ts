@@ -45,6 +45,11 @@ export const RISK_EXTREME_WEIGHT = 5;
 export const MIN_TRADE_QUALITY = 50;
 export const MIN_RISK_REWARD = 2;
 
+export const MIN_OVERALL_SCORE = 70;
+export const MIN_ADX = 25;
+export const MIN_ATR = 0;
+export const MIN_SR_LEVELS = 1;
+
 export const TRADE_QUALITY_EXCELLENT = 90;
 export const TRADE_QUALITY_HIGH = 75;
 export const TRADE_QUALITY_GOOD = 60;

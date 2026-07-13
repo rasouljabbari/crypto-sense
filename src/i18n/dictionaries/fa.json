@@ -11,7 +11,10 @@
     "watchlist": "نظارت پیگیری",
     "treemap": "نقشه حرارتی",
     "fear_greed": "ترس و طمع",
-    "coming_soon": "به زودی..."
+    "coming_soon": "به زودی...",
+    "coin_analysis": "تحلیل ارز",
+    "sidebar_section_main": "اصلی",
+    "sidebar_section_market": "بازار"
   },
   "overview": {
     "title": "نمای کلی بازار ارزهای دیجیتال",
@@ -449,6 +452,58 @@
       "examples": "BTCUSDT, bitcoin, ETH, solana...",
       "analyze": "تحلیل"
     }
+  },
+  "coin_analysis": {
+    "title": "تحلیل ارز",
+    "subtitle": "برای مشاهده تحلیل بازار و اطلاعات تفصیلی یک ارز دیجیتال را جستجو کنید",
+    "empty_title": "برای شروع تحلیل یک ارز را انتخاب کنید",
+    "empty_description": "نام یا نماد یک ارز را در بالا تایپ کنید یا روی یکی از ارزهای محبوب کلیک کنید.",
+    "analyzing_title": "در حال تحلیل {{coin}}...",
+    "analyzing_description": "دریافت اطلاعات بازار و آماده‌سازی تحلیل.",
+    "error_title": "تحلیل در دسترس نیست",
+    "no_result_title": "ارز یافت نشد",
+    "no_result_description": "داده‌ای برای {{coin}} موجود نیست. نماد را بررسی کرده و دوباره تلاش کنید.",
+    "score": {
+      "overall": "امتیاز کلی",
+      "signal": "سیگنال",
+      "confidence": "اطمینان"
+    },
+    "trade": {
+      "entry": "تنظیم معامله",
+      "stop_loss": "حد ضرر",
+      "tp1": "حد سود ۱",
+      "tp2": "حد سود ۲",
+      "tp3": "حد سود ۳",
+      "direction": "جهت"
+    },
+    "market": {
+      "title": "بازار",
+      "price": "قیمت فعلی",
+      "trend": "روند",
+      "volume": "حجم (۲۴ ساعت)",
+      "high": "بالاترین",
+      "low": "پایین‌ترین"
+    },
+    "indicators": {
+      "title": "شاخص‌های تکنیکال"
+    },
+    "explanation": {
+      "title": "توضیحات تحلیل",
+      "strengths": "نقاط قوت",
+      "weaknesses": "نقاط ضعف",
+      "risks": "risk‌های اصلی",
+      "opportunities": "فرصت‌ها",
+      "recommendation": "پیشنهاد"
+    }
+  },
+  "coin_search": {
+    "label": "جستجوی ارز دیجیتال",
+    "placeholder": "BTC, ETH, SOL را جستجو کنید...",
+    "button": "تحلیل",
+    "popular": "محبوب",
+    "recent": "جستجوهای اخیر",
+    "no_results": "ارزی با جستجوی شما مطابقت ندارد",
+    "clear_all": "پاک کردن همه"
   },
   "locale": {
     "en": "English",

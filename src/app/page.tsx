@@ -2,9 +2,9 @@
 
 import { fetchKlines } from "@/api/binance";
 import { CoinImage } from "@/components/CoinImage";
-import { Header } from "@/components/Header";
 import MarketCapChart from "@/components/MarketCapChart";
 import { Sparkline } from "@/components/Sparkline";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
@@ -204,10 +204,7 @@ export default function MarketOverviewPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <Header />
-
-      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
         {/* Title */}
         <div className="mb-8">
           <div className="flex items-center gap-3">
@@ -468,8 +465,7 @@ export default function MarketOverviewPage() {
         <p className="mt-6 text-[10px] text-gray-600 text-right">
           {t("overview.footnote")}
         </p>
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }
 

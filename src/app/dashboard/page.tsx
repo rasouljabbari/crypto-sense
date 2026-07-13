@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useI18n } from "@/i18n/context";
-import { Header } from "@/components/Header";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DashboardGrid, DashboardSkeleton, useDashboard } from "@/features/dashboard";
 
 export default function DashboardPage() {
@@ -54,9 +54,7 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <Header />
-      <main className="max-w-[1460px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-xl font-bold">{t("dashboard.title")}</h1>
@@ -95,7 +93,6 @@ function DashboardContent() {
         {viewModel && <DashboardGrid viewModel={viewModel} labels={labels} />}
 
         {coinId && isLoading && <DashboardSkeleton />}
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@/components/Header";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
 import { useEffect } from "react";
@@ -49,14 +49,12 @@ export default function IndicatorsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <Header />
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-white">Market Indicators</h2>
         </div>
 
-        <div className="space-y-6">
+        <div className="max-w-3xl space-y-6">
           <div>
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">Market Cap</h3>
             <div className="bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden">
@@ -103,7 +101,6 @@ export default function IndicatorsPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }

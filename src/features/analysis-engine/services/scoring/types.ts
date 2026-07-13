@@ -59,6 +59,7 @@ export interface ScoreBreakdown {
   readonly trend: ComponentDetail;
   readonly momentum: ComponentDetail;
   readonly volume: ComponentDetail;
+  readonly volatility: ComponentDetail;
   readonly sentiment: ComponentDetail;
   readonly risk: ComponentDetail;
   readonly confidence: ComponentDetail;
@@ -67,6 +68,8 @@ export interface ScoreBreakdown {
 export interface ComponentDetail {
   readonly value: number;
   readonly label: string;
+  readonly status: string;
+  readonly explanation: string;
   readonly factors: readonly FactorContribution[];
 }
 
@@ -75,6 +78,7 @@ export interface FactorContribution {
   readonly weight: number;
   readonly raw: number;
   readonly contribution: number;
+  readonly reason: string;
 }
 
 export interface ScoreEngineOutput {
@@ -83,6 +87,7 @@ export interface ScoreEngineOutput {
   readonly trend: number;
   readonly momentum: number;
   readonly volume: number;
+  readonly volatility: number;
   readonly sentiment: number;
   readonly risk: number;
   readonly confidence: number;

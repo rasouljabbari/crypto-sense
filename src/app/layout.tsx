@@ -1,5 +1,4 @@
 import { SessionProvider } from "@/components/SessionProvider";
-import { Footer } from "@/components/Footer";
 import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/lib/theme";
 import { QueryProvider } from "@/components/QueryProvider";
@@ -46,7 +45,6 @@ export default function RootLayout({
             <I18nProvider>
               <SessionProvider>
                 {children}
-                <Footer />
               </SessionProvider>
             </I18nProvider>
           </ThemeProvider>

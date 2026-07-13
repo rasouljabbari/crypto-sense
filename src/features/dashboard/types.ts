@@ -55,6 +55,13 @@ export interface DashboardViewModel {
     readonly directionLabel: string;
     readonly factors: readonly FactorItem[];
   };
+  readonly dimensionScores: {
+    readonly trend: DimensionScoreData;
+    readonly momentum: DimensionScoreData;
+    readonly volume: DimensionScoreData;
+    readonly volatility: DimensionScoreData;
+    readonly risk: DimensionScoreData;
+  };
   readonly entry: {
     readonly price: string;
     readonly direction: "long" | "short";
@@ -77,4 +84,12 @@ export interface DashboardViewModel {
   readonly indicators: {
     readonly items: readonly IndicatorItem[];
   };
+}
+
+export interface DimensionScoreData {
+  readonly label: string;
+  readonly value: number;
+  readonly status: string;
+  readonly explanation: string;
+  readonly reasons: readonly string[];
 }
