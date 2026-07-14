@@ -7,13 +7,11 @@
   "nav": {
     "overview": "Overview",
     "coins": "Coins",
-    "indicators": "Indicators",
     "watchlist": "Watchlist",
     "treemap": "Heatmap",
     "fear_greed": "Fear & Greed",
     "coming_soon": "Coming soon...",
     "coin_analysis": "Coin Analysis",
-    "sidebar_section_main": "Main",
     "sidebar_section_market": "Market"
   },
   "overview": {
@@ -31,12 +29,10 @@
     "total_coins": "Total Coins",
     "neutral": "Neutral Signals",
     "total_volume": "Total Volume",
-    "quick_nav": "Quick Navigation",
     "mcap_chart": "Crypto Market Cap",
     "mcap_30d": "30D",
     "mcap_1y": "1Y",
-    "mcap_all": "All",
-    "footnote": "Data sourced from Binance & CoinGecko — updated in real-time"
+    "mcap_all": "All"
   },
   "fear_greed": {
     "title": "Fear & Greed Index",
@@ -148,61 +144,6 @@
     "watch": "Watch",
     "vol_tooltip": "24h Volume / Market Cap — higher = more liquid",
     "rsi_tooltip": "Relative Strength Index (14)"
-  },
-  "indicators": {
-    "back": "Back to Dashboard",
-    "title": "Market Indicators",
-    "subtitle": "Key market-wide metrics — dominance, ratios, and total capitalization",
-    "live": "Live",
-    "columns": {
-      "indicator": "Indicator",
-      "value": "Value",
-      "signal": "Signal"
-    },
-    "rows": {
-      "total": "TOTAL (Total Crypto Market Cap)",
-      "total2": "TOTAL2 (Total ex BTC)",
-      "total3": "TOTAL3 (Total ex BTC & ETH)",
-      "btc_d": "BTC.D (Bitcoin Dominance)",
-      "eth_d": "ETH.D (Ethereum Dominance)",
-      "bnb_d": "BNB.D (BNB Dominance)",
-      "usdt_d": "USDT.D (Tether Dominance)",
-      "others_d": "OTHERS.D (ex Top 10)",
-      "eth_btc": "ETH.BTC",
-      "bnb_btc": "BNB.BTC",
-      "volume_24h": "24h Volume"
-    },
-    "signals": {
-      "risk_off": "Risk-Off",
-      "risk_on": "Risk-On",
-      "neutral": "Neutral",
-      "strong": "Strong",
-      "weak": "Weak",
-      "stable": "Stable",
-      "caution": "Caution",
-      "normal": "Normal",
-      "eth_up": "ETH ↑",
-      "btc_up": "BTC ↑",
-      "flat": "Flat",
-      "bullish": "Bullish",
-      "bearish": "Bearish",
-      "altseason": "Altseason",
-      "btc_season": "BTC Season",
-      "none": "—"
-    },
-    "footnote": "BTC.D = BTC Market Cap ÷ Total Market Cap · ETH.BTC = ETH Price ÷ BTC Price · OTHERS.D = Market Cap of coins outside Top 10 ÷ Total Market Cap",
-    "estimated": "Using estimated data",
-    "screener": {
-      "title": "Coin Screener (Vol ≥ 1000 BTC)",
-      "filter_vol": "24h vol in BTC",
-      "loading": "Loading...",
-      "empty": "No data",
-      "col_pair": "Symbol",
-      "col_price": "Price",
-      "col_chg": "24h Chg %",
-      "col_vol": "Vol (BTC)",
-      "footer": "{count} coins with ≥ 1,000 BTC 24h volume"
-    }
   },
   "chart": {
       "1h": "1H",
@@ -464,25 +405,47 @@
     "no_result_title": "Coin not found",
     "no_result_description": "No data available for {{coin}}. Check the symbol and try again.",
     "score": {
+      "title": "Scores",
       "overall": "Overall Score",
       "signal": "Signal",
-      "confidence": "Confidence"
+      "confidence": "Confidence",
+      "trend": "Trend",
+      "momentum": "Momentum",
+      "volume": "Volume",
+      "volatility": "Volatility",
+      "risk": "Risk",
+      "status": {
+        "strong_bullish": "Strong Bullish",
+        "bullish": "Bullish",
+        "neutral": "Neutral",
+        "bearish": "Bearish",
+        "strong_bearish": "Strong Bearish"
+      }
     },
     "trade": {
-      "entry": "Trade Setup",
+      "title": "Trade Setup",
+      "entry": "Entry",
       "stop_loss": "Stop Loss",
       "tp1": "TP 1",
       "tp2": "TP 2",
       "tp3": "TP 3",
-      "direction": "Direction"
+      "direction": "Direction",
+      "risk_reward": "R:R",
+      "quality": "Quality",
+      "no_trade": "No trade setup",
+      "reason": "Reason"
     },
     "market": {
       "title": "Market",
       "price": "Current Price",
+      "change_24h": "24h Change",
+      "change_percent": "24h %",
       "trend": "Trend",
       "volume": "Volume (24h)",
       "high": "High",
-      "low": "Low"
+      "low": "Low",
+      "support": "Support",
+      "resistance": "Resistance"
     },
     "indicators": {
       "title": "Technical Indicators"
@@ -493,8 +456,25 @@
       "weaknesses": "Weaknesses",
       "risks": "Key Risks",
       "opportunities": "Opportunities",
-      "recommendation": "Recommendation"
+      "recommendation": "Recommendation",
+      "summary_signals": "{strengths} bullish signal(s), {weaknesses} bearish signal(s). Overall score {score}/100 ({signal}).",
+      "summary_no_signals": "No strong signals. Overall score {score}/100 ({signal}).",
+      "risk_low": "Low risk — favourable risk profile",
+      "risk_elevated": "Elevated risk — consider tighter position sizing",
+      "dimension_score": "{dimension}: {status} ({value})"
+    },
+    "recommendation": {
+      "title": "Trade Signal",
+      "open": "Open Position",
+      "wait": "Wait",
+      "neutral": "Neutral",
+      "open_detail": "Open Position — favourable conditions across multiple dimensions",
+      "wait_detail": "Wait — weak conditions; reconsider entry or tighten risk",
+      "neutral_detail": "Neutral — monitor for clearer signals before acting"
     }
+  },
+  "errors": {
+    "cannot_resolve_symbol": "Cannot resolve symbol: \"{symbol}\". Use a Binance symbol (e.g. BTCUSDT), coin ID (e.g. bitcoin), or base asset (e.g. BTC)."
   },
   "coin_search": {
     "label": "Search Cryptocurrency",

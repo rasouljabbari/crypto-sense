@@ -1,3 +1,9 @@
+// ---------------------------------------------------------------------------
+// Risk Management Engine — Config
+// ---------------------------------------------------------------------------
+// Trade setup and validation thresholds.
+// ---------------------------------------------------------------------------
+
 export const ENTRY_ATR_MULTIPLIER = 0.5;
 export const ENTRY_ATR_VOLATILITY_MULTIPLIER = 0.3;
 
@@ -45,10 +51,15 @@ export const RISK_EXTREME_WEIGHT = 5;
 export const MIN_TRADE_QUALITY = 50;
 export const MIN_RISK_REWARD = 2;
 
-export const MIN_OVERALL_SCORE = 60;
+export const MIN_OVERALL_SCORE = 70;
 export const MIN_ADX = 25;
 export const MIN_ATR = 0;
 export const MIN_SR_LEVELS = 1;
+
+export const TRADE_QUALITY_EXCELLENT = 90;
+export const TRADE_QUALITY_HIGH = 75;
+export const TRADE_QUALITY_GOOD = 60;
+export const TRADE_QUALITY_WEAK = 40;
 
 // ─── Score Weights ────────────────────────────────────────────────────
 export const SCORE_WEIGHTS = {
@@ -67,8 +78,3 @@ export const SIGNAL_MAP = [
   { min: 20, signal: "Sell" },
   { min: 0, signal: "Strong Sell" },
 ];
-
-export const TRADE_QUALITY_EXCELLENT = 90;
-export const TRADE_QUALITY_HIGH = 75;
-export const TRADE_QUALITY_GOOD = 60;
-export const TRADE_QUALITY_WEAK = 40;

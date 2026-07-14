@@ -18,7 +18,6 @@ const breadcrumbMap: Record<string, string> = {
   "/": "nav.overview",
   "/coins": "nav.coins",
   "/analysis": "nav.coin_analysis",
-  "/indicators": "nav.indicators",
   "/watchlist": "nav.watchlist",
   "/treemap": "nav.treemap",
   "/fear-greed": "nav.fear_greed",
@@ -55,7 +54,7 @@ export function Header() {
   const pageTitle = t(breadcrumbKey);
 
   return (
-    <header className="fixed top-0 right-0 z-30 h-14 bg-theme-secondary/80 backdrop-blur-xl border-b border-theme flex items-center px-4 sm:px-6 lg:pl-[268px]">
+    <header className="fixed top-0 right-0 z-30 h-14 bg-theme-secondary/80 backdrop-blur-xl border-b border-theme flex items-center px-4 sm:px-6 lg:pl-[268px] sm:hidden">
       <div className="flex items-center gap-3 w-full">
         <button
           onClick={toggleMobile}

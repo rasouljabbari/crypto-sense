@@ -40,7 +40,6 @@ export function Header() {
   const navLinks = [
     { href: "/", label: t("nav.overview") },
     { href: "/coins", label: t("nav.coins") },
-    { href: "/indicators", label: t("nav.indicators") },
     { href: "/watchlist", label: t("nav.watchlist") },
     { href: "/treemap", label: t("nav.treemap") },
     { href: "/fear-greed", label: t("nav.fear_greed") },
@@ -85,15 +84,6 @@ export function Header() {
                   }`}
               >
                 {t("nav.coins")}
-              </Link>
-              <Link
-                href="/indicators"
-                className={`px-2.5 py-1.5 rounded-lg transition-colors ${pathname === "/indicators"
-                  ? "bg-emerald-500/15 text-emerald-400 font-medium"
-                  : "text-theme-secondary hover:text-theme-text"
-                  }`}
-              >
-                {t("nav.indicators")}
               </Link>
               <Link
                 href="/watchlist"

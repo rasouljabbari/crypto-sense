@@ -148,12 +148,12 @@ export default function FearGreedPage() {
   const zoneLabels = useMemo(() => {
     const [lo, hi] = chartDomain;
     const zones = [
-      { value: 87.5, label: "Greed", color: "#22c55e" },
-      { value: 50, label: "Neutral", color: "#eab308" },
-      { value: 12.5, label: "Fear", color: "#ef4444" },
+      { value: 87.5, label: t("fear_greed.classes.greed"), color: "#22c55e" },
+      { value: 50, label: t("fear_greed.classes.neutral"), color: "#eab308" },
+      { value: 12.5, label: t("fear_greed.classes.fear"), color: "#ef4444" },
     ];
     return zones.filter((z) => z.value >= lo && z.value <= hi);
-  }, [chartDomain]);
+  }, [chartDomain, t]);
 
   const yearly = historical
     ? { high: historical.yearlyHigh, low: historical.yearlyLow }
@@ -163,11 +163,6 @@ export default function FearGreedPage() {
 
   return (
     <DashboardLayout>
-        <Link href="/" className="text-gray-400 hover:text-gray-200 text-sm mb-6 inline-flex items-center gap-1">
-          <span>{dir === "rtl" ? "→" : "←"}</span>
-          {t("indicators.back")}
-        </Link>
-
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
             <div className="flex items-center gap-3">
@@ -179,7 +174,7 @@ export default function FearGreedPage() {
 
         {loading ? (
           <div className="bg-gray-900/30 rounded-xl border border-gray-800 p-16 text-center text-sm text-gray-500">
-            {t("indicators.screener.loading")}
+            {t("chart.loading")}
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">

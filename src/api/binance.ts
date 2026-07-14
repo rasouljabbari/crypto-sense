@@ -24,7 +24,7 @@ const FUTURES_SYMBOLS = [
   "COMPUSDT", "SNXUSDT", "1INCHUSDT", "DYDXUSDT", "LDOUSDT", "STRKUSDT", "CFXUSDT", "ROSEUSDT", "MEMEUSDT", "WIFUSDT",
   "JASMYUSDT", "RAYUSDT", "CAKEUSDT", "GALAUSDT", "BEAMUSDT", "ORDIUSDT", "ETHFIUSDT", "PENDLEUSDT", "NOTUSDT", "ZKUSDT",
   "SUPERUSDT", "TWTUSDT", "HOTUSDT", "ANKRUSDT", "WOOUSDT", "RVNUSDT", "LRCUSDT", "BANDUSDT", "SFPUSDT", "SKLUSDT",
-  "OCEANUSDT", "CELOUSDT", "ICXUSDT", "ZENUSDT", "STXUSDT", "ARKMUSDT", "BLURUSDT", "GMXUSDT", "ZRXUSDT"
+  "OCEANUSDT", "CELOUSDT", "ICXUSDT", "ZENUSDT", "STXUSDT", "ARKMUSDT", "BLURUSDT", "GMXUSDT", "ZRXUSDT", "POLUSDT"
 ];
 
 const ID_OVERRIDES: Record<string, string> = {
@@ -66,7 +66,7 @@ const KWN_NAMES: Record<string, string> = {
   ANKR: "Ankr", WOO: "WOO Network", RVN: "Ravencoin", LRC: "Loopring", BAND: "Band Protocol",
   SFP: "SafePal", SKL: "SKALE", OCEAN: "Ocean Protocol", CELO: "Celo", ICX: "ICON",
   ZEN: "Horizen", STX: "Stacks", ARKM: "Arkham", BLUR: "Blur", GMX: "GMX", ZRX: "0x",
-  HBAR: "Hedera", TON: "Toncoin", CAKE: "PancakeSwap", MEME: "Memecoin",
+  HBAR: "Hedera", TON: "Toncoin", CAKE: "PancakeSwap", MEME: "Memecoin", POL: "Polygon",
 };
 
 export const STATIC_COIN_DATA: Record<string, Omit<MarketData, "currentPrice" | "marketCap" | "volume24h" | "priceChange24h" | "priceChangePercent24h" | "high24h" | "low24h">> = {

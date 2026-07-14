@@ -224,7 +224,7 @@ export default function WatchlistPage() {
                   const trendColor = aug.changePercent >= 0 ? "text-emerald-400" : "text-red-400";
 
                   return (
-                    <Link key={item.symbol} href={`/coin/${item.symbol}`} className="group relative block hover:bg-gray-800/30 transition-colors border-b border-gray-800/50 last:border-0">
+                    <Link key={item.symbol} href={`/analysis?coin=${encodeURIComponent(item.symbol)}`} className="group relative block hover:bg-gray-800/30 transition-colors border-b border-gray-800/50 last:border-0">
                       <div className="min-w-[640px] grid grid-cols-[2fr_1fr_1fr_1fr_1.2fr_0.5fr] gap-2 items-center px-4 py-3 text-sm">
                         <div className="flex items-center gap-3">
                           {/* eslint-disable-next-line @next/next/no-img-element */}

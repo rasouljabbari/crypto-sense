@@ -7,13 +7,11 @@
   "nav": {
     "overview": "نمای کلی",
     "coins": "ارزها",
-    "indicators": "شاخص‌ها",
     "watchlist": "نظارت پیگیری",
     "treemap": "نقشه حرارتی",
     "fear_greed": "ترس و طمع",
     "coming_soon": "به زودی...",
     "coin_analysis": "تحلیل ارز",
-    "sidebar_section_main": "اصلی",
     "sidebar_section_market": "بازار"
   },
   "overview": {
@@ -31,12 +29,10 @@
     "total_coins": "تعداد ارزها",
     "neutral": "سیگنال خنثی",
     "total_volume": "حجم کل",
-    "quick_nav": "ناوبری سریع",
     "mcap_chart": "ارزش کل بازار کریپتو",
     "mcap_30d": "۳۰ روز",
     "mcap_1y": "۱ سال",
-    "mcap_all": "همه",
-    "footnote": "داده‌ها از بایننس و کوین‌گکو — بروزرسانی لحظه‌ای"
+    "mcap_all": "همه"
   },
   "fear_greed": {
     "title": "شاخص ترس و طمع",
@@ -148,61 +144,6 @@
     "watch": "نظارت",
     "vol_tooltip": "حجم ۲۴ ساعت / ارزش بازار — بالاتر = نقدشوندگی بیشتر",
     "rsi_tooltip": "شاخص قدرت نسبی (۱۴)"
-  },
-  "indicators": {
-    "back": "بازگشت به داشبورد",
-    "title": "شاخص‌های بازار",
-    "subtitle": "معیارهای کلیدی بازار — تسلط، نسبت‌ها و ارزش کل بازار",
-    "live": "زنده",
-    "columns": {
-      "indicator": "شاخص",
-      "value": "مقدار",
-      "signal": "سیگنال"
-    },
-    "rows": {
-      "total": "TOTAL (ارزش کل بازار ارزهای دیجیتال)",
-      "total2": "TOTAL2 (ارزش کل به جز بیت‌کوین)",
-      "total3": "TOTAL3 (ارزش کل به جز بیت‌کوین و اتریوم)",
-      "btc_d": "BTC.D (تسلط بیت‌کوین)",
-      "eth_d": "ETH.D (تسلط اتریوم)",
-      "bnb_d": "BNB.D (تسلط BNB)",
-      "usdt_d": "USDT.D (تسلط تتر)",
-      "others_d": "OTHERS.D (به جز ۱۰ ارز اول)",
-      "eth_btc": "ETH.BTC",
-      "bnb_btc": "BNB.BTC",
-      "volume_24h": "حجم ۲۴ ساعت"
-    },
-    "signals": {
-      "risk_off": "گریز از ریسک",
-      "risk_on": "ریسک‌پذیری",
-      "neutral": "خنثی",
-      "strong": "قوی",
-      "weak": "ضعیف",
-      "stable": "پایدار",
-      "caution": "احتیاط",
-      "normal": "عادی",
-      "eth_up": "ETH ↑",
-      "btc_up": "BTC ↑",
-      "flat": "مسطح",
-      "bullish": "صعودی",
-      "bearish": "نزولی",
-      "altseason": "فصل آلت‌کوین‌ها",
-      "btc_season": "فصل بیت‌کوین",
-      "none": "—"
-    },
-    "footnote": "BTC.D = ارزش بازار بیت‌کوین ÷ ارزش کل بازار · ETH.BTC = قیمت اتریوم ÷ قیمت بیت‌کوین · OTHERS.D = ارزش بازار ارزهای خارج از ۱۰ تای اول ÷ ارزش کل بازار",
-    "estimated": "استفاده از داده‌های تخمینی",
-    "screener": {
-      "title": "بررسی ارزها (حجم ≥ ۱۰۰۰ BTC)",
-      "filter_vol": "حجم ۲۴ساعته بر حسب BTC",
-      "loading": "در حال بارگذاری...",
-      "empty": "داده‌ای یافت نشد",
-      "col_pair": "نماد",
-      "col_price": "قیمت",
-      "col_chg": "تغییر ۲۴ ساعته",
-      "col_vol": "حجم (BTC)",
-      "footer": "{count} ارز با حداقل ۱,۰۰۰ BTC حجم ۲۴ ساعته"
-    }
   },
   "chart": {
       "1h": "یک ساعته",
@@ -464,23 +405,45 @@
     "no_result_title": "ارز یافت نشد",
     "no_result_description": "داده‌ای برای {{coin}} موجود نیست. نماد را بررسی کرده و دوباره تلاش کنید.",
     "score": {
+      "title": "امتیازها",
       "overall": "امتیاز کلی",
       "signal": "سیگنال",
-      "confidence": "اطمینان"
+      "confidence": "اطمینان",
+      "trend": "روند",
+      "momentum": "مومنتوم",
+      "volume": "حجم",
+      "volatility": "نوسان",
+      "risk": "ریسک",
+      "status": {
+        "strong_bullish": "صعودی قوی",
+        "bullish": "صعودی",
+        "neutral": "خنثی",
+        "bearish": "نزولی",
+        "strong_bearish": "نزولی قوی"
+      }
     },
     "trade": {
-      "entry": "تنظیم معامله",
+      "title": "تنظیم معامله",
+      "entry": "ورود",
       "stop_loss": "حد ضرر",
       "tp1": "حد سود ۱",
       "tp2": "حد سود ۲",
       "tp3": "حد سود ۳",
-      "direction": "جهت"
+      "direction": "جهت",
+      "risk_reward": "R:R",
+      "quality": "کیفیت",
+      "no_trade": "بدون تنظیم معامله",
+      "reason": "دلیل"
     },
     "market": {
       "title": "بازار",
       "price": "قیمت فعلی",
+      "change_24h": "تغییر ۲۴ ساعت",
+      "change_percent": "درصد تغییر",
       "trend": "روند",
       "volume": "حجم (۲۴ ساعت)",
+      "support": "حمایت",
+      "resistance": "مقاومت",
       "high": "بالاترین",
       "low": "پایین‌ترین"
     },
@@ -491,10 +454,27 @@
       "title": "توضیحات تحلیل",
       "strengths": "نقاط قوت",
       "weaknesses": "نقاط ضعف",
-      "risks": "risk‌های اصلی",
+      "risks": "ریسک‌های اصلی",
       "opportunities": "فرصت‌ها",
-      "recommendation": "پیشنهاد"
+      "recommendation": "پیشنهاد",
+      "summary_signals": "{strengths} سیگنال صعودی، {weaknesses} سیگنال نزولی. امتیاز کلی {score}/100 ({signal}).",
+      "summary_no_signals": "سیگنال قوی وجود ندارد. امتیاز کلی {score}/100 ({signal}).",
+      "risk_low": "ریسک پایین — پروفایل ریسک مطلوب",
+      "risk_elevated": "ریسک بالا — اندازه موقعیت را کاهش دهید",
+      "dimension_score": "{dimension}: {status} ({value})"
+    },
+    "recommendation": {
+      "title": "سیگنال معاملاتی",
+      "open": "باز کردن موقعیت",
+      "wait": "صبر کنید",
+      "neutral": "خنثی",
+      "open_detail": "باز کردن موقعیت — شرایط مطلوب در چندین بعد",
+      "wait_detail": "صبر کنید — شرایط ضعیف؛ ورود را بررسی کنید",
+      "neutral_detail": "خنثی — منتظر سیگنال واضح‌تر بمانید"
     }
+  },
+  "errors": {
+    "cannot_resolve_symbol": "نماد \"{symbol}\" شناسایی نشد. از یک نماد بایننس (مثلاً BTCUSDT)، شناسه ارز (مثلاً bitcoin) یا نماد پایه (مثلاً BTC) استفاده کنید."
   },
   "coin_search": {
     "label": "جستجوی ارز دیجیتال",

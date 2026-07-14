@@ -152,57 +152,6 @@ export default function MarketOverviewPage() {
     ];
   }, [indicators]);
 
-  const navCards = [
-    {
-      href: "/coins",
-      title: t("nav.coins"),
-      desc: "Browse and analyze all tracked coins",
-      icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
-        </svg>
-      ),
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10",
-    },
-    {
-      href: "/treemap",
-      title: t("nav.treemap"),
-      desc: "Visualize market by cap and price change",
-      icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="4" /><rect x="14" y="10" width="7" height="11" /><rect x="3" y="14" width="7" height="7" />
-        </svg>
-      ),
-      color: "text-cyan-400",
-      bg: "bg-cyan-500/10",
-    },
-    {
-      href: "/indicators",
-      title: t("nav.indicators"),
-      desc: "Market indicators and coin screener",
-      icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 3v18h18" /><path d="M7 16l4-8 4 4 4-6" />
-        </svg>
-      ),
-      color: "text-violet-400",
-      bg: "bg-violet-500/10",
-    },
-    {
-      href: "/fear-greed",
-      title: t("nav.fear_greed"),
-      desc: "Market sentiment and historical data",
-      icon: (
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" />
-        </svg>
-      ),
-      color: "text-amber-400",
-      bg: "bg-amber-500/10",
-    },
-  ];
-
   return (
     <DashboardLayout>
         {/* Title */}
@@ -444,27 +393,6 @@ export default function MarketOverviewPage() {
           )}
         </div>
 
-        {/* Navigation Cards */}
-        <h3 className="text-sm font-semibold text-gray-400 mb-4">{t("overview.quick_nav")}</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {navCards.map((card) => (
-            <Link
-              key={card.href}
-              href={card.href}
-              className="group bg-gray-900/50 border border-gray-800 rounded-xl p-5 hover:bg-gray-800/50 hover:border-gray-700 transition-all"
-            >
-              <div className={`w-10 h-10 rounded-lg ${card.bg} flex items-center justify-center mb-3 ${card.color}`}>
-                {card.icon}
-              </div>
-              <h4 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">{card.title}</h4>
-              <p className="text-xs text-gray-500 mt-1 hidden sm:block">{card.desc}</p>
-            </Link>
-          ))}
-        </div>
-
-        <p className="mt-6 text-[10px] text-gray-600 text-right">
-          {t("overview.footnote")}
-        </p>
     </DashboardLayout>
   );
 }

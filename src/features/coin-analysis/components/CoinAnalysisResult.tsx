@@ -1,13 +1,15 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useI18n } from "@/i18n/context";
-import { useCoinAnalysis } from "../hooks/useCoinAnalysis";
-import { ScoreCard } from "./ScoreCard";
-import { TradeSetupCard } from "./TradeSetupCard";
-import { MarketCard } from "./MarketCard";
-import { IndicatorsCard } from "./IndicatorsCard";
-import { ExplanationCard } from "./ExplanationCard";
-import { CoinAnalysisLoading } from "./CoinAnalysisLoading";
+import { useCoinAnalysis } from "@/features/coin-analysis/hooks/useCoinAnalysis";
+import type { CoinAnalysisState } from "@/features/coin-analysis/types";
+import { Card } from "@/components/Card";
+
+const CandlestickChart = dynamic(
+  () => import("@/components/CandlestickChart").then((m) => m.CandlestickChart),
+  { ssr: false },
+);
 
 interface CoinAnalysisResultProps {
   readonly coinId: string;
@@ -15,108 +17,196 @@ interface CoinAnalysisResultProps {
 
 export function CoinAnalysisResult({ coinId }: CoinAnalysisResultProps) {
   const { t } = useI18n();
-  const state = useCoinAnalysis(coinId);
+  const analysis = useCoinAnalysis(coinId);
 
-  /* ── Loading ─────────────────────────────────────────────────────────── */
-  if (state.status === "loading") {
-    return <CoinAnalysisLoading />;
-  }
-
-  /* ── Error ───────────────────────────────────────────────────────────── */
-  if (state.status === "error") {
+  if (analysis.status === "loading") {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-        <div className="mb-4 text-red-400">
-          <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-          </svg>
-        </div>
-        <h3 className="text-base font-semibold text-gray-300 mb-1">
-          {t("coin_analysis.error_title")}
-        </h3>
-        <p className="text-sm text-gray-500 max-w-sm">{state.error?.message}</p>
+      <div className="space-y-4">
+        <div className="h-[300px] bg-gray-900/30 border border-gray-800/50 rounded-xl animate-pulse" />
+        <Card loading />
       </div>
     );
   }
 
-  /* ── No result (coin not found / invalid) ────────────────────────────── */
-  if (state.status === "noResult") {
+  if (analysis.status === "error") {
+    const errMsg = String(analysis.error ?? "");
+    const translated = errMsg.includes("Cannot resolve symbol")
+      ? t("errors.cannot_resolve_symbol", { symbol: coinId })
+      : errMsg;
+    return <Card error={translated} title={t("coin_analysis.error_title")} />;
+  }
+
+  if (analysis.status === "noResult") {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-        <div className="mb-4 text-yellow-400/60">
-          <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-          </svg>
-        </div>
-        <h3 className="text-base font-semibold text-gray-300 mb-1">
-          {t("coin_analysis.no_result_title")}
-        </h3>
-        <p className="text-sm text-gray-500 max-w-sm">
-          {t("coin_analysis.no_result_description", { coin: coinId.toUpperCase() })}
+      <Card title={t("coin_analysis.no_result_title")}>
+        <p className="text-sm text-gray-400">
+          {t("coin_analysis.no_result_description", { coin: coinId })}
         </p>
-      </div>
+      </Card>
     );
   }
 
-  /* ── Result ──────────────────────────────────────────────────────────── */
   return (
-    <div className="space-y-5">
-      {/* Row 1: Score + Trade Setup */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <ScoreCard
-          overall={state.overall}
-          signal={state.signal}
-          confidence={state.confidence}
-          overallLabel={t("coin_analysis.score.overall")}
-          signalLabel={t("coin_analysis.score.signal")}
-          confidenceLabel={t("coin_analysis.score.confidence")}
-        />
-        <TradeSetupCard
-          hasTrade={state.hasTrade}
-          reason={state.tradeReason}
-          entry={state.entry}
-          entryDirection={state.entryDirection}
-          entryDirectionLabel={state.entryDirectionLabel}
-          stopLoss={state.stopLoss}
-          tp1={state.takeProfit.tp1}
-          tp2={state.takeProfit.tp2}
-          tp3={state.takeProfit.tp3}
-          entryLabel={t("coin_analysis.trade.entry")}
-          stopLossLabel={t("coin_analysis.trade.stop_loss")}
-          tp1Label={t("coin_analysis.trade.tp1")}
-          tp2Label={t("coin_analysis.trade.tp2")}
-          tp3Label={t("coin_analysis.trade.tp3")}
-          directionLabel={t("coin_analysis.trade.direction")}
-        />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <SignalCard explanation={analysis.explanation} overallScore={analysis.overallScore} />
+        <MarketCard data={analysis.market} />
+        <ScoreOverview analysis={analysis} />
       </div>
+      <ChartSection coinId={coinId} />
+    </div>
+  );
+}
 
-      {/* Row 2: Market + Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <MarketCard
-          data={state.market}
-          titleLabel={t("coin_analysis.market.title")}
-          priceLabel={t("coin_analysis.market.price")}
-          trendLabel={t("coin_analysis.market.trend")}
-          volumeLabel={t("coin_analysis.market.volume")}
-          highLabel={t("coin_analysis.market.high")}
-          lowLabel={t("coin_analysis.market.low")}
-        />
-        <IndicatorsCard
-          items={state.indicators}
-          titleLabel={t("coin_analysis.indicators.title")}
-        />
+function ChartSection({ coinId }: { readonly coinId: string }) {
+  return (
+    <div className="bg-gray-900/30 border border-gray-800/50 rounded-xl overflow-hidden" style={{ height: 480 }}>
+      <CandlestickChart coinId={coinId} />
+    </div>
+  );
+}
+
+function SignalCard({
+  explanation,
+  overallScore,
+}: {
+  readonly explanation: CoinAnalysisState["explanation"];
+  readonly overallScore: CoinAnalysisState["overallScore"];
+}) {
+  const { t } = useI18n();
+  const s = overallScore.signal;
+  const isAction = s === "Strong Buy" || s === "Buy";
+  const isWait = s === "Strong Sell" || s === "Sell";
+
+  const badgeColor = isAction
+    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+    : isWait
+      ? "bg-red-500/10 text-red-400 border-red-500/30"
+      : "bg-yellow-500/10 text-yellow-400 border-yellow-500/30";
+
+  const actionLabel = isAction
+    ? t("coin_analysis.recommendation.open")
+    : isWait
+      ? t("coin_analysis.recommendation.wait")
+      : t("coin_analysis.recommendation.neutral");
+
+  return (
+    <Card
+      title={t("coin_analysis.recommendation.title")}
+      subtitle={`${overallScore.value.toFixed(0)} — ${t("coin_row." + overallScore.signal.toLowerCase().replace(" ", "_"))}`}
+    >
+      <div className="space-y-3">
+        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold ${badgeColor}`}>
+          {actionLabel}
+        </div>
+
+        <p className="text-xs text-gray-300 leading-relaxed">
+          {explanation.summary}
+        </p>
+
+        {explanation.strengths.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mb-1.5">
+              {t("coin_analysis.explanation.strengths")}
+            </p>
+            <ul className="space-y-0.5">
+              {explanation.strengths.map((s, i) => (
+                <li key={i} className="text-[11px] text-gray-400 flex items-start gap-1.5">
+                  <span className="text-emerald-400 mt-0.5 shrink-0">+</span>
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {explanation.weaknesses.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-1.5">
+              {t("coin_analysis.explanation.weaknesses")}
+            </p>
+            <ul className="space-y-0.5">
+              {explanation.weaknesses.map((w, i) => (
+                <li key={i} className="text-[11px] text-gray-400 flex items-start gap-1.5">
+                  <span className="text-red-400 mt-0.5 shrink-0">−</span>
+                  {w}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {explanation.risks.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold text-yellow-400 uppercase tracking-wider mb-1.5">
+              {t("coin_analysis.explanation.risks")}
+            </p>
+            <ul className="space-y-0.5">
+              {explanation.risks.map((r, i) => (
+                <li key={i} className="text-[11px] text-gray-400 flex items-start gap-1.5">
+                  <span className="text-yellow-400 mt-0.5 shrink-0">!</span>
+                  {r}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
+    </Card>
+  );
+}
 
-      {/* Row 3: Explanation (full width) */}
-      <ExplanationCard
-        data={state.explanation}
-        titleLabel={t("coin_analysis.explanation.title")}
-        strengthsLabel={t("coin_analysis.explanation.strengths")}
-        weaknessesLabel={t("coin_analysis.explanation.weaknesses")}
-        risksLabel={t("coin_analysis.explanation.risks")}
-        opportunitiesLabel={t("coin_analysis.explanation.opportunities")}
-        recommendationLabel={t("coin_analysis.explanation.recommendation")}
-      />
+function MarketCard({ data }: { readonly data: CoinAnalysisState["market"] }) {
+  const { t } = useI18n();
+
+  return (
+    <Card title={t("coin_analysis.market.title")}>
+      <div className="grid grid-cols-2 gap-3">
+        <Stat label={t("coin_analysis.market.price")} value={data.price} />
+        <Stat label={t("coin_analysis.market.change_24h")} value={data.change24h} className={data.isPositive ? "text-emerald-400" : "text-red-400"} />
+        <Stat label={t("coin_analysis.market.change_percent")} value={data.changePercent24h} className={data.isPositive ? "text-emerald-400" : "text-red-400"} />
+        <Stat label={t("coin_analysis.market.high")} value={data.high24h} />
+        <Stat label={t("coin_analysis.market.low")} value={data.low24h} />
+        <Stat label={t("coin_analysis.market.volume")} value={data.volume} />
+        {data.nearestSupport && <Stat label={t("coin_analysis.market.support")} value={data.nearestSupport} className="text-emerald-400" />}
+        {data.nearestResistance && <Stat label={t("coin_analysis.market.resistance")} value={data.nearestResistance} className="text-red-400" />}
+      </div>
+    </Card>
+  );
+}
+
+function ScoreOverview({ analysis }: { readonly analysis: CoinAnalysisState }) {
+  const { t } = useI18n();
+  const { scores, overallScore } = analysis;
+
+  return (
+    <Card title={t("coin_analysis.score.title")} subtitle={`${overallScore.value.toFixed(0)} — ${t("coin_row." + overallScore.signal.toLowerCase().replace(" ", "_"))}`}>
+      <div className="space-y-2">
+        {Object.entries(scores).map(([key, score]) => (
+          <div key={key}>
+            <div className="flex justify-between text-xs mb-0.5">
+              <span className="text-gray-300">{t(`coin_analysis.score.${key}`)}</span>
+              <span className="text-gray-400">{score.value}</span>
+            </div>
+            <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${score.value >= 65 ? "bg-blue-500" : score.value <= 40 ? "bg-red-500" : "bg-yellow-500"}`}
+                style={{ width: `${score.value}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-gray-500 mt-0.5">{score.title}</p>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function Stat({ label, value, className = "" }: { readonly label: string; readonly value: string; readonly className?: string }) {
+  return (
+    <div className="bg-gray-800/30 rounded-lg p-2.5">
+      <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">{label}</p>
+      <p className={`text-xs font-bold tabular-nums ${className}`}>{value}</p>
     </div>
   );
 }

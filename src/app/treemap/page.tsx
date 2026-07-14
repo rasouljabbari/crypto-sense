@@ -7,12 +7,11 @@ const TreemapChart = dynamic(() => import("@/components/TreemapChart").then(m =>
 import { useI18n } from "@/i18n/context";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
-import Link from "next/link";
 import { useEffect } from "react";
 
 export default function TreemapPage() {
   const { loadFromBinance, coins, isLive, isLoading } = useStore();
-  const { t, dir } = useI18n();
+  const { t } = useI18n();
   useBinanceWebSocket();
 
   useEffect(() => {
@@ -21,11 +20,6 @@ export default function TreemapPage() {
 
   return (
     <DashboardLayout>
-        <Link href="/" className="text-gray-400 hover:text-gray-200 text-sm mb-6 inline-flex items-center gap-1">
-          <span>{dir === "rtl" ? "→" : "←"}</span>
-          {t("indicators.back")}
-        </Link>
-
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
             <div className="flex items-center gap-3">
@@ -43,7 +37,7 @@ export default function TreemapPage() {
 
         {isLoading || coins.length === 0 ? (
           <div className="bg-gray-900/30 rounded-xl border border-gray-800 p-16 text-center text-sm text-gray-500">
-            {t("indicators.screener.loading")}
+            {t("chart.loading")}
           </div>
         ) : (
           <div className="bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden" style={{ height: "calc(100vh - 260px)", minHeight: 500 }}>

@@ -4,8 +4,9 @@ import { CoinSearch, type CoinSearchCoin } from "@/components/CoinSearch";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { CoinAnalysisResult } from "@/features/coin-analysis";
 import { useI18n } from "@/i18n/context";
+import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 
 /* ── Static coin lists (no business logic) ─────────────────────────────── */
 
@@ -23,7 +24,7 @@ const ALL_COINS: CoinSearchCoin[] = [
   { symbol: "DOGE", name: "Dogecoin" },
   { symbol: "AVAX", name: "Avalanche" },
   { symbol: "DOT", name: "Polkadot" },
-  { symbol: "MATIC", name: "Polygon" },
+  { symbol: "POL", name: "Polygon" },
   { symbol: "LINK", name: "Chainlink" },
   { symbol: "UNI", name: "Uniswap" },
   { symbol: "ATOM", name: "Cosmos" },
@@ -43,9 +44,16 @@ export default function CoinAnalysisPage() {
 
 function CoinAnalysisContent() {
   const { t } = useI18n();
+  const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const coinId = searchParams.get("coin");
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace(`/login?callbackUrl=${encodeURIComponent("/analysis")}`);
+    }
+  }, [status, router]);
 
   const navigateTo = useCallback(
     (symbol: string) => {
@@ -63,6 +71,8 @@ function CoinAnalysisContent() {
     (query: string) => navigateTo(query.trim()),
     [navigateTo],
   );
+
+  if (status !== "authenticated") return null;
 
   return (
     <DashboardLayout>
@@ -82,6 +92,7 @@ function CoinAnalysisContent() {
           <CoinSearch
             coins={ALL_COINS}
             popularCoins={POPULAR_COINS}
+            defaultQuery={coinId ?? ""}
             onSelect={handleSelect}
             onSearch={handleSearch}
           />

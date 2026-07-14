@@ -7,15 +7,15 @@ import type { MarketSnapshot } from "../types";
 import type { IndicatorInput } from "../services/scoring";
 
 export function computeIndicators(snapshot: MarketSnapshot): IndicatorInput {
-  const daily = snapshot.candles["1d"];
-  if (daily.length < 20) {
+  const candles = snapshot.candles["1h"];
+  if (candles.length < 50) {
     return getFallbackIndicators();
   }
 
-  const closes = daily.map((c) => c.close);
-  const highs = daily.map((c) => c.high);
-  const lows = daily.map((c) => c.low);
-  const volumes = daily.map((c) => c.volume);
+  const closes = candles.map((c) => c.close);
+  const highs = candles.map((c) => c.high);
+  const lows = candles.map((c) => c.low);
+  const volumes = candles.map((c) => c.volume);
 
   const rsiResult = rsi(closes);
   const macdResult = macd(closes);

@@ -95,8 +95,11 @@ export function supportResistance(
     .slice(0, 5)
     .sort((a, b) => b.price - a.price);
 
+  const decimals = currentPrice < 0.01 ? 6 : currentPrice < 0.1 ? 5 : currentPrice < 1 ? 4 : currentPrice < 10 ? 3 : 2;
+  const factor = 10 ** decimals;
+
   return {
-    supportLevels: support.map((p) => Math.round(p.price * 100) / 100),
-    resistanceLevels: resistance.map((p) => Math.round(p.price * 100) / 100),
+    supportLevels: support.map((p) => Math.round(p.price * factor) / factor),
+    resistanceLevels: resistance.map((p) => Math.round(p.price * factor) / factor),
   };
 }

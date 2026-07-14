@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Market Engine
 // Input:  coin symbol (coinId or Binance symbol)
-// Output: MarketSnapshot — normalized price + candles for 1H / 4H / 1D
+// Output: MarketSnapshot — normalized price + candles (1H primary)
 // ---------------------------------------------------------------------------
 
 import { MarketRepository } from "../api/repositories/MarketRepository";
@@ -80,7 +80,7 @@ export class MarketEngine {
     // Fetch ticker + all candle intervals in parallel
     const [tickerResult, candles1h, candles4h, candles1d] = await Promise.all([
       this.marketRepo.getTicker(binanceSymbol, signal),
-      this.marketRepo.getKlines(binanceSymbol, "1h", 24, signal),
+      this.marketRepo.getKlines(binanceSymbol, "1h", 200, signal),
       this.marketRepo.getKlines(binanceSymbol, "4h", 42, signal),
       this.marketRepo.getKlines(binanceSymbol, "1d", 30, signal),
     ]);

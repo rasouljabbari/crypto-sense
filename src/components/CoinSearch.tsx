@@ -18,11 +18,22 @@ export interface CoinSearchCoin {
   image?: string;
 }
 
+interface ApiSearchResult {
+  symbol: string;
+  name: string;
+  binanceSymbol: string;
+  price: string;
+  changePercent: string;
+  volume: string;
+}
+
 export interface CoinSearchProps {
   /** Full coin list used for autocomplete filtering (client-side). */
   coins: CoinSearchCoin[];
   /** Coins shown in the "Popular" pill row. Defaults to first 5 of `coins`. */
   popularCoins?: CoinSearchCoin[];
+  /** Initial value for the search input. Updates when value changes. */
+  defaultQuery?: string;
   /** Callback when user selects a coin from dropdown or clicks a pill. */
   onSelect: (coin: CoinSearchCoin) => void;
   /** Callback when user presses Enter or clicks the search button with free text. */
@@ -60,6 +71,7 @@ const MAX_AUTOCOMPLETE = 8;
 export function CoinSearch({
   coins,
   popularCoins,
+  defaultQuery = "",
   onSelect,
   onSearch,
   onClearRecent,
@@ -84,13 +96,61 @@ export function CoinSearch({
   const _noResults = noResultsLabel ?? t("coin_search.no_results");
 
   /* ── State ───────────────────────────────────────────────────────────── */
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(defaultQuery);
   const [isOpen, setIsOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-
+  const [apiResults, setApiResults] = useState<CoinSearchCoin[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const apiTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  /* ── Sync when parent changes defaultQuery (e.g. URL param) ──────────── */
+  useEffect(() => {
+    setQuery(defaultQuery);
+  }, [defaultQuery]);
+
+  /* ── API search (debounced) ──────────────────────────────────────────── */
+  useEffect(() => {
+    if (apiTimer.current) clearTimeout(apiTimer.current);
+    const trimmed = query.trim();
+    if (!trimmed || trimmed.length < 1) {
+      setApiResults([]);
+      return;
+    }
+    const localMatch = coins.some(
+      (c) =>
+        c.symbol.toUpperCase().includes(trimmed.toUpperCase()) ||
+        c.name.toUpperCase().includes(trimmed.toUpperCase()),
+    );
+    if (localMatch) {
+      setApiResults([]);
+      return;
+    }
+    apiTimer.current = setTimeout(async () => {
+      setApiLoading(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.results) {
+          setApiResults(
+            json.results.map((r: ApiSearchResult) => ({
+              symbol: r.symbol,
+              name: r.name,
+            })),
+          );
+        }
+      } catch {
+      } finally {
+        setApiLoading(false);
+      }
+    }, 300);
+    return () => {
+      if (apiTimer.current) clearTimeout(apiTimer.current);
+    };
+  }, [query, coins]);
 
   /* ── Load recent searches from localStorage on mount ─────────────────── */
   useEffect(() => {
@@ -136,8 +196,8 @@ export function CoinSearch({
     onClearRecent?.();
   }, [persistRecent, onClearRecent]);
 
-  /* ── Autocomplete filtering (client-side, by symbol OR name) ─────────── */
-  const matches = useMemo(() => {
+  /* ── Autocomplete (local + API) ─────────────────────────────────────── */
+  const localMatches = useMemo(() => {
     if (!query.trim()) return [];
     const q = query.trim().toUpperCase();
     return coins
@@ -149,6 +209,11 @@ export function CoinSearch({
       .slice(0, MAX_AUTOCOMPLETE);
   }, [coins, query]);
 
+  const matches = useMemo(() => {
+    if (localMatches.length > 0) return localMatches;
+    return apiResults.slice(0, MAX_AUTOCOMPLETE);
+  }, [localMatches, apiResults]);
+
   /* ── Popular coins fallback ──────────────────────────────────────────── */
   const _popular = useMemo(
     () => popularCoins ?? coins.slice(0, 5),
@@ -159,7 +224,6 @@ export function CoinSearch({
   const selectCoin = useCallback(
     (coin: CoinSearchCoin) => {
       addRecent(coin.symbol);
-      setQuery("");
       setIsOpen(false);
       onSelect(coin);
     },
@@ -170,7 +234,6 @@ export function CoinSearch({
     const trimmed = query.trim();
     if (!trimmed) return;
     addRecent(trimmed);
-    setQuery("");
     setIsOpen(false);
     onSearch(trimmed);
   }, [query, addRecent, onSearch]);
@@ -304,6 +367,11 @@ export function CoinSearch({
                     </span>
                   </button>
                 ))
+              ) : apiLoading ? (
+                <div className="px-4 py-6 text-center text-sm text-gray-500">
+                  <span className="inline-block w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mr-2 align-middle" />
+                  Searching...
+                </div>
               ) : (
                 <div className="px-4 py-6 text-center text-sm text-gray-500">
                   {_noResults}

@@ -7,13 +7,11 @@
   "nav": {
     "overview": "Genel Bakış",
     "coins": "Coinler",
-    "indicators": "Göstergeler",
     "watchlist": "İzleme Listesi",
     "treemap": "Isı Haritası",
     "fear_greed": "Korku & Açgözlülük",
     "coming_soon": "Çok yakında...",
     "coin_analysis": "Coin Analizi",
-    "sidebar_section_main": "Ana Menü",
     "sidebar_section_market": "Piyasa"
   },
   "overview": {
@@ -31,12 +29,10 @@
     "total_coins": "Toplam Coin",
     "neutral": "Nötr Sinyaller",
     "total_volume": "Toplam Hacim",
-    "quick_nav": "Hızlı Navigasyon",
     "mcap_chart": "Kripto Piyasa Değeri",
     "mcap_30d": "30G",
     "mcap_1y": "1Y",
-    "mcap_all": "Tümü",
-    "footnote": "Veriler Binance ve CoinGecko'dan alınmıştır — gerçek zamanlı güncellenir"
+    "mcap_all": "Tümü"
   },
   "fear_greed": {
     "title": "Korku ve Açgözlülük Endeksi",
@@ -148,61 +144,6 @@
     "watch": "İzle",
     "vol_tooltip": "24s Hacim / Piyasa Değeri — yüksek = daha likit",
     "rsi_tooltip": "Göreceli Güç Endeksi (14)"
-  },
-  "indicators": {
-    "back": "Panoya Dön",
-    "title": "Piyasa Göstergeleri",
-    "subtitle": "Temel piyasa metrikleri — dominans, oranlar ve toplam piyasa değeri",
-    "live": "Canlı",
-    "columns": {
-      "indicator": "Gösterge",
-      "value": "Değer",
-      "signal": "Sinyal"
-    },
-    "rows": {
-      "total": "TOTAL (Toplam Kripto Piyasa Değeri)",
-      "total2": "TOTAL2 (BTC Hariç Toplam)",
-      "total3": "TOTAL3 (BTC ve ETH Hariç Toplam)",
-      "btc_d": "BTC.D (Bitcoin Dominansı)",
-      "eth_d": "ETH.D (Ethereum Dominansı)",
-      "bnb_d": "BNB.D (BNB Dominansı)",
-      "usdt_d": "USDT.D (Tether Dominansı)",
-      "others_d": "OTHERS.D (İlk 10 Hariç)",
-      "eth_btc": "ETH.BTC",
-      "bnb_btc": "BNB.BTC",
-      "volume_24h": "24s Hacim"
-    },
-    "signals": {
-      "risk_off": "Riskten Kaçın",
-      "risk_on": "Risk Al",
-      "neutral": "Nötr",
-      "strong": "Güçlü",
-      "weak": "Zayıf",
-      "stable": "İstikrarlı",
-      "caution": "Dikkat",
-      "normal": "Normal",
-      "eth_up": "ETH ↑",
-      "btc_up": "BTC ↑",
-      "flat": "Yatay",
-      "bullish": "Yükseliş",
-      "bearish": "Düşüş",
-      "altseason": "Alt Sezonu",
-      "btc_season": "BTC Sezonu",
-      "none": "—"
-    },
-    "footnote": "BTC.D = BTC Piyasa Değeri ÷ Toplam Piyasa Değeri · ETH.BTC = ETH Fiyatı ÷ BTC Fiyatı · OTHERS.D = İlk 10 dışındaki coinlerin Piyasa Değeri ÷ Toplam Piyasa Değeri",
-    "estimated": "Tahmini veri kullanılıyor",
-    "screener": {
-      "title": "Coin Tarayıcı (Hacim ≥ 1000 BTC)",
-      "filter_vol": "24s BTC hacmi",
-      "loading": "Yükleniyor...",
-      "empty": "Veri yok",
-      "col_pair": "Sembol",
-      "col_price": "Fiyat",
-      "col_chg": "24s Değ. %",
-      "col_vol": "Hacim (BTC)",
-      "footer": "{count} coin, ≥ 1.000 BTC 24s hacim"
-    }
   },
   "chart": {
       "1h": "1 Saatlik",
@@ -464,21 +405,43 @@
     "no_result_title": "Coin bulunamadı",
     "no_result_description": "{{coin}} için veri mevcut değil. Sembolü kontrol edin ve tekrar deneyin.",
     "score": {
+      "title": "Skorlar",
       "overall": "Genel Skor",
       "signal": "Sinyal",
-      "confidence": "Güven"
+      "confidence": "Güven",
+      "trend": "Trend",
+      "momentum": "Momentum",
+      "volume": "Hacim",
+      "volatility": "Volatilite",
+      "risk": "Risk",
+      "status": {
+        "strong_bullish": "Güçlü Yükseliş",
+        "bullish": "Yükseliş",
+        "neutral": "Nötr",
+        "bearish": "Düşüş",
+        "strong_bearish": "Güçlü Düşüş"
+      }
     },
     "trade": {
-      "entry": "İşlem Kurulumu",
+      "title": "İşlem Kurulumu",
+      "entry": "Giriş",
       "stop_loss": "Zarar Durdur",
       "tp1": "KP 1",
       "tp2": "KP 2",
       "tp3": "KP 3",
-      "direction": "Yön"
+      "direction": "Yön",
+      "risk_reward": "R:R",
+      "quality": "Kalite",
+      "no_trade": "İşlem kurulumu yok",
+      "reason": "Sebep"
     },
     "market": {
       "title": "Piyasa",
+      "support": "Destek",
+      "resistance": "Direnç",
       "price": "Güncel Fiyat",
+      "change_24h": "24s Değişim",
+      "change_percent": "24s %",
       "trend": "Trend",
       "volume": "Hacim (24s)",
       "high": "En Yüksek",
@@ -493,8 +456,25 @@
       "weaknesses": "Zayıf Yönler",
       "risks": "Ana Riskler",
       "opportunities": "Fırsatlar",
-      "recommendation": "Öneri"
+      "recommendation": "Tavsiye",
+      "summary_signals": "{strengths} yükseliş sinyali, {weaknesses} düşüş sinyali. Genel skor {score}/100 ({signal}).",
+      "summary_no_signals": "Güçlü sinyal yok. Genel skor {score}/100 ({signal}).",
+      "risk_low": "Düşük risk — olumlu risk profili",
+      "risk_elevated": "Yüksek risk — pozisyon boyutunu küçültün",
+      "dimension_score": "{dimension}: {status} ({value})"
+    },
+    "recommendation": {
+      "title": "İşlem Sinyali",
+      "open": "Pozisyon Aç",
+      "wait": "Bekle",
+      "neutral": "Nötr",
+      "open_detail": "Pozisyon Aç — birden çok boyutta uygun koşullar",
+      "wait_detail": "Bekle — zayıf koşullar; girişi yeniden değerlendirin",
+      "neutral_detail": "Nötr — daha net sinyalleri bekleyin"
     }
+  },
+  "errors": {
+    "cannot_resolve_symbol": "\"{symbol}\" sembolü çözülemedi. Bir Binance sembolü (örn. BTCUSDT), coin kimliği (örn. bitcoin) veya temel varlık (örn. BTC) kullanın."
   },
   "coin_search": {
     "label": "Kripto Para Ara",

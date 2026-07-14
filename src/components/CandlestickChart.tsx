@@ -29,95 +29,6 @@ function calcSMA(data: ChartDataPoint[], period: number) {
     .slice(0, -1);
 }
 
-function calcRSI(data: ChartDataPoint[], period = 14) {
-  if (data.length < period + 1) return [];
-
-  let avgGain = 0, avgLoss = 0;
-  for (let i = 1; i <= period; i++) {
-    const change = data[i].close - data[i - 1].close;
-    if (change > 0) avgGain += change;
-    else avgLoss += Math.abs(change);
-  }
-  avgGain /= period;
-  avgLoss /= period;
-
-  const result: { time: UTCTimestamp; value: number }[] = [];
-  const firstRS = avgGain / (avgLoss || 0.001);
-  result.push({ time: fmtTime(data[period]), value: 100 - 100 / (1 + firstRS) });
-
-  for (let i = period + 1; i < data.length; i++) {
-    const change = data[i].close - data[i - 1].close;
-    const gain = change > 0 ? change : 0;
-    const loss = change < 0 ? Math.abs(change) : 0;
-    avgGain = (avgGain * (period - 1) + gain) / period;
-    avgLoss = (avgLoss * (period - 1) + loss) / period;
-    const rs = avgGain / (avgLoss || 0.001);
-    result.push({ time: fmtTime(data[i]), value: 100 - 100 / (1 + rs) });
-  }
-
-  return result;
-}
-
-function calcDMI(data: ChartDataPoint[], period = 14) {
-  const tr: number[] = [];
-  const plusDM: number[] = [];
-  const minusDM: number[] = [];
-
-  for (let i = 1; i < data.length; i++) {
-    const h = data[i].high, l = data[i].low;
-    const pH = data[i - 1].high, pL = data[i - 1].low, pC = data[i - 1].close;
-    tr.push(Math.max(h - l, Math.abs(h - pC), Math.abs(l - pC)));
-    const up = h - pH, down = pL - l;
-    plusDM.push(up > down && up > 0 ? up : 0);
-    minusDM.push(down > up && down > 0 ? down : 0);
-  }
-
-  const sTR: number[] = [];
-  const sPDM: number[] = [];
-  const sMDM: number[] = [];
-
-  let sumTR = 0, sumPDM = 0, sumMDM = 0;
-  for (let i = 0; i < period; i++) {
-    sumTR += tr[i]; sumPDM += plusDM[i]; sumMDM += minusDM[i];
-  }
-  sTR.push(sumTR / period);
-  sPDM.push(sumPDM / period);
-  sMDM.push(sumMDM / period);
-
-  for (let i = period; i < tr.length; i++) {
-    sTR.push((sTR[sTR.length - 1] * (period - 1) + tr[i]) / period);
-    sPDM.push((sPDM[sPDM.length - 1] * (period - 1) + plusDM[i]) / period);
-    sMDM.push((sMDM[sMDM.length - 1] * (period - 1) + minusDM[i]) / period);
-  }
-
-  const plusDI: { time: UTCTimestamp; value: number }[] = [];
-  const minusDI: { time: UTCTimestamp; value: number }[] = [];
-  const dx: number[] = [];
-
-  for (let i = 0; i < sTR.length; i++) {
-    const tv = sTR[i] || 0.001;
-    const pd = 100 * sPDM[i] / tv;
-    const md = 100 * sMDM[i] / tv;
-    const t = fmtTime(data[i + period]);
-    plusDI.push({ time: t, value: pd });
-    minusDI.push({ time: t, value: md });
-    dx.push(100 * Math.abs(pd - md) / ((pd + md) || 0.001));
-  }
-
-  const adx: { time: UTCTimestamp; value: number }[] = [];
-  if (dx.length >= period) {
-    let sumDX = 0;
-    for (let i = 0; i < period; i++) sumDX += dx[i];
-    adx.push({ time: plusDI[period - 1].time, value: sumDX / period });
-    for (let i = period; i < dx.length; i++) {
-      const val = (adx[adx.length - 1].value * (period - 1) + dx[i]) / period;
-      adx.push({ time: plusDI[i].time, value: val });
-    }
-  }
-
-  return { plusDI, minusDI, adx };
-}
-
 interface Props {
   coinId: string;
 }
@@ -165,21 +76,15 @@ export function CandlestickChart({ coinId }: Props) {
   const hLineActiveRef = useRef(false);
   hLineActiveRef.current = hLineActive;
   const [showSMA, setShowSMA] = useState(true);
-  const [showRSI, setShowRSI] = useState(false);
-  const [showDMI, setShowDMI] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const reloadingRef = useRef(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const rsiSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
-  const dmiSeriesRef = useRef<ISeriesApi<"Line">[]>([]);
   const hlinePricesRef = useRef<number[]>([]);
   const hlinesRef = useRef<IPriceLine[]>([]);
   const smaSeriesArrRef = useRef<ISeriesApi<"Line">[]>([]);
   const loadedRef = useRef(false);
-  const dmiDataRef = useRef<ReturnType<typeof calcDMI>>({ plusDI: [], minusDI: [], adx: [] });
-  const rsiDataRef = useRef<{ time: UTCTimestamp; value: number }[]>([]);
-  const [crosshairValues, setCrosshairValues] = useState<{ rsi?: string; pdi?: string; mdi?: string; adx?: string; vol?: string } | null>(null);
+  const [crosshairValues, setCrosshairValues] = useState<{ vol?: string } | null>(null);
 
   const symbol = COIN_SYMBOL_MAP[coinId] ?? (coinId.toUpperCase().endsWith("USDT") ? coinId.toUpperCase() : `${coinId.toUpperCase()}USDT`);
 
@@ -292,16 +197,6 @@ export function CandlestickChart({ coinId }: Props) {
   }, [showSMA]);
 
   useEffect(() => {
-    rsiSeriesRef.current?.applyOptions({ visible: showRSI });
-  }, [showRSI]);
-
-  useEffect(() => {
-    for (const s of dmiSeriesRef.current) {
-      s.applyOptions({ visible: showDMI });
-    }
-  }, [showDMI]);
-
-  useEffect(() => {
     const container = containerRef.current;
     if (!container) { console.warn("chart: no container"); return; }
     if (data.length === 0) { console.warn("chart: no data", status.type); return; }
@@ -364,6 +259,7 @@ export function CandlestickChart({ coinId }: Props) {
         borderDownColor: "#ef4444",
         wickUpColor: "#34d399",
         wickDownColor: "#ef4444",
+        priceFormat: { type: "price", precision: 4, minMove: 0.0001 },
       });
 
       candleSeriesRef.current = candleSeries;
@@ -426,44 +322,7 @@ export function CandlestickChart({ coinId }: Props) {
       }
       smaSeriesArrRef.current = newSmaSeries;
 
-      const dmiData = calcDMI(data);
-      dmiDataRef.current = dmiData;
-      if (showDMI) {
-        const dmiPane = chart.addPane();
-        dmiPane.setStretchFactor(0.25);
-        const pdiLine = chart.addSeries(LineSeries, {
-          color: "#34d399", lineWidth: 1,
-        }, dmiPane.paneIndex());
-        const mdiLine = chart.addSeries(LineSeries, {
-          color: "#ef4444", lineWidth: 1,
-        }, dmiPane.paneIndex());
-        const adxLine = chart.addSeries(LineSeries, {
-          color: "#f59e0b", lineWidth: 1,
-        }, dmiPane.paneIndex());
-        if (dmiData.plusDI.length > 0) pdiLine.setData(dmiData.plusDI);
-        if (dmiData.minusDI.length > 0) mdiLine.setData(dmiData.minusDI);
-        if (dmiData.adx.length > 0) adxLine.setData(dmiData.adx);
-        dmiSeriesRef.current = [pdiLine, mdiLine, adxLine];
-      } else {
-        dmiSeriesRef.current = [];
-      }
 
-      const rsiData = calcRSI(data);
-      rsiDataRef.current = rsiData;
-      if (showRSI) {
-        const rsiPane = chart.addPane();
-        rsiPane.setStretchFactor(0.25);
-        const rsiLine = chart.addSeries(LineSeries, {
-          color: "#a78bfa", lineWidth: 1,
-        }, rsiPane.paneIndex());
-        if (rsiData.length > 0) rsiLine.setData(rsiData);
-        rsiLine.createPriceLine({ price: 70, color: "rgba(239,68,68,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
-        rsiLine.createPriceLine({ price: 50, color: "rgba(107,114,128,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
-        rsiLine.createPriceLine({ price: 30, color: "rgba(52,211,153,0.35)", lineStyle: LineStyle.Dotted, lineWidth: 1 });
-        rsiSeriesRef.current = rsiLine;
-      } else {
-        rsiSeriesRef.current = null;
-      }
 
       const newHlines: IPriceLine[] = [];
       for (const price of hlinePricesRef.current) {
@@ -523,22 +382,6 @@ export function CandlestickChart({ coinId }: Props) {
           else if (v >= 1e3) vals.vol = (v / 1e3).toFixed(2) + "K";
           else vals.vol = v.toFixed(0);
         }
-        if (showRSI) {
-          const rsiV = rsiDataRef.current.find((r) => Number(r.time) === t);
-          if (rsiV) vals.rsi = rsiV.value.toFixed(1);
-        }
-        if (showDMI) {
-          const dmiV = dmiDataRef.current;
-          const dmiIdx = idx >= 14 ? idx - 14 : -1;
-          if (dmiIdx >= 0 && dmiIdx < dmiV.plusDI.length) {
-            vals.pdi = dmiV.plusDI[dmiIdx].value.toFixed(1);
-            vals.mdi = dmiV.minusDI[dmiIdx].value.toFixed(1);
-          }
-          const adxIdx = dmiIdx >= 14 ? dmiIdx - 14 : -1;
-          if (adxIdx >= 0 && adxIdx < dmiV.adx.length) {
-            vals.adx = dmiV.adx[adxIdx].value.toFixed(1);
-          }
-        }
         setCrosshairValues(Object.keys(vals).length > 0 ? vals : null);
       });
 
@@ -559,11 +402,9 @@ export function CandlestickChart({ coinId }: Props) {
         candleSeriesRef.current = null;
         smaSeriesArrRef.current = [];
         hlinesRef.current = [];
-        rsiSeriesRef.current = null;
-        dmiSeriesRef.current = [];
       };
     } catch (err) { console.error("chart creation error:", err); }
-  }, [data, tf.interval, showDMI, showRSI]);
+  }, [data, tf.interval]);
 
   return (
     <div ref={wrapperRef} className={`w-full h-full flex flex-col ${isFullscreen ? `${isDark ? "bg-[#0d1117]" : "bg-white"} p-4` : ""}`}>
@@ -594,7 +435,6 @@ export function CandlestickChart({ coinId }: Props) {
             >
               ☰ H-Line
             </button>
-            <div className="w-px h-4 bg-gray-700 mx-1" />
             <button
               onClick={() => setShowSMA(v => !v)}
               className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${showSMA
@@ -604,28 +444,9 @@ export function CandlestickChart({ coinId }: Props) {
             >
               3SMA
             </button>
-            <div className="w-px h-4 bg-gray-700 mx-1" />
-            <button
-              onClick={() => setShowRSI(v => !v)}
-              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${showRSI
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                : "text-gray-400 hover:text-gray-200 border border-transparent"
-                }`}
-            >
-              RSI
-            </button>
-            <button
-              onClick={() => setShowDMI(v => !v)}
-              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${showDMI
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                : "text-gray-400 hover:text-gray-200 border border-transparent"
-                }`}
-            >
-              DMI
-            </button>
+
             {hlinePricesRef.current.length > 0 && (
               <>
-                <div className="w-px h-4 bg-gray-700 mx-1" />
                 <button
                   onClick={clearAllDrawings}
                   className="px-2 py-1 text-xs font-medium rounded-md transition-colors text-gray-400 hover:text-red-400 border border-transparent hover:border-red-500/30"
@@ -650,13 +471,9 @@ export function CandlestickChart({ coinId }: Props) {
       <div className="relative flex-1 min-h-0">
         <div ref={containerRef} className="absolute inset-0 rounded-lg overflow-hidden" />
         {/* Crosshair tooltip */}
-        {crosshairValues && (
-          <div className="absolute top-2 right-2 z-20 flex flex-col gap-0.5 text-[9px] font-semibold pointer-events-none">
-            {crosshairValues.vol && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">VOL {crosshairValues.vol}</span>}
-            {crosshairValues.rsi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-purple-400 border border-gray-700/50">RSI {crosshairValues.rsi}</span>}
-            {crosshairValues.pdi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-emerald-400 border border-gray-700/50">+DI {crosshairValues.pdi}</span>}
-            {crosshairValues.mdi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-red-400 border border-gray-700/50">-DI {crosshairValues.mdi}</span>}
-            {crosshairValues.adx && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-amber-400 border border-gray-700/50">ADX {crosshairValues.adx}</span>}
+        {crosshairValues?.vol && (
+          <div className="absolute top-2 right-2 z-20 text-[9px] font-semibold pointer-events-none">
+            <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">VOL {crosshairValues.vol}</span>
           </div>
         )}
         {status.type === "loading" && (

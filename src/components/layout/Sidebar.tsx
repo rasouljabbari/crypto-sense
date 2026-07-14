@@ -33,7 +33,6 @@ function useNavItems(): NavItem[] {
       href: "/",
       label: t("nav.overview"),
       icon: <LayoutDashboardIcon />,
-      group: t("nav.sidebar_section_main"),
     },
     {
       href: "/coins",
@@ -44,12 +43,6 @@ function useNavItems(): NavItem[] {
       href: "/analysis",
       label: t("nav.coin_analysis"),
       icon: <CoinAnalysisIcon />,
-    },
-    {
-      href: "/indicators",
-      label: t("nav.indicators"),
-      icon: <IndicatorsIcon />,
-      group: t("nav.sidebar_section_market"),
     },
     {
       href: "/watchlist",
@@ -85,7 +78,7 @@ function isActive(pathname: string, href: string) {
 export function Sidebar() {
   const { mobileOpen, setMobileOpen } = useSidebar();
   const pathname = usePathname();
-  const { t, locale, setLocale } = useI18n();
+  const { t, locale, setLocale, dir } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const { data: session, status } = useSession();
   const [langOpen, setLangOpen] = useState(false);
@@ -137,13 +130,19 @@ export function Sidebar() {
       {/* Sidebar panel */}
       <aside
         className={`
-          fixed top-0 left-0 z-40 h-screen w-[260px]
+          fixed top-0 z-40 h-screen w-[260px]
           bg-theme-secondary/95 backdrop-blur-xl
-          border-r border-theme
+          ${dir === "rtl" ? "border-l" : "border-r"} border-theme
           flex flex-col
           transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-          lg:translate-x-0
-          ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
+          ${dir === "rtl" ? "lg:translate-x-0" : "lg:translate-x-0"}
+          ${mobileOpen
+            ? "translate-x-0 shadow-2xl"
+            : dir === "rtl"
+              ? "translate-x-full"
+              : "-translate-x-full"
+          }
+          ${dir === "rtl" ? "right-0" : "left-0"}
         `}
       >
         {/* ── Brand ──────────────────────────────────────────────── */}
@@ -207,7 +206,7 @@ export function Sidebar() {
                     >
                       {/* Active indicator bar */}
                       {active && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 rounded-r-full" />
+                        <span className={`absolute top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 ${dir === "rtl" ? "right-0 rounded-l-full" : "left-0 rounded-r-full"}`} />
                       )}
 
                       <span
@@ -225,7 +224,7 @@ export function Sidebar() {
                       {/* Subtle arrow on hover */}
                       {!active && (
                         <svg
-                          className="w-3 h-3 ml-auto opacity-0 -translate-x-1 group-hover/nav:opacity-60 group-hover/nav:translate-x-0 transition-all duration-200"
+                          className={`w-3 h-3 ${dir === "rtl" ? "mr-auto" : "ml-auto"} opacity-0 ${dir === "rtl" ? "translate-x-1 group-hover/nav:translate-x-0" : "-translate-x-1 group-hover/nav:translate-x-0"} transition-all duration-200 ${dir === "rtl" ? "rotate-180" : ""}`}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -414,15 +413,6 @@ function CoinAnalysisIcon() {
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
       <circle cx="14" cy="10" r="2" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 16l4-6 3 3 4-5" />
-    </svg>
-  );
-}
-
-function IndicatorsIcon() {
-  return (
-    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l4-8 4 4 4-6" />
     </svg>
   );
 }
