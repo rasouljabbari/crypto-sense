@@ -31,6 +31,7 @@ function calcSMA(data: ChartDataPoint[], period: number) {
 
 interface Props {
   coinId: string;
+  onTimeframeChange?: (interval: string) => void;
 }
 
 interface TimeframeOption {
@@ -49,7 +50,7 @@ function chartStatusReducer(_: ChartStatus, action: ChartStatus): ChartStatus {
   return action;
 }
 
-export function CandlestickChart({ coinId }: Props) {
+export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
   const { t } = useI18n();
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -414,7 +415,7 @@ export function CandlestickChart({ coinId }: Props) {
             {TIMEFRAMES.map((t) => (
               <button
                 key={t.interval}
-                onClick={() => setTf(t)}
+                onClick={() => { setTf(t); onTimeframeChange?.(t.interval); }}
                 className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${tf.interval === t.interval
                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                   : "text-gray-400 hover:text-gray-200 border border-transparent"

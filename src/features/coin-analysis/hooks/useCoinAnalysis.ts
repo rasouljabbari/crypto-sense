@@ -23,10 +23,11 @@ function formatVolume(value: number): string {
   return `$${value.toFixed(0)}`;
 }
 
-function getNearestSR(market: ReturnType<typeof useAnalysis>["market"]): Pick<MarketCardData, "nearestSupport" | "nearestResistance"> {
+function getNearestSR(market: ReturnType<typeof useAnalysis>["market"], interval: string = "1h"): Pick<MarketCardData, "nearestSupport" | "nearestResistance"> {
   if (!market) return {};
 
-  const candles = market.candles["1h"];
+  const key = interval === "4h" || interval === "1d" ? interval : "1h";
+  const candles = market.candles[key];
   if (candles.length < 20) return {};
 
   const highs = candles.map((c) => c.high);
@@ -43,10 +44,11 @@ function getNearestSR(market: ReturnType<typeof useAnalysis>["market"]): Pick<Ma
 }
 
 function buildMarketCard(
-  market: ReturnType<typeof useAnalysis>["market"]
+  market: ReturnType<typeof useAnalysis>["market"],
+  interval?: string,
 ): MarketCardData {
   const p = market?.price;
-  const sr = getNearestSR(market);
+  const sr = getNearestSR(market, interval);
 
   return {
     price: p?.current ? fmtPrice(p.current) : "—",
@@ -176,7 +178,7 @@ function buildExplanation(
 
 /* ── Hook ──────────────────────────────────────────────────────────────── */
 
-export function useCoinAnalysis(coinId: string | null): CoinAnalysisState {
+export function useCoinAnalysis(coinId: string | null, interval: string = "1h"): CoinAnalysisState {
   const { t } = useI18n();
   const { market, scores, signal, isLoading: dashLoading, error: dashError } = useAnalysis(coinId);
 
@@ -189,7 +191,7 @@ export function useCoinAnalysis(coinId: string | null): CoinAnalysisState {
   })();
 
   /* ── Derived State ──────────────────────────────────────────────────── */
-  const marketCard = useMemo(() => buildMarketCard(market), [market]);
+  const marketCard = useMemo(() => buildMarketCard(market, interval), [market, interval]);
   const indicators = useMemo(() => buildIndicatorItems(), []);
 
   const computedScores = useMemo(
