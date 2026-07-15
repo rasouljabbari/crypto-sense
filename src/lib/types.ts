@@ -29,6 +29,7 @@ export interface TechnicalIndicators {
     histogram: number;
   };
   ema9: number;
+  ema20: number;
   ema21: number;
   ema50: number;
   ema200: number;
@@ -39,6 +40,8 @@ export interface TechnicalIndicators {
   };
   supportLevels: number[];
   resistanceLevels: number[];
+  adx: number;
+  atr: number;
 }
 
 export interface TrendAnalysis {
@@ -81,13 +84,43 @@ export interface CoinAnalysis {
   trendAnalysis: TrendAnalysis;
   sentiment: SentimentData;
   lastUpdated: string;
+  signal: SignalType;
+  confidence: number;
+  tradeQuality: number;
+  riskLevel: RiskLevel;
+  riskReward: string | null;
+  trendLabel: TrendLabel;
+  status: TradeStatus;
+  recommendation: Recommendation;
+  recommendationReasonCode: ReasonCode;
+  recommendationReason: string;
+  recommendationColor: string;
+  recommendationPriority: number;
 }
+
+export type SignalType = "strong_buy" | "buy" | "neutral" | "sell" | "strong_sell";
+export type RiskLevel = "low" | "medium" | "high";
+export type TrendLabel = "strong_bullish" | "bullish" | "sideways" | "bearish" | "strong_bearish";
+export type TradeStatus = "ready" | "wait" | "no_trade";
+export type Recommendation = "ready" | "wait" | "skip";
+export type ReasonCode =
+  | "READY"
+  | "WAIT_PULLBACK"
+  | "WAIT_BREAKOUT"
+  | "WAIT_CONFIRMATION"
+  | "WAIT_VOLUME"
+  | "SKIP_HIGH_RISK"
+  | "SKIP_WEAK_TREND"
+  | "SKIP_LOW_RR"
+  | "SKIP_INVALID_SETUP";
+
+export type Timeframe = "1h" | "4h" | "1d";
 
 export interface FilterOptions {
   positionType: PositionType | "all";
   minVolume: number;
   minScore: number;
-  sortBy: "score" | "volume" | "priceChange" | "name" | "position" | "risk";
+  sortBy: "score" | "volume" | "priceChange" | "name" | "position" | "risk" | "signal" | "confidence" | "tradeQuality" | "trend" | "status" | "recommendation";
   sortOrder: "asc" | "desc";
 }
 

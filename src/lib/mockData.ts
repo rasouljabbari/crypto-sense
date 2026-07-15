@@ -8,6 +8,7 @@ function calculateSupportResistance(
   marketCap: number,
   rsi: number,
   ema9: number,
+  ema20: number,
   ema21: number,
   ema50: number,
   ema200: number,
@@ -73,6 +74,7 @@ function calculateSupportResistance(
   // 4. EMAs as dynamic S/R
   const emaEntries: { price: number; weight: number }[] = [
     { price: ema9, weight: 65 },
+    { price: ema20, weight: 68 },
     { price: ema21, weight: 70 },
     { price: ema50, weight: 75 },
     { price: ema200, weight: 85 },
@@ -224,11 +226,14 @@ export function generateTechnicalIndicators(marketData: MarketData): TechnicalIn
   const macdValue = Math.random() * 20 - 10;
   const macdSignal = macdValue + (Math.random() - 0.5) * 4;
   const ema9 = currentPrice * (1 + (Math.random() - 0.5) * 0.008);
+  const ema20 = currentPrice * (1 + (Math.random() - 0.5) * 0.012);
   const ema21 = currentPrice * (1 + (Math.random() - 0.5) * 0.015);
   const ema50 = currentPrice * (1 + (Math.random() - 0.5) * 0.025);
   const ema200 = currentPrice * (1 + (Math.random() - 0.5) * 0.06);
   const bbUpper = currentPrice * (1 + 0.015 + Math.random() * 0.01);
   const bbLower = currentPrice * (1 - 0.015 - Math.random() * 0.01);
+  const adx = 15 + Math.random() * 30;
+  const atr = currentPrice * (0.01 + Math.random() * 0.03);
 
   const { supportLevels, resistanceLevels } = calculateSupportResistance(
     currentPrice,
@@ -238,6 +243,7 @@ export function generateTechnicalIndicators(marketData: MarketData): TechnicalIn
     marketCap,
     rsi,
     ema9,
+    ema20,
     ema21,
     ema50,
     ema200,
@@ -254,6 +260,7 @@ export function generateTechnicalIndicators(marketData: MarketData): TechnicalIn
       histogram: macdValue - macdSignal,
     },
     ema9,
+    ema20,
     ema21,
     ema50,
     ema200,
@@ -264,6 +271,8 @@ export function generateTechnicalIndicators(marketData: MarketData): TechnicalIn
     },
     supportLevels,
     resistanceLevels,
+    adx,
+    atr,
   };
 }
 

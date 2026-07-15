@@ -3,6 +3,7 @@
 import { useI18n } from "@/i18n/context";
 import { useStore } from "@/store/useStore";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -66,9 +67,19 @@ export function Header() {
           </svg>
         </button>
 
-        <div className="flex items-center gap-2 min-w-0">
+        <Link href="/" className="flex items-center gap-2 min-w-0">
+          <div className="relative shrink-0">
+            <Image
+              src="/logo.svg"
+              alt="CryptoSense"
+              width={24}
+              height={24}
+              className="w-6 h-6 rounded-lg"
+            />
+            <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-400 rounded-full border-2 border-theme-secondary" />
+          </div>
           <h2 className="text-sm font-semibold text-theme-text truncate">{pageTitle}</h2>
-        </div>
+        </Link>
 
         <div className="flex items-center gap-2 ml-auto shrink-0">
           <div className="hidden md:flex items-center gap-2 text-xs text-theme-secondary">

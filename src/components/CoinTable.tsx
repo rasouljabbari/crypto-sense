@@ -38,13 +38,16 @@ export function CoinTable() {
     }
   }
 
+  const headerClass = "flex items-center gap-0.5 hover:text-gray-200 transition-colors cursor-pointer select-none w-full";
+  const headerText = "text-[11px] font-medium text-gray-400";
+
   return (
     <div className="space-y-4">
       <FilterBar />
 
       <div className="bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden">
         {/* Market Overview header row */}
-        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-800 flex-wrap">
+        <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-gray-800 flex-wrap">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-white">{t("table.market_overview")}</h2>
             <div className="flex items-center gap-3 sm:gap-4 text-xs flex-wrap">
@@ -69,44 +72,74 @@ export function CoinTable() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search coins..."
+            placeholder={t("search.placeholder")}
             className="bg-gray-800 text-gray-200 text-sm rounded-lg px-3 py-1.5 w-48 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder-gray-500"
           />
         </div>
 
         <div className="overflow-x-auto">
-          <div className="min-w-[640px] grid grid-cols-[2fr_1.2fr_0.5fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-xs font-medium text-gray-400 border-b border-gray-800">
-            <span className="flex items-center gap-1">
-              <span className="text-[9px] text-gray-600">#</span>
-              {t("table.columns.name")}
-            </span>
-            <button onClick={() => toggleSort("position")} className="flex items-center text-left hover:text-gray-200 transition-colors">
-              {t("table.columns.signal")}
-              <SortIcon active={filters.sortBy === "position"} dir={filters.sortOrder} />
-            </button>
-            <button onClick={() => toggleSort("risk")} className="flex items-center justify-center hover:text-gray-200 transition-colors">
-              {t("table.columns.risk")}
-              <SortIcon active={filters.sortBy === "risk"} dir={filters.sortOrder} />
-            </button>
-            <span className="text-right">{t("table.columns.price")}</span>
-            <button onClick={() => toggleSort("priceChange")} className="text-right hover:text-gray-200 transition-colors">
-              {t("table.columns.24h_pct")}
-              <SortIcon active={filters.sortBy === "priceChange"} dir={filters.sortOrder} />
-            </button>
-            <span className="text-right">{t("table.columns.rsi")}</span>
-          </div>
+          <div>
+            {/* Header */}
+            <div className="grid grid-cols-[2fr_repeat(10,1fr)] gap-1 items-center px-3 py-3 border-b border-gray-800 sticky top-0 z-10 bg-gray-900/80 backdrop-blur-sm">
+              <span className={headerText}>{t("table.columns.name")}</span>
 
-          <div className="divide-y divide-gray-800/50">
-            {searched.map((coin) => (
-              <CoinRow key={coin.coinId} coin={coin} />
-            ))}
-          </div>
+              <button onClick={() => toggleSort("recommendation")} className={`${headerClass} justify-center`}>
+                <span className={headerText}>{t("table.columns.opportunity")}</span>
+                <SortIcon active={filters.sortBy === "recommendation"} dir={filters.sortOrder} />
+              </button>
 
-          {searched.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              {searchQuery ? "No coins match your search" : t("table.empty")}
+              <button onClick={() => toggleSort("score")} className={`${headerClass} justify-center`}>
+                <span className={headerText}>{t("table.columns.overall_score")}</span>
+                <SortIcon active={filters.sortBy === "score"} dir={filters.sortOrder} />
+              </button>
+
+              <button onClick={() => toggleSort("signal")} className={`${headerClass} justify-center`}>
+                <span className={headerText}>{t("table.columns.signal")}</span>
+                <SortIcon active={filters.sortBy === "signal"} dir={filters.sortOrder} />
+              </button>
+
+              <button onClick={() => toggleSort("confidence")} className={`${headerClass} justify-center`}>
+                <span className={headerText}>{t("table.columns.confidence")}</span>
+                <SortIcon active={filters.sortBy === "confidence"} dir={filters.sortOrder} />
+              </button>
+
+              <button onClick={() => toggleSort("tradeQuality")} className={`${headerClass} justify-center`}>
+                <span className={headerText}>{t("table.columns.trade_quality")}</span>
+                <SortIcon active={filters.sortBy === "tradeQuality"} dir={filters.sortOrder} />
+              </button>
+
+              <button onClick={() => toggleSort("risk")} className={`${headerClass} justify-center`}>
+                <span className={headerText}>{t("table.columns.risk")}</span>
+                <SortIcon active={filters.sortBy === "risk"} dir={filters.sortOrder} />
+              </button>
+
+              <span className={`${headerText} text-center`}>{t("table.columns.risk_reward")}</span>
+
+              <button onClick={() => toggleSort("trend")} className={`${headerClass} justify-start`}>
+                <span className={headerText}>{t("table.columns.trend")}</span>
+                <SortIcon active={filters.sortBy === "trend"} dir={filters.sortOrder} />
+              </button>
+
+              <span className={`${headerText} text-right`}>{t("table.columns.price")}</span>
+
+              <button onClick={() => toggleSort("priceChange")} className={`${headerClass} justify-end`}>
+                <span className={headerText}>{t("table.columns.24h_pct")}</span>
+                <SortIcon active={filters.sortBy === "priceChange"} dir={filters.sortOrder} />
+              </button>
             </div>
-          )}
+
+            <div className="divide-y divide-gray-800/50">
+              {searched.map((coin) => (
+                <CoinRow key={coin.coinId} coin={coin} />
+              ))}
+            </div>
+
+            {searched.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                {searchQuery ? t("search.no_results") : t("table.empty")}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

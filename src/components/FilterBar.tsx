@@ -27,13 +27,18 @@ export function FilterBar() {
         <label className="text-xs text-gray-400">{t("filters.sort_by")}</label>
         <select
           value={filters.sortBy}
-          onChange={(e) => setFilters({ sortBy: e.target.value as "score" | "volume" | "priceChange" | "name" })}
+          onChange={(e) => setFilters({ sortBy: e.target.value as typeof filters.sortBy })}
           className="bg-gray-800 text-gray-200 text-sm rounded-lg px-3 py-1.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
         >
           <option value="score">{t("filters.score")}</option>
           <option value="volume">{t("filters.volume")}</option>
           <option value="priceChange">{t("filters.price_change")}</option>
           <option value="name">{t("filters.name")}</option>
+          <option value="signal">{t("table.columns.signal")}</option>
+          <option value="confidence">{t("table.columns.confidence")}</option>
+          <option value="tradeQuality">{t("table.columns.trade_quality")}</option>
+          <option value="trend">{t("table.columns.trend")}</option>
+          <option value="recommendation">{t("table.columns.opportunity")}</option>
         </select>
       </div>
 

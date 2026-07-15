@@ -105,6 +105,28 @@ export function calcBollingerBands(
   return { upper, middle, lower };
 }
 
+export function calcADX(prices: number[], period = 14): number {
+  if (prices.length < period * 2) return 20;
+  // Simplified ADX using directional price movement
+  const tr: number[] = [];
+  const upMove: number[] = [];
+  const downMove: number[] = [];
+  for (let i = 1; i < prices.length; i++) {
+    const move = prices[i] - prices[i - 1];
+    upMove.push(Math.max(move, 0));
+    downMove.push(Math.max(-move, 0));
+    tr.push(Math.abs(move));
+  }
+  const periodTR = tr.slice(-period).reduce((a, b) => a + b, 0) / period;
+  const periodUp = upMove.slice(-period).reduce((a, b) => a + b, 0) / period;
+  const periodDown = downMove.slice(-period).reduce((a, b) => a + b, 0) / period;
+  if (periodTR === 0) return 20;
+  const diPlus = (periodUp / periodTR) * 100;
+  const diMinus = (periodDown / periodTR) * 100;
+  const dx = Math.abs(diPlus - diMinus) / (diPlus + diMinus) * 100;
+  return Math.round(Math.min(100, Math.max(0, isNaN(dx) ? 20 : dx)));
+}
+
 export function estimatePosition(changePercent: number): {
   position: "long" | "short" | "neutral";
   score: number;
@@ -125,12 +147,16 @@ export function calculateTechnicalIndicatorsFromKlines(
   const rsi = calcRSI(closes, 14);
   const ema9Arr = calcEMA(closes, 9);
   const ema21Arr = calcEMA(closes, 21);
+  const ema20Arr = calcEMA(closes, 20);
   const ema50Arr = calcEMA(closes, 50);
   const ema200Arr = calcEMA(closes, 200);
   const bb = calcBollingerBands(closes, 20, 2);
   const macd = calcMACD(closes);
 
   const last = (arr: number[]) => arr.filter((v) => !isNaN(v)).pop() ?? 0;
+
+  // ADX: simplified calculation using directional movement
+  const adx = calcADX(closes, 14);
 
   return {
     rsi,
@@ -140,6 +166,7 @@ export function calculateTechnicalIndicatorsFromKlines(
       histogram: last(macd.histogram),
     },
     ema9: last(ema9Arr),
+    ema20: last(ema20Arr),
     ema21: last(ema21Arr),
     ema50: last(ema50Arr),
     ema200: last(ema200Arr),
@@ -150,5 +177,7 @@ export function calculateTechnicalIndicatorsFromKlines(
     },
     supportLevels: [],
     resistanceLevels: [],
+    adx,
+    atr: currentPrice * 0.02,
   };
 }

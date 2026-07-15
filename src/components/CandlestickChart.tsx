@@ -374,15 +374,18 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
         const t = Number(candleData.time);
         const idx = data.findIndex((d) => Number(fmtTime(d)) === t);
         if (idx === -1) return;
-        const vals: { rsi?: string; pdi?: string; mdi?: string; adx?: string; vol?: string } = {};
-        const candle = data[idx];
-        if (candle) {
-          const v = candle.volume;
-          if (v >= 1e9) vals.vol = (v / 1e9).toFixed(2) + "B";
-          else if (v >= 1e6) vals.vol = (v / 1e6).toFixed(2) + "M";
-          else if (v >= 1e3) vals.vol = (v / 1e3).toFixed(2) + "K";
-          else vals.vol = v.toFixed(0);
-        }
+        const vals: { rsi?: string; adx?: string; vol?: string } = {};
+         const candle = data[idx];
+         if (candle) {
+           const v = candle.volume;
+           if (v >= 1e9) vals.vol = (v / 1e9).toFixed(2) + "B";
+           else if (v >= 1e6) vals.vol = (v / 1e6).toFixed(2) + "M";
+           else if (v >= 1e3) vals.vol = (v / 1e3).toFixed(2) + "K";
+           else vals.vol = v.toFixed(0);
+
+           if (candle.rsi !== undefined) vals.rsi = candle.rsi.toFixed(1);
+           if (candle.adx !== undefined) vals.adx = candle.adx.toFixed(1);
+         }
         setCrosshairValues(Object.keys(vals).length > 0 ? vals : null);
       });
 
@@ -472,11 +475,13 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
       <div className="relative flex-1 min-h-0">
         <div ref={containerRef} className="absolute inset-0 rounded-lg overflow-hidden" />
         {/* Crosshair tooltip */}
-        {crosshairValues?.vol && (
-          <div className="absolute top-2 right-2 z-20 text-[9px] font-semibold pointer-events-none">
-            <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">VOL {crosshairValues.vol}</span>
-          </div>
-        )}
+         {crosshairValues && (
+           <div className="absolute top-2 right-2 z-20 text-[9px] font-semibold pointer-events-none flex flex-col gap-1 items-end">
+             {crosshairValues.vol && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">VOL {crosshairValues.vol}</span>}
+             {crosshairValues.rsi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-purple-400 border border-gray-700/50">RSI {crosshairValues.rsi}</span>}
+             {crosshairValues.adx && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-orange-400 border border-gray-700/50">ADX {crosshairValues.adx}</span>}
+           </div>
+         )}
         {status.type === "loading" && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#0d1117]/60 z-10">
             <div className="flex flex-col items-center gap-3">

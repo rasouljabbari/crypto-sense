@@ -1,151 +1,153 @@
 "use client";
 
-import { CoinAnalysis, PositionType } from "@/lib/types";
-import { getPositionLabel } from "@/lib/scoring";
+import { CoinAnalysis } from "@/lib/types";
 import Link from "next/link";
 import { useI18n } from "@/i18n/context";
 import { CoinImage } from "./CoinImage";
-
-function trendIcon(trend: "bullish" | "bearish" | "neutral") {
-  switch (trend) {
-    case "bullish": return "▲";
-    case "bearish": return "▼";
-    case "neutral": return "◆";
-  }
-}
-
-function rsiLevel(coin: CoinAnalysis): { value: string; color: string } {
-  const rsi = coin.technicalIndicators.rsi;
-  const v = rsi.toFixed(0);
-  if (rsi > 70) return { value: v, color: "text-red-400" };
-  if (rsi > 60) return { value: v, color: "text-orange-400" };
-  if (rsi < 30) return { value: v, color: "text-emerald-400" };
-  if (rsi < 40) return { value: v, color: "text-cyan-400" };
-  return { value: v, color: "text-gray-300" };
-}
-
-interface RiskAllocation {
-  value: number;
-  label: string;
-  color: string;
-}
-
-function calcRiskAllocation(coin: CoinAnalysis): RiskAllocation {
-  let score = 0;
-
-  const trendMatch =
-    (coin.position === "long" && coin.trendAnalysis.shortTerm === "bullish") ||
-    (coin.position === "short" && coin.trendAnalysis.shortTerm === "bearish");
-  if (trendMatch) score += 30;
-  else if (coin.trendAnalysis.shortTerm === "neutral") score += 15;
-
-  score += (coin.overallScore / 100) * 25;
-
-  const rsi = coin.technicalIndicators.rsi;
-  if (coin.position === "long") {
-    if (rsi < 30) score += 25;
-    else if (rsi < 50) score += 20;
-    else if (rsi < 70) score += 10;
-    else score += 0;
-  } else if (coin.position === "short") {
-    if (rsi > 70) score += 25;
-    else if (rsi > 50) score += 20;
-    else if (rsi > 30) score += 10;
-    else score += 0;
-  } else {
-    score += 10;
-  }
-
-  if (score >= 85) return { value: 1.0, label: "1.00", color: "text-emerald-400 bg-emerald-900/20" };
-  if (score >= 65) return { value: 0.75, label: "0.75", color: "text-emerald-400 bg-emerald-900/20" };
-  if (score >= 40) return { value: 0.50, label: "0.50", color: "text-yellow-400 bg-yellow-900/20" };
-  return { value: 0.25, label: "0.25", color: "text-red-400 bg-red-900/20" };
-}
-
-interface ActionInfo { label: string; color: string }
-function calcActionLabel(coin: CoinAnalysis, t: (path: string, vars?: Record<string, string | number>) => string): ActionInfo {
-  const pl = getPositionLabel(coin.overallScore, coin.position);
-  return { label: t(pl.labelKey), color: pl.text };
-}
-
-const positionConfig: Record<PositionType, { labelKey: string; bg: string; text: string }> = {
-  long: { labelKey: "coin_row.long", bg: "bg-emerald-900/30", text: "text-emerald-400" },
-  short: { labelKey: "coin_row.short", bg: "bg-red-900/30", text: "text-red-400" },
-  neutral: { labelKey: "coin_row.neutral", bg: "bg-yellow-900/30", text: "text-yellow-400" },
-};
+import { memo, useState } from "react";
 
 interface Props {
   coin: CoinAnalysis;
 }
 
-export function CoinRow({ coin }: Props) {
-  const { t } = useI18n();
+const signalColors: Record<string, string> = {
+  strong_buy: "text-emerald-300",
+  buy: "text-emerald-400",
+  neutral: "text-yellow-400",
+  sell: "text-red-400",
+  strong_sell: "text-red-300",
+};
 
-  const pos = positionConfig[coin.position];
-  const posLabel = t(pos.labelKey);
+const signalBg: Record<string, string> = {
+  strong_buy: "bg-emerald-900/30",
+  buy: "bg-emerald-900/20",
+  neutral: "bg-yellow-900/20",
+  sell: "bg-red-900/20",
+  strong_sell: "bg-red-900/30",
+};
+
+const riskColors: Record<string, string> = {
+  low: "text-emerald-400 bg-emerald-900/20",
+  medium: "text-yellow-400 bg-yellow-900/20",
+  high: "text-red-400 bg-red-900/20",
+};
+
+const trendIcons: Record<string, string> = {
+  strong_bullish: "\u25B2",
+  bullish: "\u25B2",
+  sideways: "\u25C6",
+  bearish: "\u25BC",
+  strong_bearish: "\u25BC",
+};
+
+const trendColors: Record<string, string> = {
+  strong_bullish: "text-emerald-300",
+  bullish: "text-emerald-400",
+  sideways: "text-yellow-400",
+  bearish: "text-red-400",
+  strong_bearish: "text-red-300",
+};
+
+const recConfig: Record<string, { color: string; bg: string; dot: string }> = {
+  ready: { color: "text-emerald-400", bg: "bg-emerald-900/25", dot: "bg-emerald-400" },
+  wait: { color: "text-yellow-400", bg: "bg-yellow-900/25", dot: "bg-yellow-400" },
+  skip: { color: "text-red-400", bg: "bg-red-900/25", dot: "bg-red-400" },
+};
+
+export const CoinRow = memo(function CoinRow({ coin }: Props) {
+  const { t } = useI18n();
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+
   const isPositive = coin.marketData.priceChangePercent24h >= 0;
-  const rsi = rsiLevel(coin);
-  const risk = calcRiskAllocation(coin);
-  const action = calcActionLabel(coin, t);
+
+  const scoreBadge = coin.overallScore >= 60
+    ? "text-emerald-400 bg-emerald-900/20"
+    : coin.overallScore <= 40
+      ? "text-red-400 bg-red-900/20"
+      : "text-yellow-400 bg-yellow-900/20";
+
+  const rc = recConfig[coin.recommendation] ?? recConfig.skip;
 
   return (
     <Link
       href={`/coin/${coin.marketData.symbol}`}
-      className="min-w-[640px] grid grid-cols-[2fr_1.2fr_0.5fr_1fr_1fr_1fr] gap-2 items-center px-4 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
+      className="grid grid-cols-[2fr_repeat(10,1fr)] gap-1 items-center px-3 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
     >
-      {/* Name with Rank */}
-      <div className="flex items-center gap-3">
-        <span className="text-[10px] text-gray-500 w-5 text-right font-mono" title={t("table.columns.rank_tooltip")}>#{coin.marketData.rank}</span>
+      {/* Coin */}
+      <div className="flex items-center gap-2 min-w-0">
         <CoinImage src={coin.marketData.image} alt={coin.marketData.symbol} />
-        <div>
-          <span className="font-medium text-white">{coin.marketData.symbol}</span>
-          <span className="text-gray-400 ml-1.5 text-xs">{coin.marketData.name}</span>
+        <div className="truncate">
+          <span className="font-medium text-white text-sm">{coin.marketData.symbol}</span>
+          <span className="text-gray-400 ml-1 text-[11px] hidden sm:inline">{coin.marketData.name}</span>
         </div>
       </div>
 
-      {/* Merged Signal: Trend + Position + Score + Action */}
-      <div className="flex items-center gap-1.5 justify-start">
-        <span className={`text-[10px] ${coin.trendAnalysis.shortTerm === "bullish" ? "text-emerald-400" : coin.trendAnalysis.shortTerm === "bearish" ? "text-red-400" : "text-yellow-400"}`}>
-          {trendIcon(coin.trendAnalysis.shortTerm)}
-        </span>
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pos.bg} ${pos.text}`}>
-          {posLabel}
-        </span>
-        <div className="w-10 h-1 bg-gray-700 rounded-full overflow-hidden hidden sm:block">
-          <div
-            className={`h-full rounded-full ${coin.overallScore >= 60 ? "bg-emerald-500" : coin.overallScore <= 40 ? "bg-red-500" : "bg-yellow-500"}`}
-            style={{ width: `${coin.overallScore}%` }}
-          />
+      {/* Opportunity */}
+      <div
+        className="relative flex flex-col items-center justify-center min-w-0"
+        onMouseEnter={() => setTooltipOpen(true)}
+        onMouseLeave={() => setTooltipOpen(false)}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setTooltipOpen((v) => !v); }}
+      >
+        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${rc.bg} ${rc.color}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${rc.dot}`} />
+          {t(`coin_row.rec_${coin.recommendation}`)}
         </div>
-        <span className="text-[10px] font-bold text-white w-5 text-right">{coin.overallScore}</span>
-        <span className={`text-[9px] font-semibold hidden lg:inline ${action.color}`}>
-          {action.label}
+        <span className="text-[8px] text-gray-500 leading-tight mt-0.5">{t(`coin_row.rec_reason_${coin.recommendationReasonCode}`)}</span>
+
+        {tooltipOpen && (
+          <div className="absolute top-full mt-1 z-50 w-56 p-2 rounded-lg bg-gray-800 border border-gray-700 shadow-xl text-[10px] text-gray-200 pointer-events-none">
+            <div className="font-semibold text-white mb-1">
+              {t(`coin_row.rec_${coin.recommendation}`)}
+            </div>
+            <p>{t(`coin_row.rec_tooltip_${coin.recommendationReasonCode}`)}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Overall Score */}
+      <div className="flex justify-center">
+        <span className={`inline-flex items-center justify-center w-7 h-5 rounded text-[10px] font-bold ${scoreBadge}`}>
+          {coin.overallScore}
         </span>
       </div>
 
-      {/* Risk Allocation */}
-      <div className="text-center">
-        <span className={`inline-flex items-center justify-center w-12 px-1.5 py-0.5 rounded text-[10px] font-bold ${risk.color}`}>
-          {risk.label}
-        </span>
+      {/* Signal */}
+      <span className={`text-[10px] font-bold text-center px-1 py-0.5 rounded ${signalBg[coin.signal]} ${signalColors[coin.signal]}`}>
+        {t(`coin_row.${coin.signal}`)}
+      </span>
+
+      {/* Confidence */}
+      <span className="text-[10px] font-mono text-gray-300 text-center">{coin.confidence}%</span>
+
+      {/* Trade Quality */}
+      <span className="text-[10px] font-mono text-gray-300 text-center">{coin.tradeQuality}</span>
+
+      {/* Risk */}
+      <span className={`text-[10px] font-bold text-center px-1 py-0.5 rounded ${riskColors[coin.riskLevel]}`}>
+        {t(`coin_row.risk_${coin.riskLevel}`)}
+      </span>
+
+      {/* Risk/Reward */}
+      <span className="text-[10px] font-mono text-gray-400 text-center">
+        {coin.riskReward || "-"}
+      </span>
+
+      {/* Trend */}
+      <div className={`flex items-center gap-1 justify-start text-[11px] font-semibold ${trendColors[coin.trendLabel]}`}>
+        <span>{trendIcons[coin.trendLabel]}</span>
+        <span className="hidden xl:inline">{t(`coin_row.${coin.trendLabel}`)}</span>
       </div>
 
       {/* Price */}
-      <div className="text-right font-mono text-sm text-white">
-        ${coin.marketData.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      <div className="text-right font-mono text-sm text-white truncate">
+        ${coin.marketData.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
       </div>
 
       {/* 24h % */}
-      <div className="text-right font-mono text-sm">
-        <span className={isPositive ? "text-emerald-400" : "text-red-400"}>
-          {isPositive ? "+" : ""}{coin.marketData.priceChangePercent24h.toFixed(2)}%
-        </span>
-      </div>
-
-      {/* RSI */}
-      <div className={`text-right font-mono text-xs ${rsi.color}`} title={t("coin_row.rsi_tooltip")}>
-        {rsi.value}
+      <div className={`text-right font-mono text-sm ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+        {isPositive ? "+" : ""}{coin.marketData.priceChangePercent24h.toFixed(2)}%
       </div>
     </Link>
   );
-}
+});

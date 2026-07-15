@@ -184,7 +184,7 @@ function ScoreOverview({ analysis }: { readonly analysis: CoinAnalysisState }) {
   return (
     <Card title={t("coin_analysis.score.title")} subtitle={`${overallScore.value.toFixed(0)} — ${t("coin_row." + overallScore.signal.toLowerCase().replace(" ", "_"))}`}>
       <div className="space-y-2">
-        {Object.entries(scores).map(([key, score]) => (
+        {Object.entries(scores).map(([key, score]) => key !== "momentum" && (
           <div key={key}>
             <div className="flex justify-between text-xs mb-0.5">
               <span className="text-gray-300">{t(`coin_analysis.score.${key}`)}</span>

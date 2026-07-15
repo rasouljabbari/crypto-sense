@@ -111,21 +111,33 @@
   },
   "table": {
     "columns": {
-      "name": "نام",
+      "name": "ارز",
       "price": "قیمت",
       "24h_pct": "۲۴ ساعت %",
       "vol_mcap": "حجم/ارزش بازار",
       "rsi": "RSI",
-    "signal": "سیگنال",
-    "risk": "ریسک",
-    "rank_tooltip": "رتبه ارزش بازار"
+      "signal": "سیگنال",
+      "risk": "ریسک",
+      "overall_score": "امتیاز",
+      "confidence": "اطمینان",
+      "trade_quality": "کیفیت",
+      "risk_reward": "R:R",
+      "trend": "روند",
+      "status": "وضعیت",
+      "opportunity": "فرصت",
+      "rank_tooltip": "رتبه ارزش بازار"
     },
     "empty": "هیچ ارزی با فیلترهای شما مطابقت ندارد",
     "showing": "نمایش {visible} از {total} ارز",
     "market_overview": "نمای کلی بازار",
     "legend_long": "لانگ",
     "legend_short": "شورت",
-    "legend_neutral": "خنثی"
+    "legend_neutral": "خنثی",
+    "timeframe": "TF"
+  },
+  "search": {
+    "placeholder": "جستجوی ارز...",
+    "no_results": "ارزی با جستجوی شما مطابقت ندارد"
   },
   "coin_row": {
     "long": "لانگ",
@@ -143,7 +155,39 @@
     "short_entry": "شورت",
     "watch": "نظارت",
     "vol_tooltip": "حجم ۲۴ ساعت / ارزش بازار — بالاتر = نقدشوندگی بیشتر",
-    "rsi_tooltip": "شاخص قدرت نسبی (۱۴)"
+    "rsi_tooltip": "شاخص قدرت نسبی (۱۴)",
+    "risk_low": "کم",
+    "risk_medium": "متوسط",
+    "risk_high": "زیاد",
+    "strong_bullish": "صعودی قوی",
+    "bullish": "صعودی",
+    "sideways": "رِنج",
+    "bearish": "نزولی",
+    "strong_bearish": "نزولی قوی",
+    "ready": "آماده",
+    "wait": "صبر",
+    "no_trade": "بدون معامله",
+    "rec_ready": "آماده",
+    "rec_wait": "صبر",
+    "rec_skip": "رد",
+    "rec_reason_READY": "روند قوی",
+    "rec_reason_WAIT_PULLBACK": "منتظر اصلاح",
+    "rec_reason_WAIT_BREAKOUT": "منتظر شکست",
+    "rec_reason_WAIT_CONFIRMATION": "منتظر تایید",
+    "rec_reason_WAIT_VOLUME": "منتظر حجم",
+    "rec_reason_SKIP_HIGH_RISK": "ریسک بالا",
+    "rec_reason_SKIP_WEAK_TREND": "روند ضعیف",
+    "rec_reason_SKIP_LOW_RR": "R:R پایین",
+    "rec_reason_SKIP_INVALID_SETUP": "عدم شرایط مناسب",
+    "rec_tooltip_READY": "همه شرایط برقرار است — روند قوی، EMA هم‌راستا، مومنتوم صعودی، ریسک به پاداش خوب. آماده ورود.",
+    "rec_tooltip_WAIT_PULLBACK": "قیمت در سطح ایده‌آل ورود نیست. منتظر اصلاح به ناحیه حمایت باشید.",
+    "rec_tooltip_WAIT_BREAKOUT": "نیاز به تایید شکست. منتظر شکست مقاومت کلیدی با حجم باشید.",
+    "rec_tooltip_WAIT_CONFIRMATION": "برخی سیگنال‌ها کاملاً هماهنگ نیستند. منتظر تایید اضافی باشید.",
+    "rec_tooltip_WAIT_VOLUME": "اطمینان در حال افزایش است اما تایید حجم نیاز است. اجازه دهید موقعیت بالغ شود.",
+    "rec_tooltip_SKIP_HIGH_RISK": "ریسک برای شرایط فعلی بسیار بالاست. پوزیشن کوچک‌تر یا منتظر ریسک بهتر بمانید.",
+    "rec_tooltip_SKIP_WEAK_TREND": "روند یا امتیاز کلی بسیار ضعیف. جهت مشخصی وجود ندارد — رد کنید.",
+    "rec_tooltip_SKIP_LOW_RR": "نسبت ریسک به پاداش زیر ۱:۲. پاداش بالقوه ریسک را توجیه نمی‌کند.",
+    "rec_tooltip_SKIP_INVALID_SETUP": "یک یا چند شرط ناموفق — امتیاز کم، جهت اشتباه، یا پارامترهای معاملاتی ناقص."
   },
   "chart": {
       "1h": "یک ساعته",
@@ -476,6 +520,27 @@
   "errors": {
     "cannot_resolve_symbol": "نماد \"{symbol}\" شناسایی نشد. از یک نماد بایننس (مثلاً BTCUSDT)، شناسه ارز (مثلاً bitcoin) یا نماد پایه (مثلاً BTC) استفاده کنید."
   },
+  "refresh_status": {
+    "updated": "بروزرسانی",
+    "next": "بروزرسانی بعدی"
+  },
+  "market_summary": {
+    "title": "خلاصه بازار",
+    "coins": "ارز",
+    "avg_score": "میانگین امتیاز",
+    "avg_risk": "میانگین ریسک",
+    "avg_confidence": "میانگین اطمینان",
+    "avg_trend": "میانگین روند"
+  },
+  "market_opps": {
+    "top_buy": "بهترین خرید",
+    "top_sell": "بهترین فروش",
+    "highest_momentum": "بیشترین مومنتوم",
+    "lowest_risk": "کمترین ریسک",
+    "no_data": "فرصتی موجود نیست",
+    "confidence": "اطمینان",
+    "quality": "کیفیت"
+  },
   "coin_search": {
     "label": "جستجوی ارز دیجیتال",
     "placeholder": "BTC, ETH, SOL را جستجو کنید...",
@@ -489,5 +554,10 @@
     "en": "English",
     "tr": "Türkçe",
     "fa": "فارسی"
+  },
+  "timeframe": {
+    "1h": "۱ ساعت",
+    "4h": "۴ ساعت",
+    "1d": "۱ روز"
   }
 }

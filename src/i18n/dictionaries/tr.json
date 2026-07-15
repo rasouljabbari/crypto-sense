@@ -111,21 +111,33 @@
   },
   "table": {
     "columns": {
-      "name": "İsim",
+      "name": "Coin",
       "price": "Fiyat",
       "24h_pct": "24s %",
       "vol_mcap": "Hac/Piy.D.",
       "rsi": "RSI",
-    "signal": "Sinyal",
-    "risk": "Risk",
-    "rank_tooltip": "Piyasa Değeri Sırası"
+      "signal": "Sinyal",
+      "risk": "Risk",
+      "overall_score": "Puan",
+      "confidence": "Güv.",
+      "trade_quality": "Kalite",
+      "risk_reward": "R:R",
+      "trend": "Trend",
+      "status": "Durum",
+      "opportunity": "Fırsat",
+      "rank_tooltip": "Piyasa Değeri Sırası"
     },
     "empty": "Filtrelere uygun coin bulunamadı",
     "showing": "{visible} / {total} coin gösteriliyor",
     "market_overview": "Piyasa Genel Görünümü",
     "legend_long": "Long",
     "legend_short": "Short",
-    "legend_neutral": "Nötr"
+    "legend_neutral": "Nötr",
+    "timeframe": "ZF"
+  },
+  "search": {
+    "placeholder": "Coin ara...",
+    "no_results": "Aramanızla eşleşen coin yok"
   },
   "coin_row": {
     "long": "LONG",
@@ -143,7 +155,39 @@
     "short_entry": "Short",
     "watch": "İzle",
     "vol_tooltip": "24s Hacim / Piyasa Değeri — yüksek = daha likit",
-    "rsi_tooltip": "Göreceli Güç Endeksi (14)"
+    "rsi_tooltip": "Göreceli Güç Endeksi (14)",
+    "risk_low": "Düşük",
+    "risk_medium": "Orta",
+    "risk_high": "Yüksek",
+    "strong_bullish": "Güçlü Yükseliş",
+    "bullish": "Yükseliş",
+    "sideways": "Yatay",
+    "bearish": "Düşüş",
+    "strong_bearish": "Güçlü Düşüş",
+    "ready": "HAZIR",
+    "wait": "BEKLE",
+    "no_trade": "İŞLEM YOK",
+    "rec_ready": "Hazır",
+    "rec_wait": "Bekle",
+    "rec_skip": "Geç",
+    "rec_reason_READY": "Güçlü Trend",
+    "rec_reason_WAIT_PULLBACK": "Geri Çekilme Bekle",
+    "rec_reason_WAIT_BREAKOUT": "Kırılım Bekle",
+    "rec_reason_WAIT_CONFIRMATION": "Onay Bekle",
+    "rec_reason_WAIT_VOLUME": "Hacim Bekle",
+    "rec_reason_SKIP_HIGH_RISK": "Yüksek Risk",
+    "rec_reason_SKIP_WEAK_TREND": "Zayıf Trend",
+    "rec_reason_SKIP_LOW_RR": "Düşük R:R",
+    "rec_reason_SKIP_INVALID_SETUP": "Uygun Değil",
+    "rec_tooltip_READY": "Tüm koşullar karşılandı — güçlü trend, hizalı EMA'lar, yükseliş momentumu, iyi risk/getiri. Girişe hazır.",
+    "rec_tooltip_WAIT_PULLBACK": "Fiyat ideal giriş seviyesinde değil. Giriş için desteğe geri çekilmeyi bekleyin.",
+    "rec_tooltip_WAIT_BREAKOUT": "Kırılım onayı gerekiyor. Fiyatın hacimle ana direnci kırmasını bekleyin.",
+    "rec_tooltip_WAIT_CONFIRMATION": "Bazı sinyaller tam olarak uyumlu değil. Giriş için ek onay bekleyin.",
+    "rec_tooltip_WAIT_VOLUME": "Güven artıyor ancak hacim onayı gerekiyor. Oluşumun olgunlaşmasına izin verin.",
+    "rec_tooltip_SKIP_HIGH_RISK": "Risk seviyesi mevcut koşullar için çok yüksek. Daha küçük pozisyon düşünün veya bekleyin.",
+    "rec_tooltip_SKIP_WEAK_TREND": "Genel trend veya puan çok zayıf. Net yön yok — bu işlemi geçin.",
+    "rec_tooltip_SKIP_LOW_RR": "Risk/getiri oranı 1:2'nin altında. Potansiyel ödül riski haklı çıkarmıyor.",
+    "rec_tooltip_SKIP_INVALID_SETUP": "Bir veya daha fazla koşul başarısız — düşük puan, yanlış yön veya eksik parametreler."
   },
   "chart": {
       "1h": "1 Saatlik",
@@ -476,6 +520,27 @@
   "errors": {
     "cannot_resolve_symbol": "\"{symbol}\" sembolü çözülemedi. Bir Binance sembolü (örn. BTCUSDT), coin kimliği (örn. bitcoin) veya temel varlık (örn. BTC) kullanın."
   },
+  "refresh_status": {
+    "updated": "Güncellendi",
+    "next": "Sonraki yenileme"
+  },
+  "market_summary": {
+    "title": "Piyasa Özeti",
+    "coins": "coin",
+    "avg_score": "Ort. Puan",
+    "avg_risk": "Ort. Risk",
+    "avg_confidence": "Ort. Güven",
+    "avg_trend": "Ort. Trend"
+  },
+  "market_opps": {
+    "top_buy": "En İyi Al",
+    "top_sell": "En İyi Sat",
+    "highest_momentum": "En Yüksek Momentum",
+    "lowest_risk": "En Düşük Risk",
+    "no_data": "Uygun fırsat yok",
+    "confidence": "Güv.",
+    "quality": "Kalite"
+  },
   "coin_search": {
     "label": "Kripto Para Ara",
     "placeholder": "BTC, ETH, SOL ara...",
@@ -489,5 +554,10 @@
     "en": "English",
     "tr": "Türkçe",
     "fa": "فارسی"
+  },
+  "timeframe": {
+    "1h": "1 Saat",
+    "4h": "4 Saat",
+    "1d": "1 Gün"
   }
 }

@@ -111,21 +111,33 @@
   },
   "table": {
     "columns": {
-      "name": "Name",
+      "name": "Coin",
       "price": "Price",
       "24h_pct": "24h %",
       "vol_mcap": "Vol/M.Cap",
       "rsi": "RSI",
-    "signal": "Signal",
-    "risk": "Risk",
-    "rank_tooltip": "Market Cap Rank"
+      "signal": "Signal",
+      "risk": "Risk",
+      "overall_score": "Score",
+      "confidence": "Conf.",
+      "trade_quality": "Quality",
+      "risk_reward": "R:R",
+      "trend": "Trend",
+      "status": "Status",
+      "opportunity": "Opp.",
+      "rank_tooltip": "Market Cap Rank"
     },
     "empty": "No coins match your filters",
     "showing": "Showing {visible} of {total} coins",
     "market_overview": "Market Overview",
     "legend_long": "Long",
     "legend_short": "Short",
-    "legend_neutral": "Neutral"
+    "legend_neutral": "Neutral",
+    "timeframe": "TF"
+  },
+  "search": {
+    "placeholder": "Search coins...",
+    "no_results": "No coins match your search"
   },
   "coin_row": {
     "long": "LONG",
@@ -143,7 +155,39 @@
     "short_entry": "Short",
     "watch": "Watch",
     "vol_tooltip": "24h Volume / Market Cap — higher = more liquid",
-    "rsi_tooltip": "Relative Strength Index (14)"
+    "rsi_tooltip": "Relative Strength Index (14)",
+    "risk_low": "Low",
+    "risk_medium": "Medium",
+    "risk_high": "High",
+    "strong_bullish": "Strong Bullish",
+    "bullish": "Bullish",
+    "sideways": "Sideways",
+    "bearish": "Bearish",
+    "strong_bearish": "Strong Bearish",
+    "ready": "READY",
+    "wait": "WAIT",
+    "no_trade": "NO TRADE",
+    "rec_ready": "Ready",
+    "rec_wait": "Wait",
+    "rec_skip": "Skip",
+    "rec_reason_READY": "Strong Trend",
+    "rec_reason_WAIT_PULLBACK": "Wait for Pullback",
+    "rec_reason_WAIT_BREAKOUT": "Wait for Breakout",
+    "rec_reason_WAIT_CONFIRMATION": "Wait for Confirmation",
+    "rec_reason_WAIT_VOLUME": "Wait for Volume",
+    "rec_reason_SKIP_HIGH_RISK": "High Risk",
+    "rec_reason_SKIP_WEAK_TREND": "Weak Trend",
+    "rec_reason_SKIP_LOW_RR": "Low Risk/Reward",
+    "rec_reason_SKIP_INVALID_SETUP": "Not Ready",
+    "rec_tooltip_READY": "All conditions met — strong trend, aligned EMAs, bullish momentum, good risk/reward. Ready for entry.",
+    "rec_tooltip_WAIT_PULLBACK": "Current price not at ideal entry level. Wait for pullback to support zone before entering.",
+    "rec_tooltip_WAIT_BREAKOUT": "Setup needs breakout confirmation. Wait for price to break key resistance with volume.",
+    "rec_tooltip_WAIT_CONFIRMATION": "Some signals are not fully aligned yet. Wait for additional confirmation before entering.",
+    "rec_tooltip_WAIT_VOLUME": "Confidence is building but volume confirmation needed. Let the setup mature.",
+    "rec_tooltip_SKIP_HIGH_RISK": "Risk level too high for current conditions. Consider smaller position or wait for better risk profile.",
+    "rec_tooltip_SKIP_WEAK_TREND": "Overall trend or score too weak. No clear directional bias — skip this setup.",
+    "rec_tooltip_SKIP_LOW_RR": "Risk/reward ratio below 1:2. Potential reward does not justify the risk.",
+    "rec_tooltip_SKIP_INVALID_SETUP": "One or more conditions failed — low score, wrong direction, or missing trade parameters."
   },
   "chart": {
       "1h": "1H",
@@ -410,7 +454,6 @@
       "signal": "Signal",
       "confidence": "Confidence",
       "trend": "Trend",
-      "momentum": "Momentum",
       "volume": "Volume",
       "volatility": "Volatility",
       "risk": "Risk",
@@ -476,6 +519,27 @@
   "errors": {
     "cannot_resolve_symbol": "Cannot resolve symbol: \"{symbol}\". Use a Binance symbol (e.g. BTCUSDT), coin ID (e.g. bitcoin), or base asset (e.g. BTC)."
   },
+  "refresh_status": {
+    "updated": "Updated",
+    "next": "Next refresh"
+  },
+  "market_summary": {
+    "title": "Market Summary",
+    "coins": "coins",
+    "avg_score": "Avg Score",
+    "avg_risk": "Avg Risk",
+    "avg_confidence": "Avg Confidence",
+    "avg_trend": "Avg Trend"
+  },
+  "market_opps": {
+    "top_buy": "Top Buy",
+    "top_sell": "Top Sell",
+    "highest_momentum": "Highest Momentum",
+    "lowest_risk": "Lowest Risk",
+    "no_data": "No opportunities available",
+    "confidence": "Conf.",
+    "quality": "Quality"
+  },
   "coin_search": {
     "label": "Search Cryptocurrency",
     "placeholder": "Search BTC, ETH, SOL...",
@@ -489,5 +553,10 @@
     "en": "English",
     "tr": "Türkçe",
     "fa": "فارسی"
+  },
+  "timeframe": {
+    "1h": "1 Hour",
+    "4h": "4 Hours",
+    "1d": "1 Day"
   }
 }

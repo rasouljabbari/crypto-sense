@@ -130,20 +130,20 @@ export function Sidebar() {
       {/* Sidebar panel */}
       <aside
         className={`
-          fixed top-0 z-40 h-screen w-[260px]
-          bg-theme-secondary/95 backdrop-blur-xl
-          ${dir === "rtl" ? "border-l" : "border-r"} border-theme
-          flex flex-col
-          transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${dir === "rtl" ? "lg:translate-x-0" : "lg:translate-x-0"}
-          ${mobileOpen
+            fixed top-0 z-40 h-screen w-full lg:w-[260px]
+            bg-theme-secondary/95 backdrop-blur-xl
+            ${dir === "rtl" ? "border-l" : "border-r"} border-theme
+            flex flex-col
+            transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+            ${dir === "rtl" ? "lg:translate-x-0" : "lg:translate-x-0"}
+            ${mobileOpen
             ? "translate-x-0 shadow-2xl"
             : dir === "rtl"
               ? "translate-x-full"
               : "-translate-x-full"
           }
-          ${dir === "rtl" ? "right-0" : "left-0"}
-        `}
+            ${dir === "rtl" ? "right-0" : "left-0"}
+          `}
       >
         {/* ── Brand ──────────────────────────────────────────────── */}
         <div className="flex items-center gap-3 px-5 h-16 shrink-0 border-b border-theme">
@@ -273,8 +273,8 @@ export function Sidebar() {
                       setLangOpen(false);
                     }}
                     className={`flex items-center gap-2 w-full px-3 py-2 text-xs transition-colors duration-150 ${locale === l.value
-                        ? "text-emerald-400 bg-emerald-500/10"
-                        : "text-theme-text hover:bg-theme-hover"
+                      ? "text-emerald-400 bg-emerald-500/10"
+                      : "text-theme-text hover:bg-theme-hover"
                       }`}
                   >
                     <Flag locale={l.value} />

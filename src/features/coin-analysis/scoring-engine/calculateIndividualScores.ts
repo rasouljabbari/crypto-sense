@@ -274,7 +274,6 @@ export const calculateIndividualScores = (
   ta: TechnicalAnalysis,
 ): IndividualScores => ({
   trend: calculateTrendScore(ta),
-  momentum: calculateMomentumScore(ta),
   volume: calculateVolumeScore(ta),
   volatility: calculateVolatilityScore(ta),
   risk: calculateRiskScore(ta),
