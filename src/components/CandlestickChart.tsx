@@ -85,7 +85,7 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
   const hlinesRef = useRef<IPriceLine[]>([]);
   const smaSeriesArrRef = useRef<ISeriesApi<"Line">[]>([]);
   const loadedRef = useRef(false);
-  const [crosshairValues, setCrosshairValues] = useState<{ vol?: string } | null>(null);
+  const [crosshairValues, setCrosshairValues] = useState<{ vol?: string; rsi?: string; adx?: string } | null>(null);
 
   const symbol = COIN_SYMBOL_MAP[coinId] ?? (coinId.toUpperCase().endsWith("USDT") ? coinId.toUpperCase() : `${coinId.toUpperCase()}USDT`);
 

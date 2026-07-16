@@ -131,6 +131,8 @@ export interface ChartDataPoint {
   low: number;
   close: number;
   volume: number;
+  rsi?: number;
+  adx?: number;
 }
 
 export interface MarketIndicators {
