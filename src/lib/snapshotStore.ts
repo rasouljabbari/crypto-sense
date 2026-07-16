@@ -1,4 +1,4 @@
-import { SignalType, RiskLevel, TrendLabel, TradeStatus } from "./types";
+import { SignalType, RiskLevel, TrendLabel } from "./types";
 import type { CoinAnalysis } from "./types";
 
 export interface CoinSnapshot {

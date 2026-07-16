@@ -6,7 +6,7 @@
 
 import type { StochasticRsiResult } from "../types";
 import { rsi } from "./rsi";
-import { calcSma, lastValid, isValidNumber, highest, lowest } from "./_helpers";
+import { calcSma, lastValid, isValidNumber } from "./_helpers";
 
 export function stochasticRsi(
   closes: readonly number[],

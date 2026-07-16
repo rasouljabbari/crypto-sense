@@ -33,16 +33,3 @@ export function getPositionLabel(score: number, position: PositionType): Positio
     border: "border-yellow-500/30",
   };
 }
-
-export function getConvictionTextKey(score: number, position: PositionType): string {
-  if (position === "long") {
-    if (score >= 80) return "action_strong_buy";
-    return "action_buy";
-  }
-  if (position === "short") {
-    if (score <= 20) return "action_strong_short";
-    return "action_short_entry";
-  }
-  if (score >= 50) return "action_hold";
-  return "action_watch";
-}

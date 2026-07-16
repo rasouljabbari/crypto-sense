@@ -126,9 +126,7 @@ input[type="number"] {
 .text-theme-secondary { color: var(--theme-text-secondary); }
 .border-theme { border-color: var(--theme-border); }
 .bg-theme-card { background-color: var(--theme-card); }
-.hover-bg-theme-hover:hover { background-color: var(--theme-hover); }
 .shadow-card { box-shadow: var(--shadow-card); }
-.shadow-card-lg { box-shadow: var(--shadow-card-lg); }
 
 /* ── All cards get shadow + border for separation in both themes ── */
 .bg-gray-900\/50,

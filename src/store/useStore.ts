@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { CoinAnalysis, FilterOptions, MarketData, MarketIndicators, SignalType, RiskLevel, TrendLabel, TradeStatus, Timeframe } from "@/lib/types";
+import { CoinAnalysis, FilterOptions, MarketData, MarketIndicators, SignalType, TrendLabel, TradeStatus, Timeframe } from "@/lib/types";
 import { fetchMarketDataList, fetchGlobalMarketData, fetchKlines, COIN_SYMBOL_MAP } from "@/api/binance";
 import { analyzeAllCoins } from "@/lib/analysisEngine";
 import { calculateTechnicalIndicatorsFromKlines } from "@/lib/indicators";
@@ -11,7 +11,6 @@ import { saveSnapshot } from "@/lib/snapshotStore";
 interface AppState {
   coins: CoinAnalysis[];
   filteredCoins: CoinAnalysis[];
-  selectedCoinId: string | null;
   filters: FilterOptions;
   isLoading: boolean;
   isRefreshing: boolean;
@@ -24,20 +23,16 @@ interface AppState {
   timeframe: Timeframe;
   klinesCache: Record<string, number[]>; // "BTCUSDT:1h" → closes[]
 
-  setCoins: (coins: CoinAnalysis[]) => void;
   updateCoin: (coinId: string, updates: Partial<CoinAnalysis>) => void;
-  setSelectedCoin: (coinId: string | null) => void;
   setFilters: (filters: Partial<FilterOptions>) => void;
   refreshData: () => Promise<void>;
   reanalyze: () => void;
   reanalyzeSilent: () => void;
   startAutoRefresh: () => () => void;
-  stopAutoRefresh: () => void;
   applyFilters: () => void;
   loadFromBinance: () => Promise<void>;
   setTimeframe: (tf: Timeframe) => Promise<void>;
   refreshWithTimeframe: (tf: Timeframe) => Promise<void>;
-  getKlines: (symbol: string, tf: Timeframe) => Promise<number[]>;
 }
 
 let refreshIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -47,7 +42,6 @@ export const useStore = create<AppState>()(
     (set, get) => ({
   coins: [],
   filteredCoins: [],
-  selectedCoinId: null,
   filters: {
     positionType: "all",
     minVolume: 0,
@@ -69,11 +63,6 @@ export const useStore = create<AppState>()(
   timeframe: "1h",
   klinesCache: {},
 
-  setCoins: (coins) => {
-    set({ coins });
-    get().applyFilters();
-  },
-
   updateCoin: (coinId, updates) => {
     const coins = get().coins.map((c) =>
       c.coinId === coinId ? { ...c, ...updates, lastUpdated: new Date().toISOString() } : c
@@ -82,28 +71,11 @@ export const useStore = create<AppState>()(
     get().applyFilters();
   },
 
-  setSelectedCoin: (coinId) => set({ selectedCoinId: coinId }),
-
   setFilters: (filters) => {
     set((state) => ({
       filters: { ...state.filters, ...filters },
     }));
     get().applyFilters();
-  },
-
-  getKlines: async (symbol, tf) => {
-    const key = `${symbol}:${tf}`;
-    const cached = get().klinesCache[key];
-    if (cached) return cached;
-    const limit = tf === "1d" ? 365 : tf === "15m" ? 960 : 168;
-    try {
-      const data = await fetchKlines(symbol, tf, limit);
-      const closes = data.map((d) => d.close);
-      set((s) => ({ klinesCache: { ...s.klinesCache, [key]: closes } }));
-      return closes;
-    } catch {
-      return [];
-    }
   },
 
   setTimeframe: async (tf) => {
@@ -214,22 +186,23 @@ export const useStore = create<AppState>()(
   },
 
   startAutoRefresh: () => {
-    get().stopAutoRefresh();
+    if (refreshIntervalId !== null) {
+      clearInterval(refreshIntervalId);
+      refreshIntervalId = null;
+    }
     const ms = 5 * 60 * 1000;
     refreshIntervalId = setInterval(() => {
       get().reanalyzeSilent();
       set({ nextRefreshAt: new Date(Date.now() + ms).toISOString() });
     }, ms);
     set({ nextRefreshAt: new Date(Date.now() + ms).toISOString() });
-    return () => get().stopAutoRefresh();
-  },
-
-  stopAutoRefresh: () => {
-    if (refreshIntervalId !== null) {
-      clearInterval(refreshIntervalId);
-      refreshIntervalId = null;
-    }
-    set({ nextRefreshAt: null });
+    return () => {
+      if (refreshIntervalId !== null) {
+        clearInterval(refreshIntervalId);
+        refreshIntervalId = null;
+      }
+      set({ nextRefreshAt: null });
+    };
   },
 
   applyFilters: () => {

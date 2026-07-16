@@ -405,7 +405,7 @@ export function createBinanceWebSocket(
   const streams = ALL_BINANCE_SYMBOLS.map((s) => `${s.toLowerCase()}@ticker`).join("/");
   const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
 
-  ws.onopen = () => console.log("Binance WebSocket connected");
+  ws.onopen = () => {};
   ws.onmessage = (event) => {
     try {
       const msg = JSON.parse(event.data);
@@ -415,8 +415,8 @@ export function createBinanceWebSocket(
       }
     } catch { }
   };
-  ws.onerror = () => console.warn("Binance WebSocket error");
-  ws.onclose = () => console.log("Binance WebSocket closed");
+  ws.onerror = () => {};
+  ws.onclose = () => {};
 
   return ws;
 }

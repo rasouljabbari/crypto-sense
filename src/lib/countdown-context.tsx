@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useTimeframe } from "@/lib/timeframe";
 import { secondsUntilNextClose, formatCountdown } from "@/lib/countdown";
 

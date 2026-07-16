@@ -10,7 +10,7 @@ const DEFAULT_CONFIGS: IndicatorConfig[] = [
 
 // ─── Event Types ───────────────────────────────────────────────────────────
 
-export type IndicatorEvent =
+type IndicatorEvent =
   | { type: "toggle"; id: IndicatorId; enabled: boolean }
   | { type: "reset" };
 

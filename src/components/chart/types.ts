@@ -34,11 +34,4 @@ export function toChartTime(ts: number): UTCTimestamp {
   return Math.floor(ts / 1000) as UTCTimestamp;
 }
 
-// ─── Indicator Renderer Interface ──────────────────────────────────────────
 
-export interface IndicatorRenderer {
-  readonly id: IndicatorId;
-  create(chart: IChartApi, data: readonly ChartDataPoint[]): PaneInfo;
-  update(pane: PaneInfo, chart: IChartApi, data: readonly ChartDataPoint[]): void;
-  destroy(chart: IChartApi, pane: PaneInfo): void;
-}

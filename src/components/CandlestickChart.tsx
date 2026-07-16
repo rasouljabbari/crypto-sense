@@ -3,7 +3,7 @@
 import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
 import { useI18n } from "@/i18n/context";
 import { useTheme } from "@/lib/theme";
-import { useTimeframe, TIMEFRAME_OPTIONS, type TimeframeOption } from "@/lib/timeframe";
+import { useTimeframe } from "@/lib/timeframe";
 import type { ChartDataPoint } from "@/lib/types";
 import type { IChartApi, IPriceLine, ISeriesApi, MouseEventParams, Time, UTCTimestamp } from "lightweight-charts";
 import {
@@ -195,11 +195,9 @@ export function CandlestickChart({ coinId }: Props) {
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) { console.warn("chart: no container"); return; }
-    if (data.length === 0) { console.warn("chart: no data", status.type); return; }
-    if (reloadingRef.current) { console.warn("chart: reloading"); return; }
-
-    console.log("chart: creating chart with", data.length, "points");
+    if (!container) return;
+    if (data.length === 0) return;
+    if (reloadingRef.current) return;
 
     try {
 

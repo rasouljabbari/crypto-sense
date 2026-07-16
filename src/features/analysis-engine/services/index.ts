@@ -31,6 +31,3 @@ export type {
 
 export { buildTradeSetup } from "./tradeSetup";
 export type { TradeSetupResult } from "indicator-engine/risk-management-engine";
-
-export { generateExplanation } from "./explanation";
-export type { ExplanationData } from "./explanation";

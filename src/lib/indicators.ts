@@ -20,7 +20,7 @@ export function calcRSI(prices: number[], period = 14): number {
   return Math.round(100 - 100 / (1 + rs));
 }
 
-export function calcSMA(prices: number[], period: number): number[] {
+function calcSMA(prices: number[], period: number): number[] {
   const result: number[] = [];
   for (let i = 0; i < prices.length; i++) {
     if (i < period - 1) {
@@ -34,7 +34,7 @@ export function calcSMA(prices: number[], period: number): number[] {
   return result;
 }
 
-export function calcEMA(prices: number[], period: number): number[] {
+function calcEMA(prices: number[], period: number): number[] {
   const result: number[] = [];
   const multiplier = 2 / (period + 1);
   let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
@@ -53,7 +53,7 @@ export function calcEMA(prices: number[], period: number): number[] {
   return result;
 }
 
-export function calcMACD(prices: number[]): {
+function calcMACD(prices: number[]): {
   macdLine: number[];
   signalLine: number[];
   histogram: number[];
@@ -82,7 +82,7 @@ export function calcMACD(prices: number[]): {
   return { macdLine, signalLine, histogram };
 }
 
-export function calcBollingerBands(
+function calcBollingerBands(
   prices: number[],
   period = 20,
   stdDev = 2,
@@ -105,7 +105,7 @@ export function calcBollingerBands(
   return { upper, middle, lower };
 }
 
-export function calcADX(prices: number[], period = 14): number {
+function calcADX(prices: number[], period = 14): number {
   if (prices.length < period * 2) return 20;
   // Simplified ADX using directional price movement
   const tr: number[] = [];

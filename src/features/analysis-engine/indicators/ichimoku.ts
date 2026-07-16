@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 
 import type { IchimokuResult } from "../types";
-import { highest, lowest, isValidNumber } from "./_helpers";
+import { highest, lowest } from "./_helpers";
 
 export function ichimoku(
   highs: readonly number[],

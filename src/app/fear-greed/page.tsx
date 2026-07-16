@@ -2,7 +2,6 @@
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   Area,
