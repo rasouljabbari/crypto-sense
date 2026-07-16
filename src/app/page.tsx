@@ -6,6 +6,7 @@ import MarketCapChart from "@/components/MarketCapChart";
 import { Sparkline } from "@/components/Sparkline";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
+import { useTimeframe } from "@/lib/timeframe";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
 import Link from "next/link";
@@ -58,6 +59,7 @@ function formatPrice(n: number): string {
 export default function MarketOverviewPage() {
   const { loadFromBinance, isLive, indicators, coins } = useStore();
   const { t } = useI18n();
+  const { timeframe, getLimit } = useTimeframe();
   useBinanceWebSocket();
 
   const [fng, setFng] = useState<FngSnapshot | null>(null);
@@ -77,7 +79,7 @@ export default function MarketOverviewPage() {
       fetch(`/api/fear-greed?start=${start7d}&end=${end}`).then((r) => r.json()).catch(() => null),
       Promise.all(
         TOP_COINS.map((coin) =>
-          fetchKlines(coin.symbolB, "1h", 168)
+          fetchKlines(coin.symbolB, timeframe, getLimit())
             .then((klines) => ({ id: coin.id, closes: klines.map((k) => k.close) }))
             .catch(() => ({ id: coin.id, closes: [] }))
         )
@@ -93,7 +95,7 @@ export default function MarketOverviewPage() {
       for (const r of klineResults) map[r.id] = r.closes;
       setWeeklyData(map);
     });
-  }, [loadFromBinance]);
+  }, [loadFromBinance, timeframe]);
 
   useEffect(() => {
     setMcLoading(true);

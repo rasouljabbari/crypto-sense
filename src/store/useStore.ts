@@ -95,7 +95,7 @@ export const useStore = create<AppState>()(
     const key = `${symbol}:${tf}`;
     const cached = get().klinesCache[key];
     if (cached) return cached;
-    const limit = tf === "1d" ? 365 : 168;
+    const limit = tf === "1d" ? 365 : tf === "15m" ? 960 : 168;
     try {
       const data = await fetchKlines(symbol, tf, limit);
       const closes = data.map((d) => d.close);
@@ -129,7 +129,7 @@ export const useStore = create<AppState>()(
           const sym = COIN_SYMBOL_MAP[md.id];
           if (!sym) return;
           const key = `${sym}:${tf}`;
-          const limit = tf === "1d" ? 365 : 168;
+          const limit = tf === "1d" ? 365 : tf === "15m" ? 960 : 168;
           try {
             const data = await fetchKlines(sym, tf, limit);
             const closes = data.map((d) => d.close);

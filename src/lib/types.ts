@@ -114,7 +114,7 @@ export type ReasonCode =
   | "SKIP_LOW_RR"
   | "SKIP_INVALID_SETUP";
 
-export type Timeframe = "1h" | "4h" | "1d";
+export type Timeframe = "15m" | "1h" | "4h" | "1d";
 
 export interface FilterOptions {
   positionType: PositionType | "all";

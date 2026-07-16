@@ -1,6 +1,8 @@
 import { SessionProvider } from "@/components/SessionProvider";
+import { CountdownBridge } from "@/components/CountdownBridge";
 import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/lib/theme";
+import { TimeframeProvider } from "@/lib/timeframe";
 import { QueryProvider } from "@/components/QueryProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Vazirmatn } from "next/font/google";
@@ -42,11 +44,15 @@ export default function RootLayout({
       <body className="min-h-screen bg-theme-bg text-theme-text antialiased">
         <QueryProvider>
           <ThemeProvider>
-            <I18nProvider>
-              <SessionProvider>
-                {children}
-              </SessionProvider>
-            </I18nProvider>
+            <TimeframeProvider>
+              <CountdownBridge>
+                <I18nProvider>
+                  <SessionProvider>
+                    {children}
+                  </SessionProvider>
+                </I18nProvider>
+              </CountdownBridge>
+            </TimeframeProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>

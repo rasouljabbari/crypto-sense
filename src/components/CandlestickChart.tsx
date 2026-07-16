@@ -3,6 +3,7 @@
 import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
 import { useI18n } from "@/i18n/context";
 import { useTheme } from "@/lib/theme";
+import { useTimeframe, TIMEFRAME_OPTIONS, type TimeframeOption } from "@/lib/timeframe";
 import type { ChartDataPoint } from "@/lib/types";
 import type { IChartApi, IPriceLine, ISeriesApi, MouseEventParams, Time, UTCTimestamp } from "lightweight-charts";
 import {
@@ -10,12 +11,16 @@ import {
   ColorType,
   createChart,
   CrosshairMode,
-  HistogramSeries,
   LineSeries,
   LineStyle,
 } from "lightweight-charts";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { ChartPaneManager } from "./chart/ChartPaneManager";
+import { IndicatorToolbar } from "./chart/IndicatorToolbar";
+import { useIndicatorManager } from "./chart/useIndicatorManager";
+import { CandleCountdown } from "./CandleCountdown";
+import { TimeframeTabs } from "./TimeframeTabs";
 
 function calcSMA(data: ChartDataPoint[], period: number) {
   return data
@@ -31,13 +36,6 @@ function calcSMA(data: ChartDataPoint[], period: number) {
 
 interface Props {
   coinId: string;
-  onTimeframeChange?: (interval: string) => void;
-}
-
-interface TimeframeOption {
-  label: string;
-  interval: string;
-  limit: number;
 }
 
 type ChartStatus = { type: "loading" } | { type: "ready"; data: ChartDataPoint[] } | { type: "error"; message?: string };
@@ -50,7 +48,7 @@ function chartStatusReducer(_: ChartStatus, action: ChartStatus): ChartStatus {
   return action;
 }
 
-export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
+export function CandlestickChart({ coinId }: Props) {
   const { t } = useI18n();
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -59,18 +57,12 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
   const isAuthRef = useRef(isAuth);
   isAuthRef.current = isAuth;
 
-  const TIMEFRAMES: TimeframeOption[] = [
-    { label: "1H", interval: "1h", limit: 1000 },
-    { label: "4H", interval: "4h", limit: 1000 },
-    { label: "1D", interval: "1d", limit: 1000 },
-    { label: "1W", interval: "1w", limit: 1000 },
-    { label: "1M", interval: "1M", limit: 1000 },
-  ];
+  // ── Global Timeframe ───────────────────────────────────────────────
+  const { timeframe: globalTf, getLimit } = useTimeframe();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
-  const [tf, setTf] = useState<TimeframeOption>(TIMEFRAMES[0]);
   const [status, dispatch] = useReducer(chartStatusReducer, { type: "loading" } as ChartStatus);
 
   const [hLineActive, setHLineActive] = useState(false);
@@ -86,6 +78,10 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
   const smaSeriesArrRef = useRef<ISeriesApi<"Line">[]>([]);
   const loadedRef = useRef(false);
   const [crosshairValues, setCrosshairValues] = useState<{ vol?: string; rsi?: string; adx?: string } | null>(null);
+  const paneManagerRef = useRef<ChartPaneManager | null>(null);
+
+  // ── Indicator System ──────────────────────────────────────────────────
+  const indicator = useIndicatorManager();
 
   const symbol = COIN_SYMBOL_MAP[coinId] ?? (coinId.toUpperCase().endsWith("USDT") ? coinId.toUpperCase() : `${coinId.toUpperCase()}USDT`);
 
@@ -95,7 +91,7 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
     dispatch({ type: "loading" });
     let cancelled = false;
 
-    fetchKlines(symbol, tf.interval, tf.limit)
+    fetchKlines(symbol, globalTf, getLimit())
       .then((d) => {
         if (!cancelled) {
           reloadingRef.current = false;
@@ -110,7 +106,7 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
       });
 
     return () => { cancelled = true; };
-  }, [symbol, tf]);
+  }, [symbol, globalTf]);
 
   const data = useMemo(
     () => status.type === "ready" ? status.data : [],
@@ -243,7 +239,7 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
         },
         timeScale: {
           borderColor,
-          timeVisible: tf.interval === "1h" || tf.interval === "4h",
+          timeVisible: globalTf === "15m" || globalTf === "1h" || globalTf === "4h",
           secondsVisible: false,
         },
         rightPriceScale: {
@@ -285,21 +281,10 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
         chart.timeScale().fitContent();
       }
 
-      const volPane = chart.addPane();
-      volPane.setStretchFactor(0.2);
-
-      const volSeries = chart.addSeries(HistogramSeries, {
-        priceFormat: { type: "volume" },
-        color: "rgba(52, 211, 153, 0.3)",
-      }, volPane.paneIndex());
-
-      volSeries.setData(
-        data.map((k) => ({
-          time: fmtTime(k),
-          value: k.volume,
-          color: k.close >= k.open ? "rgba(52, 211, 153, 0.4)" : "rgba(239, 68, 68, 0.4)",
-        }))
-      );
+      // ── Indicator Panes ───────────────────────────────────────────────
+      const paneManager = new ChartPaneManager(chart);
+      paneManagerRef.current = paneManager;
+      paneManager.sync(indicator.getVisibleIds(), data);
 
       const sma7Data = calcSMA(data, 7);
       const sma21Data = calcSMA(data, 21);
@@ -399,6 +384,8 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
 
       return () => {
         ro.disconnect();
+        paneManagerRef.current?.destroy();
+        paneManagerRef.current = null;
         if (chartRef.current) {
           chartRef.current.remove();
           chartRef.current = null;
@@ -408,26 +395,32 @@ export function CandlestickChart({ coinId, onTimeframeChange }: Props) {
         hlinesRef.current = [];
       };
     } catch (err) { console.error("chart creation error:", err); }
-  }, [data, tf.interval]);
+  }, [data, globalTf]);
+
+  // ── Dynamic Indicator Sync ────────────────────────────────────────────
+  // When indicators toggle, dynamically add/remove panes without chart recreation.
+  useEffect(() => {
+    const pm = paneManagerRef.current;
+    const chart = chartRef.current;
+    if (!pm || !chart || data.length === 0) return;
+
+    const unsub = indicator.manager.subscribe(() => {
+      const pm2 = paneManagerRef.current;
+      if (pm2) {
+        pm2.sync(indicator.getVisibleIds(), data);
+      }
+    });
+
+    return unsub;
+  }, [indicator, data]);
 
   return (
     <div ref={wrapperRef} className={`w-full h-full flex flex-col ${isFullscreen ? `${isDark ? "bg-[#0d1117]" : "bg-white"} p-4` : ""}`}>
       <div className="flex items-center justify-between mb-3 gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-gray-900 rounded-lg p-0.5 border border-gray-800">
-            {TIMEFRAMES.map((t) => (
-              <button
-                key={t.interval}
-                onClick={() => { setTf(t); onTimeframeChange?.(t.interval); }}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${tf.interval === t.interval
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "text-gray-400 hover:text-gray-200 border border-transparent"
-                  }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <TimeframeTabs />
+          <CandleCountdown />
+          <IndicatorToolbar manager={indicator} />
           <div className="hidden sm:flex items-center gap-1 bg-gray-900 rounded-lg p-0.5 border border-gray-800">
             <button
               onClick={() => setHLineActive(v => !v)}

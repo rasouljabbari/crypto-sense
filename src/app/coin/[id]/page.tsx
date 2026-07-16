@@ -1,5 +1,6 @@
 "use client";
 
+import { DMIIndicator } from "@/components/DMIIndicator";
 import { CandlestickChart } from "@/components/CandlestickChart";
 import { CoinImage } from "@/components/CoinImage";
 import { OrderBook } from "@/components/OrderBook";
@@ -8,7 +9,8 @@ import { useI18n } from "@/i18n/context";
 import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
 import { calcRSI, calculateTechnicalIndicatorsFromKlines, estimatePosition } from "@/lib/indicators";
 import { getPositionLabel } from "@/lib/scoring";
-import { CoinAnalysis, PositionType, TechnicalIndicators } from "@/lib/types";
+import { CoinAnalysis, PositionType, TechnicalIndicators, Timeframe } from "@/lib/types";
+import { useTimeframe } from "@/lib/timeframe";
 import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
 import Link from "next/link";
@@ -27,11 +29,11 @@ interface FallbackData {
   rsi: number;
 }
 
-async function fetchFallback(symbol: string): Promise<FallbackData | null> {
+async function fetchFallback(symbol: string, interval: Timeframe = "1h"): Promise<FallbackData | null> {
   try {
     const [tickerRes, klinesRes] = await Promise.all([
       fetch(`${BINANCE_REST}/ticker/24hr?symbol=${symbol}USDT`),
-      fetch(`${BINANCE_REST}/klines?symbol=${symbol}USDT&interval=1h&limit=15`),
+      fetch(`${BINANCE_REST}/klines?symbol=${symbol}USDT&interval=${interval}&limit=15`),
     ]);
     if (!tickerRes.ok) return null;
     const t = await tickerRes.json();
@@ -61,7 +63,8 @@ async function fetchFallback(symbol: string): Promise<FallbackData | null> {
 
 export default function CoinDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { loadFromBinance } = useStore();
-  const { t, dir } = useI18n();
+  const { t } = useI18n();
+  const { timeframe } = useTimeframe();
   useBinanceWebSocket();
   const { id } = use(params);
   const [fallback, setFallback] = useState<FallbackData | undefined>(undefined);
@@ -69,7 +72,6 @@ export default function CoinDetailPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => { loadFromBinance(); }, [loadFromBinance]);
 
-  // Try coinId first, then symbol match, then API fallback
   const storeCoin = useStore((s) => s.coins.find((c) => c.coinId === id))
     ?? useStore((s) => s.coins.find((c) => c.marketData.symbol === id.toUpperCase()));
 
@@ -79,8 +81,8 @@ export default function CoinDetailPage({ params }: { params: Promise<{ id: strin
       return;
     }
     setFbLoading(true);
-    fetchFallback(id.toUpperCase()).then((d) => { setFallback(d ?? undefined); setFbLoading(false); });
-  }, [id, storeCoin]);
+    fetchFallback(id.toUpperCase(), timeframe).then((d) => { setFallback(d ?? undefined); setFbLoading(false); });
+  }, [id, storeCoin, timeframe]);
 
   if (!storeCoin && fbLoading) {
     return (
@@ -112,6 +114,7 @@ export default function CoinDetailPage({ params }: { params: Promise<{ id: strin
 
 function FullDetail({ coin }: { coin: CoinAnalysis }) {
   const { t, dir } = useI18n();
+  const { timeframe, getLimit } = useTimeframe();
   const pos = getPositionLabel(coin.overallScore, coin.position);
   const posLabel = t(pos.labelKey);
   const isPositive = coin.marketData.priceChangePercent24h >= 0;
@@ -123,7 +126,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
   useEffect(() => {
     let cancelled = false;
     const symbol = COIN_SYMBOL_MAP[coin.coinId] || `${md.symbol}USDT`;
-    fetchKlines(symbol, "1h", 300).then((klines) => {
+    fetchKlines(symbol, timeframe, getLimit()).then((klines) => {
       if (cancelled) return;
       const closes = klines.map((k) => k.close);
       const computed = calculateTechnicalIndicatorsFromKlines(closes, md.currentPrice);
@@ -134,7 +137,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
       });
     }).catch(() => { });
     return () => { cancelled = true; };
-  }, [coin.coinId, md.symbol, md.currentPrice]);
+  }, [coin.coinId, md.symbol, md.currentPrice, timeframe]);
 
   const display = realTi ?? ti;
 
@@ -262,6 +265,10 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
           <div className="rounded-lg overflow-hidden" style={{ height: 750 }}>
             <CandlestickChart coinId={coin.coinId} />
           </div>
+        </div>
+
+        <div className="mb-6">
+          <DMIIndicator coinId={coin.coinId} />
         </div>
 
         {/* Trend Analysis */}
@@ -476,6 +483,10 @@ function FallbackDetail({ data }: { data: FallbackData }) {
           <div className="rounded-lg overflow-hidden" style={{ height: 750 }}>
             <CandlestickChart coinId={data.symbol} />
           </div>
+        </div>
+
+        <div className="mb-6">
+          <DMIIndicator coinId={data.symbol} />
         </div>
 
         <div className="text-center py-8 text-sm text-gray-600">

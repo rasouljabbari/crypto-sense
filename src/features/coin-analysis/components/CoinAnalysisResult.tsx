@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
 import { useI18n } from "@/i18n/context";
+import { useTimeframe } from "@/lib/timeframe";
 import { useCoinAnalysis } from "@/features/coin-analysis/hooks/useCoinAnalysis";
 import type { CoinAnalysisState } from "@/features/coin-analysis/types";
 import { Card } from "@/components/Card";
@@ -18,8 +18,8 @@ interface CoinAnalysisResultProps {
 
 export function CoinAnalysisResult({ coinId }: CoinAnalysisResultProps) {
   const { t } = useI18n();
-  const [tf, setTf] = useState("1h");
-  const analysis = useCoinAnalysis(coinId, tf);
+  const { timeframe } = useTimeframe();
+  const analysis = useCoinAnalysis(coinId, timeframe);
 
   if (analysis.status === "loading") {
     return (
@@ -55,15 +55,15 @@ export function CoinAnalysisResult({ coinId }: CoinAnalysisResultProps) {
         <MarketCard data={analysis.market} />
         <ScoreOverview analysis={analysis} />
       </div>
-      <ChartSection coinId={coinId} onTimeframeChange={setTf} />
+      <ChartSection coinId={coinId} />
     </div>
   );
 }
 
-function ChartSection({ coinId, onTimeframeChange }: { readonly coinId: string; readonly onTimeframeChange?: (interval: string) => void }) {
+function ChartSection({ coinId }: { readonly coinId: string }) {
   return (
     <div className="bg-gray-900/30 border border-gray-800/50 rounded-xl overflow-hidden" style={{ height: 480 }}>
-      <CandlestickChart coinId={coinId} onTimeframeChange={onTimeframeChange} />
+      <CandlestickChart coinId={coinId} />
     </div>
   );
 }
