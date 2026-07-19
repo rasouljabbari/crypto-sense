@@ -89,9 +89,17 @@ export interface BollingerBandResult {
   readonly pricePosition: "above" | "below" | "inside";
 }
 
+export interface SupportResistanceLevel {
+  readonly price: number;
+  readonly distancePercent: number;
+  readonly strength: number;
+}
+
 export interface SupportResistanceResult {
-  readonly supportLevels: readonly number[];
-  readonly resistanceLevels: readonly number[];
+  readonly nearestSupport: SupportResistanceLevel | null;
+  readonly nearestResistance: SupportResistanceLevel | null;
+  readonly supportLevels: readonly SupportResistanceLevel[];
+  readonly resistanceLevels: readonly SupportResistanceLevel[];
 }
 
 export interface VolumeProfileResult {

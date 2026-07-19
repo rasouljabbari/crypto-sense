@@ -44,10 +44,17 @@ export interface TechnicalIndicators {
   atr: number;
 }
 
+export interface TimeframeTrend {
+  trend: "bullish" | "bearish" | "neutral";
+  strength: "strong" | "moderate" | "weak";
+  confidence: number; // 0-100
+}
+
 export interface TrendAnalysis {
-  shortTerm: "bullish" | "bearish" | "neutral";
-  mediumTerm: "bullish" | "bearish" | "neutral";
-  longTerm: "bullish" | "bearish" | "neutral";
+  "15m": TimeframeTrend;
+  "1h": TimeframeTrend;
+  "4h": TimeframeTrend;
+  "1d": TimeframeTrend;
   score: number;
 }
 
@@ -77,8 +84,10 @@ export interface CoinAnalysis {
   overallScore: number;
   volumeScore: number;
   trendScore: number;
+  momentumScore: number;
   sentimentScore: number;
   technicalScore: number;
+  riskScore: number;
   marketData: MarketData;
   technicalIndicators: TechnicalIndicators;
   trendAnalysis: TrendAnalysis;
@@ -96,6 +105,7 @@ export interface CoinAnalysis {
   recommendationReason: string;
   recommendationColor: string;
   recommendationPriority: number;
+  tradeSetup: TradeSetupData;
 }
 
 export type SignalType = "strong_buy" | "buy" | "neutral" | "sell" | "strong_sell";
@@ -103,6 +113,19 @@ export type RiskLevel = "low" | "medium" | "high";
 export type TrendLabel = "strong_bullish" | "bullish" | "sideways" | "bearish" | "strong_bearish";
 export type TradeStatus = "ready" | "wait" | "no_trade";
 export type Recommendation = "ready" | "wait" | "skip";
+
+export interface TradeSetupData {
+  readonly hasTrade: boolean;
+  readonly reason: string | null;
+  readonly direction: "long" | "short";
+  readonly entry: number;
+  readonly stopLoss: number;
+  readonly risk: number;
+  readonly takeProfit: { readonly tp1: number; readonly tp2: number; readonly tp3: number };
+  readonly riskReward: { readonly tp1: number; readonly tp2: number; readonly tp3: number };
+  readonly expectedProfit: { readonly tp1: number; readonly tp2: number; readonly tp3: number };
+  readonly tradeQuality: number;
+}
 export type ReasonCode =
   | "READY"
   | "WAIT_PULLBACK"

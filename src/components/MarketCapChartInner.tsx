@@ -103,7 +103,7 @@ export default function MarketCapChartInner({ mcData, mcDays }: { mcData: McData
                 </p>
                 <p className="text-white font-bold font-mono">{formatCompact(d.value)}</p>
                 <p className="text-gray-400 font-mono">
-                  Vol {formatCompact(d.volume)}
+                  {t("fear_greed.vol_label")} {formatCompact(d.volume)}
                 </p>
               </div>
             );

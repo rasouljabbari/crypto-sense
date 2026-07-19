@@ -3,13 +3,14 @@
 import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
+import { useI18n } from "@/i18n/context";
 import type { SearchCoin } from "./SearchBar";
 import { estimatePosition } from "@/lib/indicators";
 
-const positionStyle: Record<string, { text: string; bg: string; label: string }> = {
-  long: { text: "text-emerald-400", bg: "bg-emerald-900/30", label: "LONG" },
-  short: { text: "text-red-400", bg: "bg-red-900/30", label: "SHORT" },
-  neutral: { text: "text-yellow-400", bg: "bg-yellow-900/30", label: "NEUTRAL" },
+const positionStyle: Record<string, { text: string; bg: string }> = {
+  long: { text: "text-emerald-400", bg: "bg-emerald-900/30" },
+  short: { text: "text-red-400", bg: "bg-red-900/30" },
+  neutral: { text: "text-yellow-400", bg: "bg-yellow-900/30" },
 };
 
 interface Props {
@@ -41,6 +42,7 @@ async function removeFromWatchlist(symbol: string) {
 }
 
 export function CoinSearchBox({ coin, onSelect }: Props) {
+  const { t } = useI18n();
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -94,7 +96,7 @@ export function CoinSearchBox({ coin, onSelect }: Props) {
       </div>
 
       <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${ps.text} ${ps.bg}`}>
-        {ps.label}
+        {t(`coin_search_box.${pos.position}`)}
       </span>
 
       <button

@@ -3,7 +3,7 @@
 // Key price levels based on pivot points, round numbers, and clustering
 // ---------------------------------------------------------------------------
 
-import type { SupportResistanceResult } from "../types";
+import type { SupportResistanceLevel, SupportResistanceResult } from "../types";
 import { highest, lowest } from "./_helpers";
 
 interface Pivot {
@@ -18,7 +18,7 @@ export function supportResistance(
 ): SupportResistanceResult {
   const len = Math.min(highs.length, lows.length, closes.length);
   if (len < 20) {
-    return { supportLevels: [], resistanceLevels: [] };
+    return { nearestSupport: null, nearestResistance: null, supportLevels: [], resistanceLevels: [] };
   }
 
   const currentPrice = closes[len - 1];
@@ -98,8 +98,28 @@ export function supportResistance(
   const decimals = currentPrice < 0.01 ? 6 : currentPrice < 0.1 ? 5 : currentPrice < 1 ? 4 : currentPrice < 10 ? 3 : 2;
   const factor = 10 ** decimals;
 
+  const formatLevel = (p: Pivot, isSupport: boolean): SupportResistanceLevel => {
+    const distancePercent = ((p.price - currentPrice) / currentPrice) * 100;
+    const roundedPrice = Math.round(p.price * factor) / factor;
+    const roundedDistance = Math.round(Math.abs(distancePercent) * 10) / 10;
+    
+    // Strength capped at 5 stars
+    const cappedStrength = Math.min(5, p.strength);
+    
+    return {
+      price: roundedPrice,
+      distancePercent: isSupport ? -roundedDistance : roundedDistance,
+      strength: cappedStrength,
+    };
+  };
+
+  const formattedSupport = support.map((p) => formatLevel(p, true));
+  const formattedResistance = resistance.map((p) => formatLevel(p, false));
+
   return {
-    supportLevels: support.map((p) => Math.round(p.price * factor) / factor),
-    resistanceLevels: resistance.map((p) => Math.round(p.price * factor) / factor),
+    nearestSupport: formattedSupport[0] || null,
+    nearestResistance: formattedResistance[0] || null,
+    supportLevels: formattedSupport,
+    resistanceLevels: formattedResistance,
   };
 }

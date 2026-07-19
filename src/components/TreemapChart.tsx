@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/context";
 import { CoinAnalysis } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -95,6 +96,7 @@ interface Props {
 }
 
 export function TreemapChart({ coins }: Props) {
+  const { t } = useI18n();
   const router = useRouter();
 
   const data: CoinNode[] = useMemo(() => {
@@ -139,15 +141,15 @@ export function TreemapChart({ coins }: Props) {
                 <div className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 shadow-xl text-xs text-gray-200">
                   <div className="font-bold text-sm text-white mb-1">{n.name}</div>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-400">Vol</span>
+                    <span className="text-gray-400">{t("fear_greed.vol_label")}</span>
                     <span className="font-mono">${formatCompact(n.size)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-400">Price</span>
+                    <span className="text-gray-400">{t("fear_greed.price_label")}</span>
                     <span className="font-mono">${n.price < 1 ? n.price.toFixed(4) : n.price.toFixed(2)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-400">24h</span>
+                    <span className="text-gray-400">{t("fear_greed.h24_label")}</span>
                     <span className={`font-mono font-semibold ${n.change >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                       {n.change >= 0 ? "+" : ""}{n.change.toFixed(2)}%
                     </span>

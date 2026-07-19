@@ -49,7 +49,7 @@ export function RefreshStatus() {
 
       {lastUpdated && (
         <span className="text-gray-500">
-          {t("refresh_status.updated")} <span className="text-gray-400 font-mono">{timeAgo(lastUpdated)} ago</span>
+          {t("refresh_status.updated")} <span className="text-gray-400 font-mono">{timeAgo(lastUpdated)} {t("refresh_status.ago")}</span>
         </span>
       )}
 

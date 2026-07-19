@@ -4,7 +4,10 @@ import { useMemo } from "react";
 import { useI18n } from "@/i18n/context";
 import { useAnalysis } from "@/features/analysis-engine/hooks/useAnalysis";
 import { supportResistance } from "@/features/analysis-engine/indicators";
-import type { CoinAnalysisState, MarketCardData, IndicatorItem } from "../types";
+import { computeIndicators } from "@/features/analysis-engine/hooks/_computeIndicators";
+import { calcEma } from "@/features/analysis-engine/indicators/_helpers";
+import { buildTradeSetup } from "@/features/analysis-engine/services";
+import type { CoinAnalysisState, MarketCardData, IndicatorItem, TimeframeTrendData, SrLevelDisplay } from "../types";
 import type { ScoreEngineOutput } from "@/features/analysis-engine/services/scoring";
 import type { TradingSignalOutput } from "@/features/analysis-engine/services/signaling";
 import type { TradingSignalType } from "../types/scoring";
@@ -23,7 +26,7 @@ function formatVolume(value: number): string {
   return `$${value.toFixed(0)}`;
 }
 
-function getNearestSR(market: ReturnType<typeof useAnalysis>["market"], interval: string = "1h"): Pick<MarketCardData, "nearestSupport" | "nearestResistance"> {
+function getNearestSR(market: ReturnType<typeof useAnalysis>["market"], interval: string = "1h"): Pick<MarketCardData, "nearestSupport" | "nearestResistance" | "srSupport" | "srResistance"> {
   if (!market) return {};
 
   const key = interval === "4h" || interval === "1d" ? interval : "1h";
@@ -37,10 +40,18 @@ function getNearestSR(market: ReturnType<typeof useAnalysis>["market"], interval
 
   const { supportLevels, resistanceLevels } = supportResistance(highs, lows, closes);
 
-  const nearestSupport = supportLevels.length > 0 ? fmtPrice(supportLevels[0]) : undefined;
-  const nearestResistance = resistanceLevels.length > 0 ? fmtPrice(resistanceLevels[0]) : undefined;
+  const nearestSupport = supportLevels.length > 0 ? fmtPrice(supportLevels[0].price) : undefined;
+  const nearestResistance = resistanceLevels.length > 0 ? fmtPrice(resistanceLevels[0].price) : undefined;
 
-  return { nearestSupport, nearestResistance };
+  const srSupport: SrLevelDisplay | null = supportLevels.length > 0
+    ? { price: fmtPrice(supportLevels[0].price), distancePercent: Math.abs(supportLevels[0].distancePercent), strength: supportLevels[0].strength }
+    : null;
+
+  const srResistance: SrLevelDisplay | null = resistanceLevels.length > 0
+    ? { price: fmtPrice(resistanceLevels[0].price), distancePercent: Math.abs(resistanceLevels[0].distancePercent), strength: resistanceLevels[0].strength }
+    : null;
+
+  return { nearestSupport, nearestResistance, srSupport, srResistance };
 }
 
 function buildMarketCard(
@@ -70,8 +81,179 @@ function buildMarketCard(
   };
 }
 
-function buildIndicatorItems(): readonly IndicatorItem[] {
-  return [];
+function buildIndicatorItems(
+  raw: NonNullable<ReturnType<typeof computeIndicators>>,
+  currentPrice: number,
+): readonly IndicatorItem[] {
+  const rsi = raw.rsi;
+  const macd = raw.macd;
+  const adx = raw.adx;
+  const ema20 = raw.ema20.value;
+  const ema50 = raw.ema50.value;
+  const atr_val = raw.atr.value;
+  const bb = raw.bollingerBands;
+
+  const items: IndicatorItem[] = [];
+
+  // ── RSI ──────────────────────────────────────────────────────────────
+  {
+    const val = rsi.value.toFixed(1);
+    let status: "bullish" | "bearish" | "neutral";
+    let statusLabel: string;
+    let interpretation: string;
+
+    if (rsi.value > 70) {
+      status = "bearish";
+      statusLabel = "Overbought";
+      interpretation = "Bearish Reversal Possible";
+    } else if (rsi.value < 30) {
+      status = "bullish";
+      statusLabel = "Oversold";
+      interpretation = "Bullish Recovery Possible";
+    } else {
+      status = "neutral";
+      statusLabel = "Neutral";
+      interpretation = "Normal Trading Range";
+    }
+
+    items.push({ key: "rsi", label: "RSI", value: val, status, statusLabel, interpretation });
+  }
+
+  // ── MACD ─────────────────────────────────────────────────────────────
+  {
+    const hist = macd.histogram;
+    const bullish = macd.bullish;
+    let status: "bullish" | "bearish" | "neutral";
+    let statusLabel: string;
+    let interpretation: string;
+
+    if (bullish && hist > 0) {
+      status = "bullish";
+      statusLabel = "Bullish Cross";
+      interpretation = "Momentum Increasing";
+    } else if (!bullish && hist < 0) {
+      status = "bearish";
+      statusLabel = "Bearish Cross";
+      interpretation = "Momentum Decreasing";
+    } else if (hist > 0) {
+      status = "bullish";
+      statusLabel = "Histogram Positive";
+      interpretation = "Early Bullish Bias";
+    } else if (hist < 0) {
+      status = "bearish";
+      statusLabel = "Histogram Negative";
+      interpretation = "Early Bearish Bias";
+    } else {
+      status = "neutral";
+      statusLabel = "Converging";
+      interpretation = "Crossover Forming";
+    }
+
+    items.push({ key: "macd", label: "MACD", value: statusLabel, status, statusLabel, interpretation });
+  }
+
+  // ── ADX ──────────────────────────────────────────────────────────────
+  {
+    const val = adx.adx.toFixed(1);
+    let status: "bullish" | "bearish" | "neutral";
+    let statusLabel: string;
+    let interpretation: string;
+
+    if (adx.adx >= 40) {
+      status = "bullish";
+      statusLabel = "Very Strong Trend";
+      interpretation = "High Conviction Move";
+    } else if (adx.adx >= 25) {
+      status = adx.plusDI > adx.minusDI ? "bullish" : "bearish";
+      statusLabel = "Strong Trend";
+      interpretation = adx.plusDI > adx.minusDI ? "Buyers in Control" : "Sellers in Control";
+    } else if (adx.adx >= 20) {
+      status = "neutral";
+      statusLabel = "Moderate Trend";
+      interpretation = "Trend Developing";
+    } else {
+      status = "neutral";
+      statusLabel = "Weak Trend";
+      interpretation = "Market Ranging";
+    }
+
+    items.push({ key: "adx", label: "ADX", value: val, status, statusLabel, interpretation });
+  }
+
+  // ── EMA Alignment ────────────────────────────────────────────────────
+  {
+    const bullishAlign = ema20 > ema50;
+    const bearishAlign = ema20 < ema50;
+
+    let status: "bullish" | "bearish" | "neutral";
+    let statusLabel: string;
+    let interpretation: string;
+
+    if (bullishAlign) {
+      status = "bullish";
+      statusLabel = "Bullish Alignment";
+      interpretation = "Uptrend Structure Intact";
+    } else if (bearishAlign) {
+      status = "bearish";
+      statusLabel = "Bearish Alignment";
+      interpretation = "Downtrend Structure Intact";
+    } else {
+      status = "neutral";
+      statusLabel = "Mixed";
+      interpretation = "No Clear Trend";
+    }
+
+    items.push({ key: "ema", label: "EMA", value: statusLabel, status, statusLabel, interpretation });
+  }
+
+  // ── ATR ──────────────────────────────────────────────────────────────
+  {
+    const atrPct = currentPrice > 0 ? (atr_val / currentPrice) * 100 : 0;
+    let status: "bullish" | "bearish" | "neutral";
+    let statusLabel: string;
+    let interpretation: string;
+
+    if (atrPct > 5) {
+      status = "bearish";
+      statusLabel = "High Volatility";
+      interpretation = "Wide Stops Needed";
+    } else if (atrPct > 2) {
+      status = "neutral";
+      statusLabel = "Medium Volatility";
+      interpretation = "Normal Conditions";
+    } else {
+      status = "bullish";
+      statusLabel = "Low Volatility";
+      interpretation = "Breakout Building";
+    }
+
+    items.push({ key: "atr", label: "ATR", value: statusLabel, status, statusLabel, interpretation });
+  }
+
+  // ── Bollinger Bands ──────────────────────────────────────────────────
+  {
+    let status: "bullish" | "bearish" | "neutral";
+    let statusLabel: string;
+    let interpretation: string;
+
+    if (bb.pricePosition === "above") {
+      status = "bearish";
+      statusLabel = "Above Upper Band";
+      interpretation = "Price Extended";
+    } else if (bb.pricePosition === "below") {
+      status = "bullish";
+      statusLabel = "Below Lower Band";
+      interpretation = "Potential Bounce";
+    } else {
+      status = "neutral";
+      statusLabel = "Inside Bands";
+      interpretation = "Normal Range";
+    }
+
+    items.push({ key: "bb", label: "Bollinger", value: statusLabel, status, statusLabel, interpretation });
+  }
+
+  return items;
 }
 
 function mapSignalType(signal: TradingSignalOutput["signal"]): TradingSignalType {
@@ -176,6 +358,96 @@ function buildExplanation(
   return { summary, strengths, weaknesses, risks, recommendation };
 }
 
+/* ── Per-timeframe Trend Analysis ─────────────────────────────────────── */
+
+function computeTimeframeTrend(closes: readonly number[]): { trend: string; confidence: number } {
+  const minBars = 20;
+  if (closes.length < minBars) {
+    return { trend: "Neutral", confidence: 50 };
+  }
+
+  const ema9Arr = calcEma(closes, 9);
+  const ema21Arr = calcEma(closes, 21);
+  const ema50Arr = calcEma(closes, Math.min(50, closes.length));
+
+  const ema9 = ema9Arr[ema9Arr.length - 1];
+  const ema21 = ema21Arr[ema21Arr.length - 1];
+  const ema50 = ema50Arr[ema50Arr.length - 1];
+
+  const bullish = ema9 > ema21;
+  const bearish = ema9 < ema21;
+  const emaAlignedBull = bullish && ema21 > ema50;
+  const emaAlignedBear = bearish && ema21 < ema50;
+
+  // Price momentum (recent change)
+  const recentChange = ((closes[closes.length - 1] - closes[closes.length - 10]) / closes[closes.length - 10]) * 100;
+
+  let trend: string;
+  if (emaAlignedBull && recentChange > 2) trend = "Strong Bullish";
+  else if (emaAlignedBull) trend = "Bullish";
+  else if (emaAlignedBear && recentChange < -2) trend = "Strong Bearish";
+  else if (emaAlignedBear) trend = "Bearish";
+  else if (bullish && recentChange > 1) trend = "Bullish";
+  else if (bearish && recentChange < -1) trend = "Bearish";
+  else trend = "Neutral";
+
+  // Confidence: EMA separation + momentum alignment
+  const emaSeparation = Math.abs(ema9 - ema21) / ema21;
+  let confidence = 50;
+  if (emaAlignedBull || emaAlignedBear) confidence += 15;
+  if (emaSeparation > 0.01) confidence += 10;
+  if (Math.abs(recentChange) > 3) confidence += 10;
+  else if (Math.abs(recentChange) > 1) confidence += 5;
+  if ((trend.startsWith("Bullish") || trend.startsWith("Strong Bullish")) && recentChange > 0) confidence += 5;
+  if ((trend.startsWith("Bearish") || trend.startsWith("Strong Bearish")) && recentChange < 0) confidence += 5;
+
+  // Volatility dampener
+  const volatility = calcEma(closes.map(c => Math.abs(c - closes[closes.length - 1]) / closes[closes.length - 1]), 14);
+  const vol = volatility[volatility.length - 1] ?? 0;
+  if (vol > 0.05) confidence -= 10;
+  else if (vol < 0.01) confidence += 5;
+
+  return { trend, confidence: Math.max(0, Math.min(100, Math.round(confidence))) };
+}
+
+function buildTrends(
+  market: ReturnType<typeof useAnalysis>["market"],
+  activeTimeframe: string,
+): readonly TimeframeTrendData[] {
+  if (!market) return [];
+
+  const tfs = ["15m", "1h", "4h", "1d"] as const;
+  const results: TimeframeTrendData[] = [];
+
+  for (const tf of tfs) {
+    let closes: number[];
+
+    if (tf === "15m") {
+      // Approximate 15m using 1h data with shorter window (last 6 candles ≈ short-term)
+      const hourly = market.candles["1h"];
+      if (hourly.length < 4) continue;
+      closes = hourly.slice(-20).map(c => c.close);
+    } else if (tf === "1h") {
+      const hourly = market.candles["1h"];
+      if (hourly.length < 20) continue;
+      closes = hourly.map(c => c.close);
+    } else if (tf === "4h") {
+      const fourHourly = market.candles["4h"];
+      if (fourHourly.length < 10) continue;
+      closes = fourHourly.map(c => c.close);
+    } else {
+      const daily = market.candles["1d"];
+      if (daily.length < 10) continue;
+      closes = daily.map(c => c.close);
+    }
+
+    const { trend, confidence } = computeTimeframeTrend(closes);
+    results.push({ timeframe: tf, trend, confidence, isActive: tf === activeTimeframe });
+  }
+
+  return results;
+}
+
 /* ── Hook ──────────────────────────────────────────────────────────────── */
 
 export function useCoinAnalysis(coinId: string | null, interval: string = "1h"): CoinAnalysisState {
@@ -190,9 +462,21 @@ export function useCoinAnalysis(coinId: string | null, interval: string = "1h"):
     return "ready";
   })();
 
+  /* ── Technical Indicators ──────────────────────────────────────────── */
+  const rawIndicators = useMemo(() => {
+    if (!market) return null;
+    try { return computeIndicators(market); } catch { return null; }
+  }, [market]);
+
+  const indicatorItems = useMemo(() => {
+    if (!rawIndicators) return [] as readonly IndicatorItem[];
+    return buildIndicatorItems(rawIndicators, market?.price.current ?? 0);
+  }, [rawIndicators, market?.price.current]);
+
   /* ── Derived State ──────────────────────────────────────────────────── */
   const marketCard = useMemo(() => buildMarketCard(market, interval), [market, interval]);
-  const indicators = useMemo(() => buildIndicatorItems(), []);
+  const indicators = indicatorItems;
+  const trends = useMemo(() => buildTrends(market, interval), [market, interval]);
 
   const computedScores = useMemo(
     () => (scores ? buildScores(scores, t) : null),
@@ -203,6 +487,66 @@ export function useCoinAnalysis(coinId: string | null, interval: string = "1h"):
     if (!signal) return { type: "Neutral" as TradingSignalType };
     return { type: mapSignalType(signal.signal) };
   }, [signal]);
+
+  /* ── Trade Setup ────────────────────────────────────────────────────── */
+  const computedTradeSetup = useMemo(() => {
+    if (!market || !scores || !signal || !rawIndicators) return null;
+    try {
+      return buildTradeSetup(market, scores, signal, rawIndicators);
+    } catch {
+      return null;
+    }
+  }, [market, scores, signal, rawIndicators]);
+
+  const tradeState = useMemo(() => {
+    const ts = computedTradeSetup;
+    if (!ts) return { hasTrade: false, tradeReason: "No trade data available.", tradeSetup: { hasTrade: false } as const };
+
+    if (!ts.hasTrade) {
+      return {
+        hasTrade: false,
+        tradeReason: ts.validation.reason ?? "No valid trade setup.",
+        tradeSetup: {
+          hasTrade: false,
+          reason: ts.validation.reason ?? "No valid trade setup.",
+          direction: ts.direction,
+        } as const,
+      };
+    }
+
+    return {
+      hasTrade: true,
+      tradeReason: undefined as string | undefined,
+      tradeSetup: {
+        hasTrade: true,
+        direction: ts.direction,
+        entry: ts.entry,
+        stopLoss: ts.stopLoss,
+        takeProfit: {
+          tp1: ts.takeProfit.tp1,
+          tp2: ts.takeProfit.tp2,
+          tp3: ts.takeProfit.tp3,
+        },
+        riskReward: {
+          tp1: ts.riskReward.tp1,
+          tp2: ts.riskReward.tp2,
+          tp3: ts.riskReward.tp3,
+        },
+        expectedProfit: {
+          tp1: ts.expectedProfit.tp1,
+          tp2: ts.expectedProfit.tp2,
+          tp3: ts.expectedProfit.tp3,
+        },
+        risk: ts.position.riskAmount,
+        tradeQuality: ts.tradeQuality,
+      } as const,
+    };
+  }, [computedTradeSetup]);
+
+  const computedConfidence = scores?.confidence ?? 0;
+  const computedTradeQuality = tradeState.hasTrade && tradeState.tradeSetup.tradeQuality
+    ? tradeState.tradeSetup.tradeQuality
+    : 0;
 
   if (!computedScores) {
     return {
@@ -217,11 +561,14 @@ export function useCoinAnalysis(coinId: string | null, interval: string = "1h"):
       },
       overallScore: { value: 0, signal: "Neutral", weights: { trend: 0.35, momentum: 0.20, volume: 0.15, volatility: 0.10, risk: 0.20 } },
       signal: computedSignal,
-      hasTrade: false,
-      tradeReason: "No trade generated.",
-      tradeSetup: { hasTrade: false },
+      hasTrade: tradeState.hasTrade,
+      tradeReason: tradeState.tradeReason,
+      tradeSetup: tradeState.tradeSetup,
+      confidence: computedConfidence,
+      tradeQuality: computedTradeQuality,
       market: marketCard,
       indicators,
+      trends,
       explanation: {
         summary: "—",
         strengths: [],
@@ -247,11 +594,14 @@ export function useCoinAnalysis(coinId: string | null, interval: string = "1h"):
       weights: { trend: 0.35, momentum: 0.20, volume: 0.15, volatility: 0.10, risk: 0.20 },
     },
     signal: computedSignal,
-    hasTrade: false,
-    tradeReason: "No trade generated.",
-    tradeSetup: { hasTrade: false },
+    hasTrade: tradeState.hasTrade,
+    tradeReason: tradeState.tradeReason,
+    tradeSetup: tradeState.tradeSetup,
+    confidence: computedConfidence,
+    tradeQuality: computedTradeQuality,
     market: marketCard,
     indicators,
+    trends,
     explanation,
   };
 }

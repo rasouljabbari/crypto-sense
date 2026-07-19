@@ -268,7 +268,7 @@ export default function FearGreedPage() {
                             <p className="text-gray-400">{formatDateNumeric(d.timestamp)}</p>
                             <div className="flex items-center gap-2">
                               <span className="w-2 h-2 rounded-sm bg-emerald-400 shrink-0" />
-                              <span className="text-gray-400 w-16">F&G</span>
+                              <span className="text-gray-400 w-16">{t("fear_greed.fg_label")}</span>
                               <span className="text-white font-bold font-mono">{d.value}</span>
                               <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color, backgroundColor: `${color}1a`, border: `1px solid ${color}33` }}>
                                 {d.classification}
@@ -276,12 +276,12 @@ export default function FearGreedPage() {
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="w-2 h-2 rounded-sm bg-amber-500 shrink-0" />
-                              <span className="text-gray-400 w-16">BTC</span>
+                              <span className="text-gray-400 w-16">{t("fear_greed.btc_label")}</span>
                               <span className="text-white font-bold font-mono">${d.btcPrice!.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="w-2 h-2 rounded-sm bg-violet-400 shrink-0" />
-                              <span className="text-gray-400 w-16">Volume</span>
+                              <span className="text-gray-400 w-16">{t("fear_greed.volume_label")}</span>
                               <span className="text-white font-bold font-mono">${formatCompact(d.btcVolume!)}</span>
                             </div>
                           </div>

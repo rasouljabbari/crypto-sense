@@ -98,7 +98,7 @@ export function MarketSummary() {
           value={parseFloat(summary.avgRisk)}
           max={3}
           color={summary.avgRisk <= "1.5" ? "text-emerald-400" : summary.avgRisk <= "2.0" ? "text-yellow-400" : "text-red-400"}
-          suffix="/3"
+          suffix={t("market_summary.out_of_3")}
         />
         <SummaryMetric
           label={t("market_summary.avg_confidence")}
@@ -111,7 +111,7 @@ export function MarketSummary() {
           value={parseFloat(summary.avgTrend)}
           max={5}
           color={summary.avgTrend >= "3.5" ? "text-emerald-400" : summary.avgTrend <= "2.5" ? "text-red-400" : "text-yellow-400"}
-          suffix="/5"
+          suffix={t("market_summary.out_of_5")}
         />
       </div>
     </div>

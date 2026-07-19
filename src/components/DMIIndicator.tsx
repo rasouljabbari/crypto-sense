@@ -1,6 +1,7 @@
 "use client";
 
 import { COIN_SYMBOL_MAP, fetchKlines } from "@/api/binance";
+import { useI18n } from "@/i18n/context";
 import { useTimeframe } from "@/lib/timeframe";
 import { useEffect, useState } from "react";
 
@@ -63,6 +64,7 @@ interface Props {
 }
 
 export function DMIIndicator({ coinId }: Props) {
+  const { t } = useI18n();
   const [dmi, setDmi] = useState<DmiValues | null>(null);
   const [loading, setLoading] = useState(true);
   const { timeframe, getLimit } = useTimeframe();
@@ -88,23 +90,23 @@ export function DMIIndicator({ coinId }: Props) {
 
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-gray-400 mb-4">DMI (14)</h3>
+      <h3 className="text-sm font-semibold text-gray-400 mb-4">{t("dmi.title")}</h3>
       {loading ? (
         <div className="flex items-center justify-center py-8">
           <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : !hasValues ? (
-        <p className="text-xs text-gray-500">Not enough data</p>
+        <p className="text-xs text-gray-500">{t("dmi.no_data")}</p>
       ) : (
         <div className="space-y-3">
-          <DmiBar label="+DI" value={plusDIVal!} color="#22c55e" />
-          <DmiBar label="-DI" value={minusDIVal!} color="#ef4444" />
-          <DmiBar label="ADX" value={adxVal!} color="#f97316" />
+          <DmiBar label={t("dmi.plus_di")} value={plusDIVal!} color="#22c55e" />
+          <DmiBar label={t("dmi.minus_di")} value={minusDIVal!} color="#ef4444" />
+          <DmiBar label={t("dmi.adx")} value={adxVal!} color="#f97316" />
           <div className="pt-2 border-t border-gray-800 text-xs text-gray-500">
             {adxVal! >= 25 ? (
-              <span className="text-orange-400">Trending ({adxVal!.toFixed(1)})</span>
+              <span className="text-orange-400">{t("dmi.trending", { val: adxVal!.toFixed(1) })}</span>
             ) : (
-              <span className="text-gray-400">Ranging ({adxVal!.toFixed(1)})</span>
+              <span className="text-gray-400">{t("dmi.ranging", { val: adxVal!.toFixed(1) })}</span>
             )}
           </div>
         </div>

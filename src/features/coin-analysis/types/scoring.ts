@@ -313,6 +313,7 @@ export interface TradeExplanation {
 export interface TradeSetupResult {
   readonly hasTrade: boolean;
   readonly reason?: string; // Only if hasTrade = false
+  readonly direction?: "long" | "short";
   readonly entry?: number;
   readonly stopLoss?: number;
   readonly takeProfit?: {
@@ -320,8 +321,18 @@ export interface TradeSetupResult {
     readonly tp2: number; // RR 1:3
     readonly tp3: number; // RR 1:5
   };
+  readonly riskReward?: {
+    readonly tp1: number;
+    readonly tp2: number;
+    readonly tp3: number;
+  };
+  readonly expectedProfit?: {
+    readonly tp1: number;
+    readonly tp2: number;
+    readonly tp3: number;
+  };
+  readonly risk?: number;
   readonly tradeQuality?: number; // 0-100
-  readonly riskReward?: number; // e.g., 2.0 for 1:2
 }
 
 // ─── AnalysisResult (complete) ────────────────────────────────────────────

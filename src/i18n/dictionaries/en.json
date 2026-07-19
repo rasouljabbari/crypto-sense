@@ -2,7 +2,8 @@
   "brand": {
     "name": "CryptoSense",
     "tagline": "Smart Crypto Analysis",
-    "initials": "CS"
+    "initials": "CS",
+    "alt": "CryptoSense"
   },
   "nav": {
     "overview": "Overview",
@@ -49,6 +50,11 @@
     "yesterday": "Yesterday",
     "last_week": "Last Week",
     "last_month": "Last Month",
+    "fg_label": "F&G",
+    "btc_label": "BTC",
+    "volume_label": "Volume",
+    "price_label": "Price",
+    "h24_label": "24h",
     "updated": "Updated {date}",
     "classes": {
       "extreme_fear": "Extreme Fear",
@@ -69,7 +75,8 @@
     "refreshing": "Refreshing...",
     "light_mode": "Light mode",
     "dark_mode": "Dark mode",
-    "login": "Sign in"
+    "login": "Sign in",
+    "menu": "Menu"
   },
   "coins_page": {
     "title": "Crypto Market Analysis",
@@ -156,9 +163,11 @@
     "watch": "Watch",
     "vol_tooltip": "24h Volume / Market Cap — higher = more liquid",
     "rsi_tooltip": "Relative Strength Index (14)",
+    "risk_very_low": "Very Low",
     "risk_low": "Low",
     "risk_medium": "Medium",
     "risk_high": "High",
+    "risk_extreme": "Extreme",
     "strong_bullish": "Strong Bullish",
     "bullish": "Bullish",
     "sideways": "Sideways",
@@ -197,7 +206,28 @@
     "no_data": "No data",
     "no_chart_data": "No chart data",
     "past_days": "Past {days}d",
-    "simulated": "simulated"
+    "simulated": "simulated",
+    "h_line": "H-Line",
+    "sma": "SMA",
+    "clear_lines": "Clear",
+    "fullscreen": "Fullscreen",
+    "exit_fullscreen": "Exit fullscreen",
+    "rsi_label": "RSI",
+    "adx_label": "ADX",
+    "vol_label": "VOL",
+    "dmi_label": "DMI",
+    "ind_label": "Ind",
+    "hide_indicator": "Hide {label}",
+    "show_indicator": "Show {label}"
+  },
+  "dmi": {
+    "title": "DMI (14)",
+    "no_data": "Not enough data",
+    "plus_di": "+DI",
+    "minus_di": "-DI",
+    "adx": "ADX",
+    "trending": "Trending ({val})",
+    "ranging": "Ranging ({val})"
   },
   "coin_detail": {
     "back": "Back to Dashboard",
@@ -250,19 +280,97 @@
         "macd": "MACD",
         "macd_signal": "MACD Signal",
         "macd_histogram": "MACD Histogram",
+        "adx": "ADX",
         "ema_9": "EMA 9",
         "ema_21": "EMA 21",
+        "ema_alignment": "EMA Alignment",
+        "atr": "ATR",
         "bb_upper": "Bollinger Upper",
         "bb_lower": "Bollinger Lower",
+        "bb_position": "Bollinger Position",
         "tooltips": {
           "rsi": "Relative Strength Index (14 periods): >70 = overbought, <30 = oversold. Helps identify potential reversal points.",
           "macd": "Moving Average Convergence Divergence: trend-following momentum indicator. MACD > Signal = bullish momentum.",
           "macd_signal": "9-period EMA of MACD line. Crossovers with MACD generate trade signals.",
           "macd_histogram": "MACD line − Signal line. Positive = increasing momentum, negative = decreasing momentum.",
+          "adx": "Average Directional Index: measures trend strength regardless of direction. >25 = strong trend, <20 = weak/no trend.",
           "ema_9": "9-period Exponential Moving Average. Shorter-term trend indicator. Price above = short-term uptrend.",
           "ema_21": "21-period Exponential Moving Average. Medium-term trend indicator. Price above = medium-term uptrend.",
+          "ema_alignment": "Relative positioning of EMA 9, 21, and 50. Bullish alignment: 9 > 21 > 50. Bearish: 9 < 21 < 50.",
+          "atr": "Average True Range: measures volatility. High ATR = large price swings, low ATR = quiet market.",
           "bb_upper": "Upper band (2 std dev above middle). Price touching this may indicate overbought conditions.",
-          "bb_lower": "Lower band (2 std dev below middle). Price touching this may indicate oversold conditions."
+          "bb_lower": "Lower band (2 std dev below middle). Price touching this may indicate oversold conditions.",
+          "bb_position": "Price position relative to Bollinger Bands. Above upper = overbought, below lower = oversold."
+        }
+      },
+      "tech_interpret": {
+        "rsi": {
+          "oversold": "Oversold",
+          "neutral": "Neutral",
+          "overbought": "Overbought",
+          "extreme_oversold": "Extreme oversold — strong reversal signal likely",
+          "oversold_desc": "Oversold territory — bullish recovery possible",
+          "extreme_overbought": "Extreme overbought — pullback risk elevated",
+          "overbought_desc": "Overbought territory — selling pressure may increase",
+          "bullish_zone": "Bullish zone — momentum favoring buyers",
+          "bearish_zone": "Bearish zone — momentum favoring sellers",
+          "mid_range": "Mid range — no strong directional signal"
+        },
+        "macd": {
+          "bullish_cross": "Bullish Cross",
+          "bearish_cross": "Bearish Cross",
+          "neutral": "Neutral",
+          "bullish_desc": "Momentum increasing — bullish crossover confirmed",
+          "bearish_desc": "Momentum decreasing — bearish crossover confirmed",
+          "converging": "Lines converging — potential crossover forming"
+        },
+        "histogram": {
+          "strong": "Strong",
+          "moderate": "Moderate",
+          "weak": "Weak",
+          "strong_bullish": "Strong bullish momentum — buyers in control",
+          "strong_bearish": "Strong bearish momentum — sellers in control",
+          "moderate_bullish": "Moderate bullish momentum building",
+          "moderate_bearish": "Moderate bearish momentum building",
+          "fading": "Momentum fading — direction unclear"
+        },
+        "adx": {
+          "very_strong": "Very Strong",
+          "strong": "Strong",
+          "moderate": "Moderate",
+          "weak": "Weak",
+          "very_strong_desc": "Very strong trend — high conviction direction",
+          "strong_desc": "Strong trend — directional bias clear",
+          "moderate_desc": "Moderate trend — direction forming",
+          "weak_desc": "Weak trend — choppy/ranging market likely"
+        },
+        "ema": {
+          "bullish": "Bullish",
+          "bearish": "Bearish",
+          "neutral": "Mixed",
+          "mixed": "Mixed",
+          "bullish_desc": "Bullish alignment — all EMAs stacked bullishly",
+          "bearish_desc": "Bearish alignment — all EMAs stacked bearishly",
+          "mixed_desc": "Mixed alignment — no clear trend direction"
+        },
+        "atr": {
+          "high": "High Volatility",
+          "medium": "Medium Volatility",
+          "low": "Low Volatility",
+          "high_desc": "High volatility — wider stops needed, larger swings expected",
+          "medium_desc": "Medium volatility — normal trading conditions",
+          "low_desc": "Low volatility — breakout potential building"
+        },
+        "bb": {
+          "above": "Above Upper",
+          "below": "Below Lower",
+          "inside": "Inside Bands",
+          "upper_tag": "Upper Band",
+          "lower_tag": "Lower Band",
+          "mid_tag": "Mid Band",
+          "above_desc": "Price above upper band — overbought, potential reversal",
+          "below_desc": "Price below lower band — oversold, potential bounce",
+          "inside_desc": "Price inside bands — normal range, no extreme"
         }
       },
       "trend_analysis": {
@@ -282,9 +390,9 @@
       "news_sentiment": {
         "title": "News & Sentiment",
         "tooltip": "Aggregated sentiment from news and social media sources.",
-        "positive": "positive",
-        "negative": "negative",
-        "neutral": "neutral",
+        "positive": "Positive",
+        "negative": "Negative",
+        "neutral": "Neutral",
         "positive_ratio": "{pct}% positive",
         "mentions": "{count} mentions",
         "no_news": "No recent news for this coin"
@@ -301,14 +409,43 @@
     "subscores": {
       "volume": "Volume",
       "trend": "Trend",
+      "momentum": "Momentum",
       "technicals": "Technicals",
-      "sentiment": "Sentiment"
+      "sentiment": "Sentiment",
+      "confidence": "Confidence",
+      "trade_quality": "Trade Quality",
+      "risk": "Risk"
     },
     "data_source": "Binance",
     "signal": "Signal",
     "score": "Score: {score}",
     "price_chart": "Price Chart",
-    "fallback_message": "Full analysis not available for this coin. Only Binance market data is shown."
+    "fallback_message": "Full analysis not available for this coin. Only Binance market data is shown.",
+    "hero": {
+      "opportunity": "Opportunity",
+      "score": "Score",
+      "confidence": "Confidence",
+      "quality": "Trade Quality",
+      "risk": "Risk",
+      "analysis_period": "{timeframe} Analysis",
+      "last_updated": "Updated {time}",
+      "opportunity_question": "Is this coin worth trading right now?"
+    },
+    "trade_setup": {
+      "title": "Trade Setup",
+      "direction": "Direction",
+      "long": "Long",
+      "short": "Short",
+      "entry": "Entry Price",
+      "current_price": "Current Price",
+      "stop_loss": "Stop Loss",
+      "take_profit": "Take Profit",
+      "risk_reward": "Risk / Reward",
+      "expected_profit": "Expected Profit",
+      "expected_loss": "Expected Loss",
+      "risk_level": "Risk Level",
+      "no_trade": "No Valid Trade Setup"
+    }
   },
   "order_book": {
     "title": "Order Book",
@@ -318,13 +455,30 @@
     "spread": "Spread",
     "bids": "Bids",
     "asks": "Asks",
-    "updated": "Updated 1s"
+    "updated": "Updated 1s",
+    "buy_pressure": "Buy Pressure",
+    "sell_pressure": "Sell Pressure",
+    "liquidity": "Liquidity",
+    "liquidity_high": "High",
+    "liquidity_medium": "Medium",
+    "liquidity_low": "Low",
+    "largest_bid_wall": "Largest Bid Wall",
+    "largest_ask_wall": "Largest Ask Wall",
+    "sr_title": "Support & Resistance",
+    "sr_support": "Support",
+    "sr_resistance": "Resistance",
+    "sr_percent_below": "{pct}% below",
+    "sr_percent_above": "{pct}% above",
+    "sr_no_support": "No support detected",
+    "sr_no_resistance": "No resistance detected",
+    "sr_star": "{count}"
   },
   "footer": {
     "copyright": "© {year} CryptoSense. All rights reserved.",
     "support": "Support:",
     "copied": "Copied!",
-    "contact": "Bugs & suggestions:"
+    "contact": "Bugs & suggestions:",
+    "author": "Rasoul Jabbari"
   },
   "dashboard": {
     "title": "Analysis Dashboard",
@@ -454,8 +608,10 @@
       "signal": "Signal",
       "confidence": "Confidence",
       "trend": "Trend",
+      "momentum": "Momentum",
       "volume": "Volume",
       "volatility": "Volatility",
+      "trade_quality": "Trade Quality",
       "risk": "Risk",
       "status": {
         "strong_bullish": "Strong Bullish",
@@ -506,6 +662,54 @@
       "risk_elevated": "Elevated risk — consider tighter position sizing",
       "dimension_score": "{dimension}: {status} ({value})"
     },
+    "trend_arrow": {
+      "strong_bullish": "↑↑",
+      "bullish": "↑",
+      "strong_bearish": "↓↓",
+      "bearish": "↓",
+      "sideways": "→"
+    },
+    "strength": {
+      "strong": "Strong",
+      "moderate": "Moderate",
+      "weak": "Weak"
+    },
+    "active": "Active",
+    "signal_reasons": {
+      "title": "Why This Signal",
+      "no_reasons": "No signal reasons available",
+      "ema_bullish": "EMA Bullish Alignment",
+      "macd_bullish_cross": "MACD Bullish Cross",
+      "rsi_oversold_recovery": "RSI Oversold Recovery",
+      "rsi_bullish": "RSI Bullish",
+      "buyers_in_control": "Buyers in Control",
+      "strong_trend_momentum": "Strong Trend Momentum",
+      "high_conviction_trend": "High Conviction Trend",
+      "volume_confirmation": "Volume Confirmation",
+      "risk_reward": "Risk/Reward 1:{ratio}",
+      "momentum_positive": "Momentum Positive",
+      "high_confidence": "High Confidence",
+      "ema_bearish": "Bearish EMA Alignment",
+      "macd_bearish_cross": "MACD Bearish Cross",
+      "macd_bearish": "MACD Bearish",
+      "rsi_overbought": "RSI Overbought",
+      "trend_momentum_weak": "Trend Momentum Weak",
+      "weak_volume": "Weak Volume Confirmation",
+      "elevated_risk": "Elevated Risk",
+      "momentum_negative": "Momentum Negative",
+      "momentum_fading": "Momentum Fading",
+      "price_near_support": "Price Near Support",
+      "high_risk": "High Risk",
+      "weak_trend": "Weak Trend",
+      "low_volume": "Low Volume",
+      "mixed_momentum": "Mixed Momentum",
+      "low_confidence": "Low Confidence",
+      "market_ranging": "Market Ranging",
+      "invalid_trade_setup": "Invalid Trade Setup",
+      "price_above_entry": "Price Above Entry",
+      "price_below_entry": "Price Below Entry",
+      "volume_neutral": "Volume Neutral"
+    },
     "recommendation": {
       "title": "Trade Signal",
       "open": "Open Position",
@@ -516,12 +720,55 @@
       "neutral_detail": "Neutral — monitor for clearer signals before acting"
     }
   },
+  "register": {
+    "title": "Create Account",
+    "subtitle": "Start your crypto analysis journey",
+    "first_name": "First Name",
+    "first_name_placeholder": "John",
+    "last_name": "Last Name",
+    "last_name_placeholder": "Doe",
+    "email": "Email",
+    "email_placeholder": "you@example.com",
+    "password": "Password",
+    "password_placeholder": "••••••••",
+    "creating_account": "Creating account...",
+    "has_account": "Already have an account?",
+    "sign_in": "Sign in",
+    "registration_failed": "Registration failed",
+    "something_wrong": "Something went wrong. Please try again."
+  },
+  "login": {
+    "title": "Sign In",
+    "subtitle": "Welcome back to CryptoSense",
+    "password_placeholder": "Enter your password",
+    "signing_in": "Signing in...",
+    "no_account": "Don't have an account?",
+    "create_one": "Create one",
+    "invalid_credentials": "Invalid email or password"
+  },
+  "coin_search_box": {
+    "long": "LONG",
+    "short": "SHORT",
+    "neutral": "NEUTRAL"
+  },
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "min_ago": "{count}m ago",
+    "hour_ago": "{count}h ago",
+    "day_ago": "{count}d ago"
+  },
+  "auth": {
+    "sign_out": "Sign out",
+    "sign_out_confirm": "Are you sure you want to sign out?"
+  },
   "errors": {
     "cannot_resolve_symbol": "Cannot resolve symbol: \"{symbol}\". Use a Binance symbol (e.g. BTCUSDT), coin ID (e.g. bitcoin), or base asset (e.g. BTC)."
   },
   "refresh_status": {
     "updated": "Updated",
-    "next": "Next refresh"
+    "next": "Next refresh",
+    "ago": "ago"
   },
   "market_summary": {
     "title": "Market Summary",
@@ -529,7 +776,9 @@
     "avg_score": "Avg Score",
     "avg_risk": "Avg Risk",
     "avg_confidence": "Avg Confidence",
-    "avg_trend": "Avg Trend"
+    "avg_trend": "Avg Trend",
+    "out_of_3": "/3",
+    "out_of_5": "/5"
   },
   "market_opps": {
     "top_buy": "Top Buy",
@@ -547,7 +796,8 @@
     "popular": "Popular",
     "recent": "Recent",
     "no_results": "No coins match your search",
-    "clear_all": "Clear all"
+    "clear_all": "Clear all",
+    "searching": "Searching..."
   },
   "locale": {
     "en": "English",

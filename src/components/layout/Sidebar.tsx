@@ -151,7 +151,7 @@ export function Sidebar() {
             <div className="relative shrink-0">
               <Image
                 src="/logo.svg"
-                alt="CryptoSense"
+                alt={t("brand.alt")}
                 width={32}
                 height={32}
                 className="w-8 h-8 rounded-xl"
@@ -329,6 +329,7 @@ export function Sidebar() {
 /* ── User Menu ────────────────────────────────────────────────────────── */
 
 function SidebarUserMenu({ session }: { session: Session }) {
+  const { t } = useI18n();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const pathname = usePathname();
 
@@ -351,7 +352,7 @@ function SidebarUserMenu({ session }: { session: Session }) {
         <button
           onClick={() => setLogoutOpen(true)}
           className="shrink-0 p-1 rounded-lg text-theme-secondary hover:text-red-400 hover:bg-red-900/20 transition-colors duration-200"
-          title="Sign out"
+          title={t("auth.sign_out")}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
@@ -361,10 +362,10 @@ function SidebarUserMenu({ session }: { session: Session }) {
 
       <ConfirmModal
         open={logoutOpen}
-        title="Sign out"
-        message="Are you sure you want to sign out?"
-        confirmLabel="Sign out"
-        cancelLabel="Cancel"
+        title={t("auth.sign_out")}
+        message={t("auth.sign_out_confirm")}
+        confirmLabel={t("auth.sign_out")}
+        cancelLabel={t("common.cancel")}
         onConfirm={async () => {
           setLogoutOpen(false);
           localStorage.clear();

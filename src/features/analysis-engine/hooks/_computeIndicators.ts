@@ -54,7 +54,7 @@ function getFallbackIndicators(): IndicatorInput {
     atr: { value: 0 },
     obv: { value: 0, values: [], trend: "flat" },
     stochasticRsi: { k: 50, d: 50, kValues: [], dValues: [], oversold: false, overbought: false },
-    supportResistance: { supportLevels: [], resistanceLevels: [] },
+    supportResistance: { nearestSupport: null, nearestResistance: null, supportLevels: [], resistanceLevels: [] },
     trendDirection: "neutral",
   };
 }

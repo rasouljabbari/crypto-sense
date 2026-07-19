@@ -24,12 +24,21 @@ export interface CoinAnalysisState {
   hasTrade: boolean;
   tradeReason?: string;
   tradeSetup: TradeSetupResult;
+  confidence: number;
+  tradeQuality: number;
   market: MarketCardData;
   indicators: readonly IndicatorItem[];
+  trends: readonly TimeframeTrendData[];
   explanation: TradeExplanation;
 }
 
 // ─── MarketCardData ───────────────────────────────────────────────────────
+
+export interface SrLevelDisplay {
+  price: string;
+  distancePercent: number;
+  strength: number;
+}
 
 export interface MarketCardData {
   price: string;
@@ -45,9 +54,18 @@ export interface MarketCardData {
   volatilityStatus: "low" | "medium" | "high";
   nearestSupport?: string;
   nearestResistance?: string;
+  srSupport?: SrLevelDisplay | null;
+  srResistance?: SrLevelDisplay | null;
 }
 
 // ─── IndicatorItem ───────────────────────────────────────────────────────
+
+export interface TimeframeTrendData {
+  timeframe: string;
+  trend: string;
+  confidence: number;
+  isActive: boolean;
+}
 
 export interface IndicatorItem {
   key: string;
@@ -55,4 +73,5 @@ export interface IndicatorItem {
   value: string;
   status: "bullish" | "bearish" | "neutral";
   statusLabel: string;
+  interpretation: string;
 }

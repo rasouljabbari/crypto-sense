@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useI18n } from "@/i18n/context";
 
 export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
+  const { t } = useI18n();
   const { data: session } = useSession();
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -29,7 +31,7 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
     });
     setLoading(false);
     if (res?.error) {
-      setError("Invalid email or password");
+      setError(t("login.invalid_credentials"));
     } else if (res?.ok) {
       router.push(callbackUrl);
     }
@@ -54,8 +56,8 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-          <p className="text-gray-500 text-sm mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-white">{t("login.title")}</h1>
+          <p className="text-gray-500 text-sm mt-1">{t("login.subtitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-6 space-y-4 shadow-xl shadow-black/20">
@@ -66,25 +68,25 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
           )}
 
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">Email</label>
+            <label className="block text-xs font-medium text-gray-400 mb-1.5">{t("register.email")}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t("register.email_placeholder")}
               required
               className="w-full bg-gray-800/80 text-gray-200 text-sm rounded-xl px-4 py-2.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder-gray-600 transition-all duration-200"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">Password</label>
+            <label className="block text-xs font-medium text-gray-400 mb-1.5">{t("register.password")}</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={t("login.password_placeholder")}
                 required
                 className="w-full bg-gray-800/80 text-gray-200 text-sm rounded-xl pl-4 pr-10 py-2.5 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder-gray-600 transition-all duration-200"
               />
@@ -116,17 +118,17 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
             {loading ? (
               <span className="flex items-center justify-center gap-2 relative">
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Signing in...
+                {t("login.signing_in")}
               </span>
             ) : (
-              <span className="relative">Sign in</span>
+              <span className="relative">{t("login.title")}</span>
             )}
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            Don&apos;t have an account?{" "}
+            {t("login.no_account")}{" "}
             <Link href="/register" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-              Create one
+              {t("login.create_one")}
             </Link>
           </p>
         </form>

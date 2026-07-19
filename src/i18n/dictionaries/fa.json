@@ -2,7 +2,8 @@
   "brand": {
     "name": "CryptoSense",
     "tagline": "تحلیل هوشمند ارزهای دیجیتال",
-    "initials": "CS"
+    "initials": "CS",
+    "alt": "CryptoSense"
   },
   "nav": {
     "overview": "نمای کلی",
@@ -49,6 +50,11 @@
     "yesterday": "دیروز",
     "last_week": "هفته گذشته",
     "last_month": "ماه گذشته",
+    "fg_label": "F&G",
+    "btc_label": "BTC",
+    "volume_label": "حجم",
+    "price_label": "قیمت",
+    "h24_label": "۲۴h",
     "updated": "بروزرسانی در {date}",
     "classes": {
       "extreme_fear": "ترس شدید",
@@ -69,7 +75,8 @@
     "refreshing": "در حال بروزرسانی...",
     "light_mode": "حالت روز",
     "dark_mode": "حالت شب",
-    "login": "ورود"
+    "login": "ورود",
+    "menu": "منو"
   },
   "coins_page": {
     "title": "تحلیل بازار ارزهای دیجیتال",
@@ -156,9 +163,11 @@
     "watch": "نظارت",
     "vol_tooltip": "حجم ۲۴ ساعت / ارزش بازار — بالاتر = نقدشوندگی بیشتر",
     "rsi_tooltip": "شاخص قدرت نسبی (۱۴)",
+    "risk_very_low": "بسیار کم",
     "risk_low": "کم",
     "risk_medium": "متوسط",
     "risk_high": "زیاد",
+    "risk_extreme": "شدید",
     "strong_bullish": "صعودی قوی",
     "bullish": "صعودی",
     "sideways": "رِنج",
@@ -197,7 +206,28 @@
     "no_data": "داده‌ای وجود ندارد",
     "no_chart_data": "داده نمودار وجود ندارد",
     "past_days": "{days} روز گذشته",
-    "simulated": "شبیه‌سازی‌شده"
+    "simulated": "شبیه‌سازی‌شده",
+    "h_line": "خط افقی",
+    "sma": "میانگین ساده",
+    "clear_lines": "پاک کردن",
+    "fullscreen": "تمام صفحه",
+    "exit_fullscreen": "خروج از تمام صفحه",
+    "rsi_label": "RSI",
+    "adx_label": "ADX",
+    "vol_label": "VOL",
+    "dmi_label": "DMI",
+    "ind_label": "Ind",
+    "hide_indicator": "مخفی‌سازی {label}",
+    "show_indicator": "نمایش {label}"
+  },
+  "dmi": {
+    "title": "DMI (۱۴)",
+    "no_data": "داده کافی نیست",
+    "plus_di": "+DI",
+    "minus_di": "-DI",
+    "adx": "ADX",
+    "trending": "رونددار ({val})",
+    "ranging": "رِنج ({val})"
   },
   "coin_detail": {
     "back": "بازگشت به داشبورد",
@@ -250,19 +280,97 @@
         "macd": "MACD",
         "macd_signal": "سیگنال MACD",
         "macd_histogram": "هیستوگرام MACD",
+        "adx": "ADX",
         "ema_9": "EMA ۹",
         "ema_21": "EMA ۲۱",
+        "ema_alignment": "تراز EMA",
+        "atr": "ATR",
         "bb_upper": "باند بالایی بولینگر",
         "bb_lower": "باند پایینی بولینگر",
+        "bb_position": "موقعیت باند بولینگر",
         "tooltips": {
           "rsi": "شاخص قدرت نسبی (۱۴ دوره): >۷۰ = اشباع خرید، <۳۰ = اشباع فروش. به شناسایی نقاط بازگشت بالقوه کمک می‌کند.",
           "macd": "میانگین متحرک همگرایی واگرایی: شاخص مومنتوم دنبال‌کننده روند. MACD > سیگنال = مومنتوم صعودی.",
           "macd_signal": "میانگین متحرک نمایی ۹ دوره‌ای خط MACD. تقاطع‌ها با MACD سیگنال‌های معاملاتی تولید می‌کنند.",
           "macd_histogram": "خط MACD − خط سیگنال. مثبت = مومنتوم افزایشی، منفی = مومنتوم کاهشی.",
+          "adx": "شاخص جهت‌دار میانگین: قدرت روند را بدون در نظر گرفتن جهت اندازه‌گیری می‌کند. >۲۵ = روند قوی، <۲۰ = روند ضعیف.",
           "ema_9": "میانگین متحرک نمایی ۹ دوره‌ای. شاخص روند کوتاه‌مدت. قیمت بالای آن = روند صعودی کوتاه‌مدت.",
           "ema_21": "میانگین متحرک نمایی ۲۱ دوره‌ای. شاخص روند میان‌مدت. قیمت بالای آن = روند صعودی میان‌مدت.",
+          "ema_alignment": "موقعیت نسبی EMA ۹، ۲۱ و ۵۰. تراز صعودی: ۹ > ۲۱ > ۵۰. تراز نزولی: ۹ < ۲۱ < ۵۰.",
+          "atr": "میانگین محدوده واقعی: نوسان را اندازه‌گیری می‌کند. ATR بالا = نوسانات قیمت زیاد، ATR پایین = بازار آرام.",
           "bb_upper": "باند بالایی (۲ انحراف معیار بالای میانگین). تماس قیمت با این باند می‌تواند نشان‌دهنده اشباع خرید باشد.",
-          "bb_lower": "باند پایینی (۲ انحراف معیار پایین میانگین). تماس قیمت با این باند می‌تواند نشان‌دهنده اشباع فروش باشد."
+          "bb_lower": "باند پایینی (۲ انحراف معیار پایین میانگین). تماس قیمت با این باند می‌تواند نشان‌دهنده اشباع فروش باشد.",
+          "bb_position": "موقعیت قیمت نسبت به باندهای بولینگر. بالای باند بالا = اشباع خرید، زیر باند پایین = اشباع فروش."
+        }
+      },
+      "tech_interpret": {
+        "rsi": {
+          "oversold": "اشباع فروش",
+          "neutral": "خنثی",
+          "overbought": "اشباع خرید",
+          "extreme_oversold": "اشباع فروش شدید — سیگنال بازگشت قوی محتمل",
+          "oversold_desc": "منطقه اشباع فروش — احتمال بازگشت صعودی",
+          "extreme_overbought": "اشباع خرید شدید — خطر اصلاح بالا",
+          "overbought_desc": "منطقه اشباع خرید — فشار فروش ممکن است افزایش یابد",
+          "bullish_zone": "منطقه صعودی — مومنتوم به نفع خریداران",
+          "bearish_zone": "منطقه نزولی — مومنتوم به نفع فروشندگان",
+          "mid_range": "محدوده میانی — سیگنال جهتی قوی وجود ندارد"
+        },
+        "macd": {
+          "bullish_cross": "تقاطع صعودی",
+          "bearish_cross": "تقاطع نزولی",
+          "neutral": "خنثی",
+          "bullish_desc": "مومنتوم در حال افزایش — تقاطع صعودی تأیید شد",
+          "bearish_desc": "مومنتوم در حال کاهش — تقاطع نزولی تأیید شد",
+          "converging": "خطوط در حال همگرایی — تقاطع بالقوه در حال شکل‌گیری"
+        },
+        "histogram": {
+          "strong": "قوی",
+          "moderate": "متوسط",
+          "weak": "ضعیف",
+          "strong_bullish": "مومنتوم صعودی قوی — خریداران کنترل دارند",
+          "strong_bearish": "مومنتوم نزولی قوی — فروشندگان کنترل دارند",
+          "moderate_bullish": "مومنتوم صعودی متوسط در حال افزایش",
+          "moderate_bearish": "مومنتوم نزولی متوسط در حال افزایش",
+          "fading": "مومنتوم در حال کاهش — جهت نامشخص"
+        },
+        "adx": {
+          "very_strong": "بسیار قوی",
+          "strong": "قوی",
+          "moderate": "متوسط",
+          "weak": "ضعیف",
+          "very_strong_desc": "روند بسیار قوی — اطمینان بالا به جهت",
+          "strong_desc": "روند قوی — سوگیر جهتی مشخص",
+          "moderate_desc": "روند متوسط — جهت در حال شکل‌گیری",
+          "weak_desc": "روند ضعیف — بازار پرنوسان/-range احتمالی"
+        },
+        "ema": {
+          "bullish": "صعودی",
+          "bearish": "نزولی",
+          "neutral": "ترکیبی",
+          "mixed": "ترکیبی",
+          "bullish_desc": "هم‌ترازی صعودی — تمام EMAها به صورت صعودی چیده شده‌اند",
+          "bearish_desc": "هم‌ترازی نزولی — تمام EMAها به صورت نزولی چیده شده‌اند",
+          "mixed_desc": "هم‌ترازی ترکیبی — جهت روند مشخص نیست"
+        },
+        "atr": {
+          "high": "نوسان بالا",
+          "medium": "نوسان متوسط",
+          "low": "نوسان پایین",
+          "high_desc": "نوسان بالا — توقف‌های وسیع‌تر لازم است، نوسانات بزرگ‌تر مورد انتظار",
+          "medium_desc": "نوسان متوسط — شرایط عادی معاملات",
+          "low_desc": "نوسان پایین — پتانسیل شکست در حال افزایش"
+        },
+        "bb": {
+          "above": "بالای باند بالایی",
+          "below": "زیر باند پایینی",
+          "inside": "داخل باندها",
+          "upper_tag": "باند بالایی",
+          "lower_tag": "باند پایینی",
+          "mid_tag": "باند میانی",
+          "above_desc": "قیمت بالای باند بالایی — اشباع خرید، احتمال بازگشت",
+          "below_desc": "قیمت زیر باند پایینی — اشباع فروش، احتمال جهش",
+          "inside_desc": "قیمت داخل باندها — محدوده عادی، بدون اشباع"
         }
       },
       "trend_analysis": {
@@ -301,14 +409,43 @@
     "subscores": {
       "volume": "حجم",
       "trend": "روند",
+      "momentum": "مومنتوم",
       "technicals": "تکنیکال",
-      "sentiment": "احساسات"
+      "sentiment": "احساسات",
+      "confidence": "اطمینان",
+      "trade_quality": "کیفیت معامله",
+      "risk": "ریسک"
     },
     "data_source": "بایننس",
     "signal": "سیگنال",
     "score": "امتیاز: {score}",
     "price_chart": "نمودار قیمت",
-    "fallback_message": "تحلیل کامل برای این ارز در دسترس نیست. فقط داده‌های بازار بایننس نمایش داده می‌شود."
+    "fallback_message": "تحلیل کامل برای این ارز در دسترس نیست. فقط داده‌های بازار بایننس نمایش داده می‌شود.",
+    "hero": {
+      "opportunity": "فرصت",
+      "score": "امتیاز",
+      "confidence": "اطمینان",
+      "quality": "کیفیت معامله",
+      "risk": "ریسک",
+      "analysis_period": "تحلیل {timeframe}",
+      "last_updated": "به‌روز شده {time}",
+      "opportunity_question": "آیا این ارز در حال حاضر ارزش معامله دارد؟"
+    },
+    "trade_setup": {
+      "title": "تنظیم معامله",
+      "direction": "جهت",
+      "long": "لانگ",
+      "short": "Short",
+      "entry": "قیمت ورود",
+      "current_price": "قیمت فعلی",
+      "stop_loss": "حد ضرر",
+      "take_profit": "حد سود",
+      "risk_reward": "ریسک / پاداش",
+      "expected_profit": "سود مورد انتظار",
+      "expected_loss": "ضرر مورد انتظار",
+      "risk_level": "سطح ریسک",
+      "no_trade": "تنظیم معامله معتبری وجود ندارد"
+    }
   },
   "order_book": {
     "title": "دفتر سفارشات",
@@ -318,13 +455,30 @@
     "spread": "اسپرد",
     "bids": "خرید",
     "asks": "فروش",
-    "updated": "بروزرسانی ۱ثانیه"
+    "updated": "بروزرسانی ۱ثانیه",
+    "buy_pressure": "فشار خرید",
+    "sell_pressure": "فشار فروش",
+    "liquidity": "نقدشوندگی",
+    "liquidity_high": "زیاد",
+    "liquidity_medium": "متوسط",
+    "liquidity_low": "کم",
+    "largest_bid_wall": "بزرگترین دیوار خرید",
+    "largest_ask_wall": "بزرگترین دیوار فروش",
+    "sr_title": "حمایت و مقاومت",
+    "sr_support": "حمایت",
+    "sr_resistance": "مقاومت",
+    "sr_percent_below": "{pct}% پایین‌تر",
+    "sr_percent_above": "{pct}% بالاتر",
+    "sr_no_support": "حمایتی شناسایی نشد",
+    "sr_no_resistance": "مقاومتی شناسایی نشد",
+    "sr_star": "{count}"
   },
   "footer": {
     "copyright": "© {year} CryptoSense. تمامی حقوق محفوظ است.",
     "support": "حمایت:",
     "copied": "کپی شد!",
-    "contact": "باگ و پیشنهادات:"
+    "contact": "باگ و پیشنهادات:",
+    "author": "رسول جباری"
   },
   "dashboard": {
     "title": "داشبورد تحلیل",
@@ -443,11 +597,11 @@
     "subtitle": "برای مشاهده تحلیل بازار و اطلاعات تفصیلی یک ارز دیجیتال را جستجو کنید",
     "empty_title": "برای شروع تحلیل یک ارز را انتخاب کنید",
     "empty_description": "نام یا نماد یک ارز را در بالا تایپ کنید یا روی یکی از ارزهای محبوب کلیک کنید.",
-    "analyzing_title": "در حال تحلیل {{coin}}...",
+    "analyzing_title": "در حال تحلیل {coin}...",
     "analyzing_description": "دریافت اطلاعات بازار و آماده‌سازی تحلیل.",
     "error_title": "تحلیل در دسترس نیست",
     "no_result_title": "ارز یافت نشد",
-    "no_result_description": "داده‌ای برای {{coin}} موجود نیست. نماد را بررسی کرده و دوباره تلاش کنید.",
+    "no_result_description": "داده‌ای برای {coin} موجود نیست. نماد را بررسی کرده و دوباره تلاش کنید.",
     "score": {
       "title": "امتیازها",
       "overall": "امتیاز کلی",
@@ -457,6 +611,7 @@
       "momentum": "مومنتوم",
       "volume": "حجم",
       "volatility": "نوسان",
+      "trade_quality": "کیفیت معامله",
       "risk": "ریسک",
       "status": {
         "strong_bullish": "صعودی قوی",
@@ -507,6 +662,54 @@
       "risk_elevated": "ریسک بالا — اندازه موقعیت را کاهش دهید",
       "dimension_score": "{dimension}: {status} ({value})"
     },
+    "trend_arrow": {
+      "strong_bullish": "↑↑",
+      "bullish": "↑",
+      "strong_bearish": "↓↓",
+      "bearish": "↓",
+      "sideways": "→"
+    },
+    "strength": {
+      "strong": "قوی",
+      "moderate": "متوسط",
+      "weak": "ضعیف"
+    },
+    "active": "فعال",
+    "signal_reasons": {
+      "title": "علت این سیگنال",
+      "no_reasons": "دلیلی برای سیگنال موجود نیست",
+      "ema_bullish": "هم‌راستایی صعودی EMA",
+      "macd_bullish_cross": "تقاطع صعودی MACD",
+      "rsi_oversold_recovery": "بازگشت از اشباع فروش RSI",
+      "rsi_bullish": "RSI صعودی",
+      "buyers_in_control": "خریداران در کنترل",
+      "strong_trend_momentum": "مومنتوم روند قوی",
+      "high_conviction_trend": "روند با اطمینان بالا",
+      "volume_confirmation": "تأیید حجم",
+      "risk_reward": "ریسک/پاداش 1:{ratio}",
+      "momentum_positive": "مومنتوم مثبت",
+      "high_confidence": "اطمینان بالا",
+      "ema_bearish": "هم‌راستایی نزولی EMA",
+      "macd_bearish_cross": "تقاطع نزولی MACD",
+      "macd_bearish": "MACD نزولی",
+      "rsi_overbought": "اشباع خرید RSI",
+      "trend_momentum_weak": "مومنتوم روند ضعیف",
+      "weak_volume": "تأیید حجم ضعیف",
+      "elevated_risk": "ریسک بالا",
+      "momentum_negative": "مومنتوم منفی",
+      "momentum_fading": "مومنتوم در حال کاهش",
+      "price_near_support": "قیمت نزدیک حمایت",
+      "high_risk": "ریسک بالا",
+      "weak_trend": "روند ضعیف",
+      "low_volume": "حجم پایین",
+      "mixed_momentum": "مومنتوم ترکیبی",
+      "low_confidence": "اطمینان پایین",
+      "market_ranging": "بازار رِِنج",
+      "invalid_trade_setup": "تنظیم معامله نامعتبر",
+      "price_above_entry": "قیمت بالای ورود",
+      "price_below_entry": "قیمت زیر ورود",
+      "volume_neutral": "حجم خنثی"
+    },
     "recommendation": {
       "title": "سیگنال معاملاتی",
       "open": "باز کردن موقعیت",
@@ -517,12 +720,55 @@
       "neutral_detail": "خنثی — منتظر سیگنال واضح‌تر بمانید"
     }
   },
+  "register": {
+    "title": "ایجاد حساب",
+    "subtitle": "سفر تحلیل ارزهای دیجیتال خود را شروع کنید",
+    "first_name": "نام",
+    "first_name_placeholder": "علی",
+    "last_name": "نام خانوادگی",
+    "last_name_placeholder": "احمدی",
+    "email": "ایمیل",
+    "email_placeholder": "you@example.com",
+    "password": "رمز عبور",
+    "password_placeholder": "••••••••",
+    "creating_account": "در حال ایجاد حساب...",
+    "has_account": "حساب کاربری دارید؟",
+    "sign_in": "ورود",
+    "registration_failed": "ثبت‌نام ناموفق بود",
+    "something_wrong": "خطایی رخ داد. لطفاً دوباره تلاش کنید."
+  },
+  "login": {
+    "title": "ورود",
+    "subtitle": "خوش آمدید به CryptoSense",
+    "password_placeholder": "رمز عبور خود را وارد کنید",
+    "signing_in": "در حال ورود...",
+    "no_account": "حساب ندارید؟",
+    "create_one": "ایجاد کنید",
+    "invalid_credentials": "ایمیل یا رمز عبور اشتباه است"
+  },
+  "coin_search_box": {
+    "long": "لانگ",
+    "short": "شورت",
+    "neutral": "خنثی"
+  },
+  "common": {
+    "confirm": "تأیید",
+    "cancel": "لغو",
+    "min_ago": "{count} دقیقه پیش",
+    "hour_ago": "{count} ساعت پیش",
+    "day_ago": "{count} روز پیش"
+  },
+  "auth": {
+    "sign_out": "خروج",
+    "sign_out_confirm": "آیا مطمئن هستید که می‌خواهید خارج شوید؟"
+  },
   "errors": {
     "cannot_resolve_symbol": "نماد \"{symbol}\" شناسایی نشد. از یک نماد بایننس (مثلاً BTCUSDT)، شناسه ارز (مثلاً bitcoin) یا نماد پایه (مثلاً BTC) استفاده کنید."
   },
   "refresh_status": {
     "updated": "بروزرسانی",
-    "next": "بروزرسانی بعدی"
+    "next": "بروزرسانی بعدی",
+    "ago": "پیش"
   },
   "market_summary": {
     "title": "خلاصه بازار",
@@ -530,7 +776,9 @@
     "avg_score": "میانگین امتیاز",
     "avg_risk": "میانگین ریسک",
     "avg_confidence": "میانگین اطمینان",
-    "avg_trend": "میانگین روند"
+    "avg_trend": "میانگین روند",
+    "out_of_3": "/۳",
+    "out_of_5": "/۵"
   },
   "market_opps": {
     "top_buy": "بهترین خرید",
@@ -548,7 +796,8 @@
     "popular": "محبوب",
     "recent": "جستجوهای اخیر",
     "no_results": "ارزی با جستجوی شما مطابقت ندارد",
-    "clear_all": "پاک کردن همه"
+    "clear_all": "پاک کردن همه",
+    "searching": "در حال جستجو..."
   },
   "locale": {
     "en": "English",

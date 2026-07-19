@@ -426,9 +426,9 @@ export function CandlestickChart({ coinId }: Props) {
                 ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                 : "text-gray-400 hover:text-gray-200 border border-transparent"
                 }`}
-              title="Horizontal line"
+              title={t("chart.h_line")}
             >
-              ☰ H-Line
+              ☰ {t("chart.h_line")}
             </button>
             <button
               onClick={() => setShowSMA(v => !v)}
@@ -437,7 +437,7 @@ export function CandlestickChart({ coinId }: Props) {
                 : "text-gray-400 hover:text-gray-200 border border-transparent"
                 }`}
             >
-              3SMA
+              {t("chart.sma")}
             </button>
 
             {hlinePricesRef.current.length > 0 && (
@@ -445,9 +445,9 @@ export function CandlestickChart({ coinId }: Props) {
                 <button
                   onClick={clearAllDrawings}
                   className="px-2 py-1 text-xs font-medium rounded-md transition-colors text-gray-400 hover:text-red-400 border border-transparent hover:border-red-500/30"
-                  title="Clear all horizontal lines"
+                  title={t("chart.clear_lines")}
                 >
-                  ✕ Clear
+                  ✕ {t("chart.clear_lines")}
                 </button>
               </>
             )}
@@ -457,7 +457,7 @@ export function CandlestickChart({ coinId }: Props) {
           <button
             onClick={toggleFullscreen}
             className="px-2 py-1 text-xs font-medium rounded-md transition-colors text-gray-400 hover:text-gray-200 border border-transparent hover:border-gray-700"
-            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            title={isFullscreen ? t("chart.exit_fullscreen") : t("chart.fullscreen")}
           >
             {isFullscreen ? "⊠" : "⛶"}
           </button>
@@ -468,9 +468,9 @@ export function CandlestickChart({ coinId }: Props) {
         {/* Crosshair tooltip */}
          {crosshairValues && (
            <div className="absolute top-2 right-2 z-20 text-[9px] font-semibold pointer-events-none flex flex-col gap-1 items-end">
-             {crosshairValues.vol && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">VOL {crosshairValues.vol}</span>}
-             {crosshairValues.rsi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-purple-400 border border-gray-700/50">RSI {crosshairValues.rsi}</span>}
-             {crosshairValues.adx && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-orange-400 border border-gray-700/50">ADX {crosshairValues.adx}</span>}
+              {crosshairValues.vol && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">VOL {crosshairValues.vol}</span>}
+              {crosshairValues.rsi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-purple-400 border border-gray-700/50">{t("chart.rsi_label")} {crosshairValues.rsi}</span>}
+              {crosshairValues.adx && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-orange-400 border border-gray-700/50">{t("chart.adx_label")} {crosshairValues.adx}</span>}
            </div>
          )}
         {status.type === "loading" && (

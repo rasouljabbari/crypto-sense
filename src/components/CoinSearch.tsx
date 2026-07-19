@@ -370,7 +370,7 @@ export function CoinSearch({
               ) : apiLoading ? (
                 <div className="px-4 py-6 text-center text-sm text-gray-500">
                   <span className="inline-block w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mr-2 align-middle" />
-                  Searching...
+                  {t("coin_search.searching")}
                 </div>
               ) : (
                 <div className="px-4 py-6 text-center text-sm text-gray-500">

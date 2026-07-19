@@ -495,12 +495,12 @@ function evaluateRisk(i: ScoreEngineInput): {
   // ── S/R distance ─────────────────────────────────────────────────────────
   const nearestSupport =
     sr.supportLevels.length > 0
-      ? Math.max(...sr.supportLevels.filter((l) => l < i.price.currentPrice), 0)
+      ? Math.max(...sr.supportLevels.filter((l) => l.price < i.price.currentPrice).map((l) => l.price), 0)
       : i.price.currentPrice * 0.9;
   const nearestResistance =
     sr.resistanceLevels.length > 0
       ? Math.min(
-          ...sr.resistanceLevels.filter((l) => l > i.price.currentPrice),
+          ...sr.resistanceLevels.filter((l) => l.price > i.price.currentPrice).map((l) => l.price),
           i.price.currentPrice * 2,
         )
       : i.price.currentPrice * 1.1;

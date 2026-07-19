@@ -138,10 +138,10 @@ export function generateExplanation(
   }
 
   const nearestSupport = indicators.supportResistance.supportLevels.length > 0
-    ? Math.max(...indicators.supportResistance.supportLevels.filter((l) => l < price.current), 0)
+    ? Math.max(...indicators.supportResistance.supportLevels.filter((l) => l.price < price.current).map((l) => l.price), 0)
     : price.current * 0.9;
   const nearestResistance = indicators.supportResistance.resistanceLevels.length > 0
-    ? Math.min(...indicators.supportResistance.resistanceLevels.filter((l) => l > price.current), price.current * 2)
+    ? Math.min(...indicators.supportResistance.resistanceLevels.filter((l) => l.price > price.current).map((l) => l.price), price.current * 2)
     : price.current * 1.1;
   const srRange = price.current > 0 ? Math.abs(nearestResistance - nearestSupport) / price.current : 0;
 

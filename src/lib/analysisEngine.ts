@@ -1,6 +1,8 @@
-import { MarketData, TechnicalIndicators, TrendAnalysis, SentimentData, NewsItem, CoinAnalysis, PositionType, SignalType, RiskLevel, TrendLabel, TradeStatus } from "./types";
+import { MarketData, TechnicalIndicators, TrendAnalysis, SentimentData, NewsItem, CoinAnalysis, PositionType, SignalType, RiskLevel, TrendLabel, TradeStatus, TradeSetupData } from "./types";
 import { generateTechnicalIndicators, MOCK_NEWS } from "./mockData";
 import { generateRecommendation } from "./recommendationEngine";
+import { generateTradeSetup } from "indicator-engine/risk-management-engine";
+import { trendStrength } from "indicator-engine";
 
 // ── helpers ────────────────────────────────────────────────
 function cap(v: number, min = 0, max = 100): number {
@@ -94,6 +96,37 @@ function calculateTechnicalScore(indicators: TechnicalIndicators): number {
   return cap(score);
 }
 
+// ── momentum score ───────────────────────────────────────
+
+function calculateMomentumScore(indicators: TechnicalIndicators): number {
+  const { rsi, macd, adx } = indicators;
+  let score = 50;
+
+  // MACD histogram — primary momentum signal
+  if (macd.histogram > 0) {
+    const mag = Math.min(Math.abs(macd.histogram) / 2, 1);
+    score += 20 * mag;
+  } else {
+    const mag = Math.min(Math.abs(macd.histogram) / 2, 1);
+    score -= 20 * mag;
+  }
+
+  // ADX — trend strength amplifies momentum reading
+  if (adx >= 30) score += 15;
+  else if (adx >= 20) score += 8;
+  else score -= 5;
+
+  // RSI — overbought/oversold dampens momentum conviction
+  if (rsi > 80) score -= 10;
+  else if (rsi < 20) score -= 10;
+
+  // MACD crossover alignment
+  if (macd.value > macd.signal) score += 5;
+  else score -= 5;
+
+  return cap(score);
+}
+
 // ── position + overall score ──────────────────────────────
 
 function determinePosition(
@@ -120,56 +153,111 @@ function generateTrendAnalysis(
   priceChangePercent: number,
   ti: TechnicalIndicators,
 ): TrendAnalysis {
+  const ema9 = ti.ema9;
   const ema20 = ti.ema20;
   const ema50 = ti.ema50;
   const ema200 = ti.ema200;
   const adx = ti.adx;
-  const macdHist = ti.macd.histogram;
+  const macd = ti.macd;
   const rsi = ti.rsi;
 
-  const emaBullish = ema20 > ema50 && ema50 > ema200;
-  const emaBearish = ema20 < ema50 && ema50 < ema200;
-  const emaMixed = !emaBullish && !emaBearish;
+  // ── helpers ──────────────────────────────────────────────────────────
+  function classifyTrend(bullish: boolean, bearish: boolean): "bullish" | "bearish" | "neutral" {
+    if (bullish) return "bullish";
+    if (bearish) return "bearish";
+    return "neutral";
+  }
 
-  let shortTerm: "bullish" | "bearish" | "neutral";
-  const strongTrend = adx >= 25;
-  const weakTrend = adx < 20;
+  function classifyStrength(trend: "bullish" | "bearish" | "neutral", adxVal: number, histAbs: number): "strong" | "moderate" | "weak" {
+    if (trend === "neutral") return adxVal >= 25 ? "moderate" : "weak";
+    if (adxVal >= 30 && histAbs > 0.5) return "strong";
+    if (adxVal >= 20) return "moderate";
+    return "weak";
+  }
 
-  if (emaBullish && strongTrend && macdHist > 0) shortTerm = "bullish";
-  else if (emaBullish && adx >= 20) shortTerm = "bullish";
-  else if (emaMixed && strongTrend && macdHist > 0) shortTerm = "bullish";
-  else if (emaBearish && strongTrend && macdHist < 0) shortTerm = "bearish";
-  else if (emaBearish && adx >= 20) shortTerm = "bearish";
-  else if (weakTrend && emaMixed) shortTerm = "neutral";
-  else if (emaBullish) shortTerm = "bullish";
-  else if (emaBearish) shortTerm = "bearish";
-  else shortTerm = "neutral";
+  function calcConfidence(trend: "bullish" | "bearish" | "neutral", adxVal: number, emaAligned: boolean, histDir: boolean): number {
+    let c = 50;
+    if (trend !== "neutral") c += 15;
+    if (emaAligned) c += 12;
+    if (adxVal >= 25) c += 10;
+    else if (adxVal < 15) c -= 10;
+    if (histDir) c += 8;
+    else c -= 5;
+    if (rsi > 70 || rsi < 30) c += 5;
+    return cap(c);
+  }
 
+  // ── 15M — fast-reacting (RSI + MACD + EMA9/21) ──────────────────────
+  const histAbs = Math.abs(macd.histogram);
+  const ema9Above21 = ema9 > ema20;
+  const ema9Below21 = ema9 < ema20;
+  const macdBullish = macd.value > macd.signal;
+  const macdBearish = macd.value < macd.signal;
+
+  const t15m = classifyTrend(
+    ema9Above21 && macdBullish && rsi > 40 && rsi < 70,
+    ema9Below21 && macdBearish && rsi < 60 && rsi > 30,
+  );
+  const s15m = classifyStrength(t15m, adx, histAbs);
+  const c15m = calcConfidence(t15m, adx, ema9Above21 || ema9Below21, macdBullish || macdBearish);
+
+  // ── 1H — balanced (EMA9/21 + EMA21/50 + MACD + ADX) ────────────────
+  const ema21Above50 = ema20 > ema50;
+  const ema21Below50 = ema20 < ema50;
+  const emaAlignedBull = ema9Above21 && ema21Above50;
+  const emaAlignedBear = ema9Below21 && ema21Below50;
+
+  const t1h = classifyTrend(
+    emaAlignedBull && (macdBullish || adx >= 25),
+    emaAlignedBear && (macdBearish || adx >= 25),
+  );
+  const s1h = classifyStrength(t1h, adx, histAbs);
+  const c1h = calcConfidence(t1h, adx, emaAlignedBull || emaAlignedBear, macdBullish || macdBearish);
+
+  // ── 4H — slower (EMA21/50 + EMA50/200 + ADX) ───────────────────────
   const ema50Above200 = ema50 > ema200;
-  let mediumTerm: "bullish" | "bearish" | "neutral";
-  if (ema50Above200 && shortTerm !== "bearish") mediumTerm = "bullish";
-  else if (!ema50Above200 && shortTerm !== "bullish") mediumTerm = "bearish";
-  else mediumTerm = "neutral";
+  const ema50Below200 = ema50 < ema200;
+  const strongTrend = adx >= 25;
 
-  const longTermChange = priceChangePercent;
-  let longTerm: "bullish" | "bearish" | "neutral";
-  if (longTermChange > 5 && ema50 > ema200) longTerm = "bullish";
-  else if (longTermChange < -5 && ema50 < ema200) longTerm = "bearish";
-  else longTerm = "neutral";
+  const t4h = classifyTrend(
+    ema21Above50 && ema50Above200 && strongTrend,
+    ema21Below50 && ema50Below200 && strongTrend,
+  );
+  const s4h = classifyStrength(t4h, adx, histAbs);
+  const c4h = calcConfidence(t4h, adx, ema21Above50 || ema21Below50, macdBullish || macdBearish);
 
+  // ── 1D — macro (EMA50/200 + price change + ADX) ────────────────────
+  const priceChangeBull = priceChangePercent > 3;
+  const priceChangeBear = priceChangePercent < -3;
+
+  const t1d = classifyTrend(
+    ema50Above200 && priceChangeBull && strongTrend,
+    ema50Below200 && priceChangeBear && strongTrend,
+  );
+  const s1d = classifyStrength(t1d, adx, histAbs);
+  const c1d = calcConfidence(t1d, adx, ema50Above200 || ema50Below200, macdBullish || macdBearish);
+
+  // ── composite score ──────────────────────────────────────────────────
   let score = 50;
-  if (emaBullish) score += 20;
-  if (shortTerm === "bullish") score += 10;
-  if (macdHist > 0) score += 8;
-  if (adx >= 25) score += 7;
-  if (rsi < 70 && rsi > 40) score += 5;
-  if (emaBearish) score -= 20;
-  if (shortTerm === "bearish") score -= 10;
-  if (macdHist < 0) score -= 8;
-  if (adx < 20) score -= 5;
+  if (ema9Above21 && ema21Above50 && ema50Above200) score += 25;
+  else if (ema9Above21 && ema21Above50) score += 15;
+  else if (ema50Above200) score += 8;
+  if (ema9Below21 && ema21Below50 && ema50Below200) score -= 25;
+  else if (ema9Below21 && ema21Below50) score -= 15;
+  else if (ema50Below200) score -= 8;
+  if (strongTrend && macdBullish) score += 10;
+  if (strongTrend && macdBearish) score -= 10;
+  if (rsi > 70) score -= 5;
+  if (rsi < 30) score += 5;
   score = cap(score);
 
-  return { shortTerm, mediumTerm, longTerm, score };
+  return {
+    "15m": { trend: t15m, strength: s15m, confidence: c15m },
+    "1h":  { trend: t1h,  strength: s1h,  confidence: c1h },
+    "4h":  { trend: t4h,  strength: s4h,  confidence: c4h },
+    "1d":  { trend: t1d,  strength: s1d,  confidence: c1d },
+    score,
+  };
 }
 
 function computeTrendLabel(ti: TechnicalIndicators): TrendLabel {
@@ -487,6 +575,7 @@ export function analyzeCoin(
   const trendScore = calculateTrendScore(marketData.priceChangePercent24h, indicators, marketData);
   const sentimentScore = calculateSentimentScore(MOCK_NEWS, marketData.id);
   const technicalScore = calculateTechnicalScore(indicators);
+  const momentumScore = calculateMomentumScore(indicators);
 
   const { position, overallScore } = determinePosition(trendScore, volumeScore, sentimentScore, technicalScore);
   const trendLabel = computeTrendLabel(indicators);
@@ -509,14 +598,55 @@ export function analyzeCoin(
   const tradeQuality = computeTradeQuality(position, trendLabel, technicalScore, volumeScore, overallScore, indicators.adx);
   const riskLevel = computeRiskLevel(riskScore);
 
+  // ── Trade Setup (from indicator-engine) ──────────────────────────────
+  function mapEngineRiskLevel(r: RiskLevel): "very_low" | "low" | "medium" | "high" | "extreme" {
+    if (r === "low") return "low";
+    if (r === "high") return "high";
+    return "medium";
+  }
+
+  const trendDir = position === "long" ? "bullish" as const : position === "short" ? "bearish" as const : "neutral" as const;
+  const rawTradeSetup = generateTradeSetup({
+    currentPrice: marketData.currentPrice,
+    trendDirection: trendDir,
+    trendStrength: trendStrength(indicators.adx),
+    supportLevels: indicators.supportLevels,
+    resistanceLevels: indicators.resistanceLevels,
+    atr: indicators.atr,
+    adx: indicators.adx,
+    ema20: indicators.ema21,
+    ema50: indicators.ema50,
+    ema200: indicators.ema200,
+    volatility: { value: 0, annualized: 0, label: "low" },
+    riskLevel: mapEngineRiskLevel(riskLevel),
+    overallScore,
+    signal,
+    accountBalance: 10_000,
+  });
+
+  const tradeSetup: TradeSetupData = {
+    hasTrade: rawTradeSetup.hasTrade,
+    reason: rawTradeSetup.validation.reason,
+    direction: rawTradeSetup.direction,
+    entry: rawTradeSetup.entry,
+    stopLoss: rawTradeSetup.stopLoss,
+    risk: rawTradeSetup.risk,
+    takeProfit: rawTradeSetup.takeProfit,
+    riskReward: rawTradeSetup.riskReward,
+    expectedProfit: rawTradeSetup.expectedProfit,
+    tradeQuality: rawTradeSetup.tradeQuality,
+  };
+
   let base: CoinAnalysis = {
     coinId: marketData.id,
     position,
     overallScore,
     volumeScore,
     trendScore,
+    momentumScore,
     sentimentScore,
     technicalScore,
+    riskScore,
     marketData,
     technicalIndicators: indicators,
     trendAnalysis,
@@ -534,6 +664,7 @@ export function analyzeCoin(
     recommendationReason: "",
     recommendationColor: "#ef4444",
     recommendationPriority: 0,
+    tradeSetup,
   };
 
   // Resolve any internal contradictions

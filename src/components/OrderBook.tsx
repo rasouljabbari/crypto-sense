@@ -91,9 +91,96 @@ export function OrderBook({ symbol }: { symbol: string }) {
   const maxBidTotal = Math.max(...bids.map((b) => b.total), 1);
   const maxAskTotal = Math.max(...asks.map((a) => a.total), 1);
 
+  const totalBidVolume = bids.reduce((s, b) => s + b.total, 0);
+  const totalAskVolume = asks.reduce((s, a) => s + a.total, 0);
+  const combinedVolume = totalBidVolume + totalAskVolume;
+  const buyPressure = combinedVolume > 0 ? (totalBidVolume / combinedVolume) * 100 : 50;
+  const sellPressure = 100 - buyPressure;
+
+  const liquidityKey = combinedVolume > 10_000_000 ? "high" : combinedVolume > 1_000_000 ? "medium" : "low";
+  const liquidityLabel = t(`order_book.liquidity_${liquidityKey}`);
+  const liquidityColor = liquidityKey === "high" ? "text-emerald-400" : liquidityKey === "medium" ? "text-yellow-400" : "text-gray-400";
+
+  const largestBid = bids.reduce((m, b) => (b.total > m.total ? b : m), bids[0] ?? null);
+  const largestAsk = asks.reduce((m, a) => (a.total > m.total ? a : m), asks[0] ?? null);
+
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
       <h3 className="text-sm font-semibold text-gray-400 mb-3">{t("order_book.title")}</h3>
+
+      {/* Summary */}
+      {(data && (bids.length > 0 || asks.length > 0)) && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+          {/* Buy Pressure */}
+          <div className="bg-gray-800/30 border border-gray-800/50 rounded-lg p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+              {t("order_book.buy_pressure")}
+            </div>
+            <div className="text-lg font-bold font-mono tabular-nums text-emerald-400">
+              {buyPressure.toFixed(0)}%
+            </div>
+            <div className="mt-1.5 h-1 bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${buyPressure}%` }} />
+            </div>
+          </div>
+
+          {/* Sell Pressure */}
+          <div className="bg-gray-800/30 border border-gray-800/50 rounded-lg p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+              {t("order_book.sell_pressure")}
+            </div>
+            <div className="text-lg font-bold font-mono tabular-nums text-red-400">
+              {sellPressure.toFixed(0)}%
+            </div>
+            <div className="mt-1.5 h-1 bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-full bg-red-500 rounded-full" style={{ width: `${sellPressure}%` }} />
+            </div>
+          </div>
+
+          {/* Liquidity */}
+          <div className="bg-gray-800/30 border border-gray-800/50 rounded-lg p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+              {t("order_book.liquidity")}
+            </div>
+            <div className={`text-lg font-bold ${liquidityColor}`}>
+              {liquidityLabel}
+            </div>
+            <div className="mt-1.5 text-[10px] text-gray-600 font-mono">
+              {fmtTotal(combinedVolume)}
+            </div>
+          </div>
+
+          {/* Largest Bid Wall */}
+          <div className="bg-gray-800/30 border border-gray-800/50 rounded-lg p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+              {t("order_book.largest_bid_wall")}
+            </div>
+            <div className="text-lg font-bold font-mono tabular-nums text-emerald-400">
+              {largestBid ? fmtPrice(largestBid.price) : "—"}
+            </div>
+            {largestBid && (
+              <div className="mt-1.5 text-[10px] text-gray-600">
+                {fmtQty(largestBid.qty)} · {fmtTotal(largestBid.total)}
+              </div>
+            )}
+          </div>
+
+          {/* Largest Ask Wall */}
+          <div className="bg-gray-800/30 border border-gray-800/50 rounded-lg p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
+              {t("order_book.largest_ask_wall")}
+            </div>
+            <div className="text-lg font-bold font-mono tabular-nums text-red-400">
+              {largestAsk ? fmtPrice(largestAsk.price) : "—"}
+            </div>
+            {largestAsk && (
+              <div className="mt-1.5 text-[10px] text-gray-600">
+                {fmtQty(largestAsk.qty)} · {fmtTotal(largestAsk.total)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className={`flex flex-col sm:flex-row gap-4 ${dir === "rtl" ? "sm:flex-row-reverse" : ""}`}>
         {/* Bids (left) */}
