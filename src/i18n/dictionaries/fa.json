@@ -33,7 +33,8 @@
     "mcap_chart": "ارزش کل بازار کریپتو",
     "mcap_30d": "۳۰ روز",
     "mcap_1y": "۱ سال",
-    "mcap_all": "همه"
+    "mcap_all": "همه",
+    "others": "سایر"
   },
   "fear_greed": {
     "title": "شاخص ترس و طمع",
@@ -662,6 +663,21 @@
       "risk_elevated": "ریسک بالا — اندازه موقعیت را کاهش دهید",
       "dimension_score": "{dimension}: {status} ({value})"
     },
+    "trade_setup": {
+      "title": "تنظیم معامله",
+      "direction": "جهت",
+      "long": "لانگ",
+      "short": "Short",
+      "entry": "قیمت ورود",
+      "current_price": "قیمت فعلی",
+      "stop_loss": "حد ضرر",
+      "take_profit": "حد سود",
+      "risk_reward": "ریسک / پاداش",
+      "expected_profit": "سود مورد انتظار",
+      "expected_loss": "ضرر مورد انتظار",
+      "risk_level": "سطح ریسک",
+      "no_trade": "تنظیم معامله معتبری وجود ندارد"
+    },
     "trend_arrow": {
       "strong_bullish": "↑↑",
       "bullish": "↑",
@@ -808,6 +824,10 @@
     "15m": "۱۵ دقیقه",
     "1h": "۱ ساعت",
     "4h": "۴ ساعت",
-    "1d": "۱ روز"
+    "1d": "۱ روز",
+    "short_15m": "15M",
+    "short_1h": "1H",
+    "short_4h": "4H",
+    "short_1d": "1D"
   }
 }

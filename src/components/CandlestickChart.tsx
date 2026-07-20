@@ -468,7 +468,7 @@ export function CandlestickChart({ coinId }: Props) {
         {/* Crosshair tooltip */}
          {crosshairValues && (
            <div className="absolute top-2 right-2 z-20 text-[9px] font-semibold pointer-events-none flex flex-col gap-1 items-end">
-              {crosshairValues.vol && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">VOL {crosshairValues.vol}</span>}
+              {crosshairValues.vol && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">{t("chart.vol_label")} {crosshairValues.vol}</span>}
               {crosshairValues.rsi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-purple-400 border border-gray-700/50">{t("chart.rsi_label")} {crosshairValues.rsi}</span>}
               {crosshairValues.adx && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-orange-400 border border-gray-700/50">{t("chart.adx_label")} {crosshairValues.adx}</span>}
            </div>

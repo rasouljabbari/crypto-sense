@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/context";
 import { useTimeframe, TIMEFRAME_OPTIONS, type TimeframeOption } from "@/lib/timeframe";
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function TimeframeTabs({ active, onChange }: Props) {
+  const { t } = useI18n();
   const ctx = useTimeframe();
   const current = active ?? ctx.timeframe;
   const setTf = onChange ?? ctx.setTimeframe;
@@ -28,7 +30,7 @@ export function TimeframeTabs({ active, onChange }: Props) {
                 : "text-gray-400 hover:text-gray-200 hover:bg-gray-700/40"
             }`}
           >
-            {tab.label}
+            {t("timeframe.short_" + tab.value)}
           </button>
         );
       })}

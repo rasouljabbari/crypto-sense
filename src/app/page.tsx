@@ -150,7 +150,7 @@ export default function MarketOverviewPage() {
       { label: "BTC", value: indicators.btcDominance, color: "#f7931a" },
       { label: "ETH", value: indicators.ethDominance, color: "#8b8cf7" },
       { label: "BNB", value: indicators.bnbDominance, color: "#f0b90b" },
-      { label: "Others", value: indicators.othersDominance, color: "#6b7280" },
+      { label: t("overview.others"), value: indicators.othersDominance, color: "#6b7280" },
     ];
   }, [indicators]);
 
