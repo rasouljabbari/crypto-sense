@@ -20,8 +20,6 @@ const breadcrumbMap: Record<string, string> = {
   "/coins": "nav.coins",
   "/analysis": "nav.coin_analysis",
   "/watchlist": "nav.watchlist",
-  "/treemap": "nav.treemap",
-  "/fear-greed": "nav.fear_greed",
   "/dashboard": "nav.overview",
   "/login": "header.login",
 };
@@ -123,8 +121,8 @@ export function Header() {
                       setLangOpen(false);
                     }}
                     className={`flex items-center gap-2 w-full px-3 py-2 text-xs transition-colors ${locale === l.value
-                        ? "text-emerald-400 bg-emerald-500/10"
-                        : "text-theme-text hover:bg-theme-hover"
+                      ? "text-emerald-400 bg-emerald-500/10"
+                      : "text-theme-text hover:bg-theme-hover"
                       }`}
                   >
                     <Flag locale={l.value} />

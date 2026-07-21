@@ -48,17 +48,7 @@ function useNavItems(): NavItem[] {
       href: "/watchlist",
       label: t("nav.watchlist"),
       icon: <WatchlistIcon />,
-    },
-    {
-      href: "/treemap",
-      label: t("nav.treemap"),
-      icon: <TreemapIcon />,
-    },
-    {
-      href: "/fear-greed",
-      label: t("nav.fear_greed"),
-      icon: <FearGreedIcon />,
-    },
+    }
   ];
 }
 
@@ -130,11 +120,11 @@ export function Sidebar() {
       {/* Sidebar panel */}
       <aside
         className={`
-            fixed top-0 z-40 h-screen w-full lg:w-[260px]
+            fixed top-0 z-40 h-screen w-full lg:w-56
             bg-theme-secondary/95 backdrop-blur-xl
             ${dir === "rtl" ? "border-l" : "border-r"} border-theme
             flex flex-col
-            transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+            transition-transform duration-300 ease-in-out
             ${dir === "rtl" ? "lg:translate-x-0" : "lg:translate-x-0"}
             ${mobileOpen
             ? "translate-x-0 shadow-2xl"
