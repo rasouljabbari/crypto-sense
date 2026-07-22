@@ -15,7 +15,7 @@ import { useStore } from "@/store/useStore";
 import { useBinanceWebSocket } from "@/store/useWebSocket";
 import Link from "next/link";
 import { HeroSection } from "@/components/HeroSection";
-import { TradeSetupCard } from "@/components/TradeSetupCard";
+
 import { use, useEffect, useState } from "react";
 
 const BINANCE_REST = "https://api.binance.com/api/v3";
@@ -143,6 +143,11 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
 
   const display = realTi ?? ti;
 
+  const srLines = [
+    ...display.supportLevels.map((p) => ({ price: p, type: "support" as const })),
+    ...display.resistanceLevels.map((p) => ({ price: p, type: "resistance" as const })),
+  ];
+
   return (
     <DashboardLayout>
         <button onClick={() => window.history.back()} className="text-gray-400 hover:text-gray-200 text-sm mb-6 inline-flex items-center gap-1">
@@ -203,8 +208,92 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
             <ScoreInterpretation score={coin.overallScore} position={coin.position} t={t} />
           </div>
 
-          {/* Trade Setup */}
-          <TradeSetupCard coin={coin} />
+          {/* Trend Analysis */}
+          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-gray-400 mb-4 flex items-center">
+              {t("coin_detail.cards.trend_analysis.title")}
+              <InfoTip text={t("coin_detail.cards.trend_analysis.tooltip")} />
+            </h3>
+            <div className="space-y-2.5">
+              {(["15m", "1h", "4h", "1d"] as const).map((tf) => {
+                const data = coin.trendAnalysis[tf];
+                const isActive = timeframe === tf;
+                const trendColor =
+                  data.trend === "bullish" ? "text-emerald-400" :
+                  data.trend === "bearish" ? "text-red-400" : "text-yellow-400";
+                const trendIcon =
+                  data.trend === "bullish" ? "▲" :
+                  data.trend === "bearish" ? "▼" : "◆";
+                const sl = data.confidence >= 65
+                  ? { label: t("coin_analysis.strength.strong"), color: "text-emerald-400", bg: "bg-emerald-500/10" }
+                  : data.confidence >= 40
+                    ? { label: t("coin_analysis.strength.moderate"), color: "text-yellow-400", bg: "bg-yellow-500/10" }
+                    : { label: t("coin_analysis.strength.weak"), color: "text-gray-400", bg: "bg-gray-500/10" };
+                return (
+                  <div
+                    key={tf}
+                    className={`rounded-lg p-3 transition-all ${
+                      isActive
+                        ? "bg-gray-800/70 border border-emerald-500/40 shadow-[0_0_10px_rgba(52,211,153,0.08)]"
+                        : "bg-gray-800/30 border border-gray-800/60"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2.5">
+                      <span className={`text-[11px] font-bold uppercase tracking-wider ${
+                        isActive ? "text-emerald-300" : "text-gray-500"
+                      }`}>
+                        {tf.toUpperCase()}
+                      </span>
+                      {isActive && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-emerald-400/70">
+                          {t("coin_analysis.active")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2.5 mb-2.5">
+                      <span className="text-xl font-bold leading-none">{trendIcon}</span>
+                      <span className={`text-sm font-bold ${trendColor}`}>
+                        {t(`coin_detail.cards.trend_analysis.${data.trend}`)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${sl.bg} ${sl.color}`}>
+                        {sl.label}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-gray-700/60 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              data.confidence >= 65 ? "bg-emerald-500" :
+                              data.confidence >= 40 ? "bg-yellow-500" : "bg-gray-500"
+                            }`}
+                            style={{ width: `${data.confidence}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-mono tabular-nums text-gray-400 w-7 text-right">
+                          {data.confidence}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="border-t border-gray-800 pt-3 mt-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">{t("coin_detail.cards.trend_analysis.trend_score")}</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-20 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${coin.trendAnalysis.score >= 60 ? "bg-emerald-500" : coin.trendAnalysis.score <= 40 ? "bg-red-500" : "bg-yellow-500"}`}
+                      style={{ width: `${coin.trendAnalysis.score}%` }}
+                    />
+                  </div>
+                  <span className="text-white font-mono text-xs">{coin.trendAnalysis.score}</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Technical Indicators */}
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
@@ -387,7 +476,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
         <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5 mb-6">
           <h3 className="text-sm font-semibold text-gray-400 mb-4">{t("coin_detail.price_chart")}</h3>
           <div className="rounded-lg overflow-hidden" style={{ height: 750 }}>
-            <CandlestickChart coinId={coin.coinId} />
+            <CandlestickChart coinId={coin.coinId} srLines={srLines} />
           </div>
         </div>
 
@@ -395,82 +484,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
           <DMIIndicator coinId={coin.coinId} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Trend Analysis */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-gray-400 mb-4 flex items-center">
-              {t("coin_detail.cards.trend_analysis.title")}
-              <InfoTip text={t("coin_detail.cards.trend_analysis.tooltip")} />
-            </h3>
-            <div className="space-y-2">
-              {(["15m", "1h", "4h", "1d"] as const).map((tf) => {
-                const data = coin.trendAnalysis[tf];
-                const isActive = timeframe === tf;
-                const trendColor =
-                  data.trend === "bullish" ? "text-emerald-400" :
-                  data.trend === "bearish" ? "text-red-400" : "text-yellow-400";
-                const trendIcon =
-                  data.trend === "bullish" ? "▲" :
-                  data.trend === "bearish" ? "▼" : "◆";
-                const strengthColor =
-                  data.strength === "strong" ? "text-emerald-400" :
-                  data.strength === "moderate" ? "text-yellow-400" : "text-gray-500";
-                return (
-                  <div
-                    key={tf}
-                    className={`flex items-center justify-between py-2.5 px-3 rounded-lg transition-colors ${
-                      isActive
-                        ? "bg-gray-800/60 border border-gray-700/50"
-                        : "border border-transparent"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className={`text-xs font-bold w-8 ${isActive ? "text-white" : "text-gray-500"}`}>
-                        {tf.toUpperCase()}
-                      </span>
-                      <span className={`text-sm font-semibold ${trendColor}`}>
-                        {trendIcon} {t(`coin_detail.cards.trend_analysis.${data.trend}`)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-[10px] font-semibold uppercase ${strengthColor}`}>
-                        {data.strength}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-14 h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${
-                              data.confidence >= 65 ? "bg-emerald-500" :
-                              data.confidence <= 40 ? "bg-red-500" : "bg-yellow-500"
-                            }`}
-                            style={{ width: `${data.confidence}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-mono text-gray-400 w-7 text-right">
-                          {data.confidence}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="border-t border-gray-800 pt-3 mt-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">{t("coin_detail.cards.trend_analysis.trend_score")}</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${coin.trendAnalysis.score >= 60 ? "bg-emerald-500" : coin.trendAnalysis.score <= 40 ? "bg-red-500" : "bg-yellow-500"}`}
-                      style={{ width: `${coin.trendAnalysis.score}%` }}
-                    />
-                  </div>
-                  <span className="text-white font-mono text-xs">{coin.trendAnalysis.score}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* Sentiment */}
           <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
             <h3 className="text-sm font-semibold text-gray-400 mb-4 flex items-center">

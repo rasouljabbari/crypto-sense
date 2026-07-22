@@ -45,7 +45,7 @@ for (const sym of FUTURES_SYMBOLS) {
 
 export const ALL_BINANCE_SYMBOLS = FUTURES_SYMBOLS;
 
-const KWN_NAMES: Record<string, string> = {
+export const KWN_NAMES: Record<string, string> = {
   BTC: "Bitcoin", ETH: "Ethereum", BNB: "BNB", SOL: "Solana", XRP: "XRP",
   DOGE: "Dogecoin", ADA: "Cardano", TRX: "TRON", LINK: "Chainlink", AVAX: "Avalanche",
   DOT: "Polkadot", LTC: "Litecoin", BCH: "Bitcoin Cash", ATOM: "Cosmos", ETC: "Ethereum Classic",

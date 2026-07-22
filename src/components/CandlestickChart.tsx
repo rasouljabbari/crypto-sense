@@ -5,22 +5,22 @@ import { useI18n } from "@/i18n/context";
 import { useTheme } from "@/lib/theme";
 import { useTimeframe } from "@/lib/timeframe";
 import type { ChartDataPoint } from "@/lib/types";
-import type { IChartApi, IPriceLine, ISeriesApi, MouseEventParams, Time, UTCTimestamp } from "lightweight-charts";
+import type { IChartApi, ISeriesApi, UTCTimestamp } from "lightweight-charts";
 import {
   CandlestickSeries,
   ColorType,
   createChart,
   CrosshairMode,
   LineSeries,
-  LineStyle,
 } from "lightweight-charts";
-import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { ChartPaneManager } from "./chart/ChartPaneManager";
 import { IndicatorToolbar } from "./chart/IndicatorToolbar";
 import { useIndicatorManager } from "./chart/useIndicatorManager";
 import { CandleCountdown } from "./CandleCountdown";
 import { TimeframeTabs } from "./TimeframeTabs";
+
+// ─── Helpers ────────────────────────────────────────────────────────────
 
 function calcSMA(data: ChartDataPoint[], period: number) {
   return data
@@ -34,8 +34,31 @@ function calcSMA(data: ChartDataPoint[], period: number) {
     .slice(0, -1);
 }
 
+// ─── Types ──────────────────────────────────────────────────────────────
+
+export interface SrLine {
+  price: number;
+  type: "support" | "resistance";
+  priceRange?: { min: number; max: number };
+  confidence?: number;
+  strength?: string;
+  reason?: string;
+  detectedTimeframes?: readonly string[];
+  touchCount?: number;
+  reactionStrength?: number;
+  volumeQuality?: "strong" | "moderate" | "weak" | "neutral";
+  alignmentScore?: number;
+}
+
+interface SrLineMarker {
+  line: SrLine;
+  y: number;
+  highlighted: boolean;
+}
+
 interface Props {
   coinId: string;
+  srLines?: readonly SrLine[];
 }
 
 type ChartStatus = { type: "loading" } | { type: "ready"; data: ChartDataPoint[] } | { type: "error"; message?: string };
@@ -48,16 +71,135 @@ function chartStatusReducer(_: ChartStatus, action: ChartStatus): ChartStatus {
   return action;
 }
 
-export function CandlestickChart({ coinId }: Props) {
+// ─── Line Detail Panel ──────────────────────────────────────────────────
+
+function ZoneDetailPanel({
+  zone,
+  onClose,
+  isDark,
+}: {
+  zone: SrLine;
+  onClose: () => void;
+  isDark: boolean;
+}) {
+  const { t } = useI18n();
+  const isSupport = zone.type === "support";
+
+  const strengthLabel = zone.strength
+    ?? (zone.confidence != null
+      ? zone.confidence >= 70 ? "strong" : zone.confidence >= 40 ? "medium" : "weak"
+      : "—");
+
+  return (
+    <div
+      className={`absolute bottom-3 left-3 z-30 w-64 rounded-lg border shadow-xl p-3 text-[11px] leading-relaxed ${
+        isDark
+          ? "bg-gray-900/95 border-gray-700/60 text-gray-300"
+          : "bg-white/95 border-gray-200 text-gray-600"
+      } backdrop-blur-sm`}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <span className={`font-semibold text-xs ${
+          isSupport ? "text-emerald-400" : "text-red-400"
+        }`}>
+          {isSupport ? t("order_book.sr_support") : t("order_book.sr_resistance")}
+        </span>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-300 text-sm leading-none"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Price Range */}
+      {zone.priceRange && (
+        <div className="mb-2">
+          <span className="text-gray-500">{t("chart.zone_range")}: </span>
+          <span className="font-mono">
+            {zone.priceRange.min.toFixed(4)} — {zone.priceRange.max.toFixed(4)}
+          </span>
+        </div>
+      )}
+
+      {/* Strength */}
+      <div className="mb-1.5">
+        <span className="text-gray-500">{t("chart.zone_strength")}: </span>
+        <span className={`font-semibold capitalize ${
+          strengthLabel === "strong"
+            ? isSupport ? "text-emerald-400" : "text-red-400"
+            : strengthLabel === "medium"
+              ? "text-yellow-400"
+              : "text-gray-500"
+        }`}>
+          {strengthLabel}
+        </span>
+        {zone.confidence != null && (
+          <span className="text-gray-500 ml-1">({zone.confidence}%)</span>
+        )}
+      </div>
+
+      {/* Reason */}
+      {zone.reason && (
+        <div className="mb-1.5">
+          <span className="text-gray-500">{t("chart.zone_reason")}: </span>
+          <span>
+            {zone.alignmentScore != null && zone.detectedTimeframes && zone.detectedTimeframes.length > 0
+              ? `${t("chart.alignment_prefix", { score: zone.alignmentScore, timeframes: zone.detectedTimeframes.join(", ") })} — ${zone.reason}`
+              : zone.reason}
+          </span>
+        </div>
+      )}
+
+      {/* Touch Count */}
+      {zone.touchCount != null && zone.touchCount > 0 && (
+        <div className="mb-1.5">
+          <span className="text-gray-500">{t("chart.zone_touches")}: </span>
+          <span className="font-semibold">{zone.touchCount}</span>
+        </div>
+      )}
+
+      {/* Detected Timeframes */}
+      {zone.detectedTimeframes && zone.detectedTimeframes.length > 0 && (
+        <div className="mb-1.5">
+          <span className="text-gray-500">{t("chart.zone_timeframes")}: </span>
+          <span>{zone.detectedTimeframes.join(", ")}</span>
+        </div>
+      )}
+
+      {/* Volume Confirmation */}
+      {zone.volumeQuality && (
+        <div className="mb-1.5">
+          <span className="text-gray-500">{t("chart.zone_volume")}: </span>
+          <span className={
+            zone.volumeQuality === "strong" ? "text-emerald-400" :
+            zone.volumeQuality === "weak" ? "text-red-400" :
+            zone.volumeQuality === "moderate" ? "text-yellow-400" : ""
+          }>
+            {t(`chart.vol_quality_${zone.volumeQuality}`)}
+          </span>
+        </div>
+      )}
+
+      {/* Reaction Strength */}
+      {zone.reactionStrength != null && zone.reactionStrength > 0 && (
+        <div>
+          <span className="text-gray-500">{t("chart.zone_reaction")}: </span>
+          <span className="font-semibold">{zone.reactionStrength}%</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Component ─────────────────────────────────────────────────────
+
+export function CandlestickChart({ coinId, srLines }: Props) {
   const { t } = useI18n();
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const { data: session, status: authStatus } = useSession();
-  const isAuth = authStatus === "authenticated";
-  const isAuthRef = useRef(isAuth);
-  isAuthRef.current = isAuth;
-
-  // ── Global Timeframe ───────────────────────────────────────────────
   const { timeframe: globalTf, getLimit } = useTimeframe();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -65,26 +207,67 @@ export function CandlestickChart({ coinId }: Props) {
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const [status, dispatch] = useReducer(chartStatusReducer, { type: "loading" } as ChartStatus);
 
-  const [hLineActive, setHLineActive] = useState(false);
-  const hLineActiveRef = useRef(false);
-  hLineActiveRef.current = hLineActive;
-  const [showSMA, setShowSMA] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-
   const reloadingRef = useRef(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const hlinePricesRef = useRef<number[]>([]);
-  const hlinesRef = useRef<IPriceLine[]>([]);
   const smaSeriesArrRef = useRef<ISeriesApi<"Line">[]>([]);
-  const loadedRef = useRef(false);
   const [crosshairValues, setCrosshairValues] = useState<{ vol?: string; rsi?: string; adx?: string } | null>(null);
   const paneManagerRef = useRef<ChartPaneManager | null>(null);
 
-  // ── Indicator System ──────────────────────────────────────────────────
+  // ── Line overlay state ──────────────────────────────────────────────
+  const [lineMarkers, setLineMarkers] = useState<SrLineMarker[]>([]);
+  const [selectedZone, setSelectedZone] = useState<SrLine | null>(null);
+  const currentPriceRef = useRef<number>(0);
+  const rafRef = useRef<number>(0);
+
+  const hasSrSupport = useMemo(() => srLines?.some(sl => sl.type === "support") ?? false, [srLines]);
+  const hasSrResistance = useMemo(() => srLines?.some(sl => sl.type === "resistance") ?? false, [srLines]);
+
+  // ── Line position calculation (throttled via rAF) ─────────────────
+  const updateLinePositions = useCallback(() => {
+    const chart = chartRef.current;
+    const series = candleSeriesRef.current;
+    const container = containerRef.current;
+    if (!chart || !series || !container || !srLines || srLines.length === 0) {
+      setLineMarkers([]);
+      return;
+    }
+
+    const currentPrice = currentPriceRef.current;
+    const markers: SrLineMarker[] = [];
+
+    for (const sl of srLines) {
+      const price = sl.priceRange
+        ? (sl.priceRange.min + sl.priceRange.max) / 2
+        : sl.price;
+
+      const y = series.priceToCoordinate(price);
+      if (y === null) continue;
+
+      const containerHeight = container.clientHeight;
+      if (y < 0 || y > containerHeight) continue;
+
+      const highlighted = currentPrice > 0 && Math.abs(currentPrice - price) / currentPrice < 0.002;
+
+      markers.push({ line: sl, y, highlighted });
+    }
+
+    setLineMarkers(markers);
+  }, [srLines]);
+
+  // Throttled update via rAF
+  const scheduleLineUpdate = useCallback(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(updateLinePositions);
+  }, [updateLinePositions]);
+
+  const hasSr = useMemo(() => (srLines?.length ?? 0) > 0, [srLines]);
+
   const indicator = useIndicatorManager();
 
   const symbol = COIN_SYMBOL_MAP[coinId] ?? (coinId.toUpperCase().endsWith("USDT") ? coinId.toUpperCase() : `${coinId.toUpperCase()}USDT`);
 
+  // ── Data fetch ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!symbol) return;
     reloadingRef.current = true;
@@ -113,48 +296,12 @@ export function CandlestickChart({ coinId }: Props) {
     [status]
   );
 
-  function redrawHLines() {
-    const cs = candleSeriesRef.current;
-    if (!cs) return;
-
-    for (const hl of hlinesRef.current) {
-      try { cs.removePriceLine(hl); } catch { }
+  // Track current price from data
+  useEffect(() => {
+    if (data.length > 0) {
+      currentPriceRef.current = data[data.length - 1].close;
     }
-    hlinesRef.current = [];
-
-    for (const price of hlinePricesRef.current) {
-      const hl = cs.createPriceLine({
-        price,
-        color: "#06b6d4",
-        lineWidth: 1,
-        lineStyle: LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: price.toFixed(2),
-      });
-      hlinesRef.current.push(hl);
-    }
-  }
-
-  function clearAllDrawings() {
-    for (const hl of hlinesRef.current) {
-      try { candleSeriesRef.current?.removePriceLine(hl); } catch { }
-    }
-    hlinesRef.current = [];
-    hlinePricesRef.current = [];
-
-    if (isAuthRef.current) {
-      fetch(`/api/chart-drawings?coinId=${encodeURIComponent(coinId)}`, { method: "DELETE" }).catch(() => { });
-    }
-  }
-
-  function saveHLines(prices: number[]) {
-    if (!isAuthRef.current) return;
-    fetch("/api/chart-drawings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ coinId, lines: prices }),
-    }).catch(() => { });
-  }
+  }, [data]);
 
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
@@ -172,27 +319,7 @@ export function CandlestickChart({ coinId }: Props) {
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
-  useEffect(() => {
-    if (authStatus !== "authenticated" || loadedRef.current) return;
-    loadedRef.current = true;
-
-    fetch(`/api/chart-drawings?coinId=${encodeURIComponent(coinId)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data.lines) && data.lines.length > 0) {
-          hlinePricesRef.current = data.lines;
-          redrawHLines();
-        }
-      })
-      .catch(() => { });
-  }, [authStatus, coinId]);
-
-  useEffect(() => {
-    for (const s of smaSeriesArrRef.current) {
-      s.applyOptions({ visible: showSMA });
-    }
-  }, [showSMA]);
-
+  // ── Chart creation ──────────────────────────────────────────────────
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -200,7 +327,6 @@ export function CandlestickChart({ coinId }: Props) {
     if (reloadingRef.current) return;
 
     try {
-
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;
@@ -279,73 +405,40 @@ export function CandlestickChart({ coinId }: Props) {
         chart.timeScale().fitContent();
       }
 
-      // ── Indicator Panes ───────────────────────────────────────────────
+      // ── Indicator Panes ──
       const paneManager = new ChartPaneManager(chart);
       paneManagerRef.current = paneManager;
       paneManager.sync(indicator.getVisibleIds(), data);
 
+      // ── SMAs ──
       const sma7Data = calcSMA(data, 7);
       const sma21Data = calcSMA(data, 21);
       const sma99Data = calcSMA(data, 99);
 
       const newSmaSeries: ISeriesApi<"Line">[] = [];
       if (sma7Data.length > 0) {
-        const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
+        const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: true });
         s.setData(sma7Data);
         newSmaSeries.push(s);
       }
       if (sma21Data.length > 0) {
-        const s = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
+        const s = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: true });
         s.setData(sma21Data);
         newSmaSeries.push(s);
       }
       if (sma99Data.length > 0) {
-        const s = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: showSMA });
+        const s = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: true });
         s.setData(sma99Data);
         newSmaSeries.push(s);
       }
       smaSeriesArrRef.current = newSmaSeries;
 
+      // ── Subscribe scroll → update zone positions ──
+      chart.timeScale().subscribeVisibleTimeRangeChange(() => {
+        scheduleLineUpdate();
+      });
 
-
-      const newHlines: IPriceLine[] = [];
-      for (const price of hlinePricesRef.current) {
-        const hl = candleSeries.createPriceLine({
-          price,
-          color: "#06b6d4",
-          lineWidth: 1,
-          lineStyle: LineStyle.Dashed,
-          axisLabelVisible: true,
-          title: price.toFixed(2),
-        });
-        newHlines.push(hl);
-      }
-      hlinesRef.current = newHlines;
-
-      function onClick(param: MouseEventParams<Time>) {
-        if (!hLineActiveRef.current || !param.point) return;
-        if (!chartRef.current || !candleSeriesRef.current) return;
-
-        const y = param.point.y;
-        const price = candleSeriesRef.current.coordinateToPrice(y);
-        if (price === null) return;
-
-        hlinePricesRef.current.push(price);
-        const hl = candleSeriesRef.current.createPriceLine({
-          price,
-          color: "#06b6d4",
-          lineWidth: 1,
-          lineStyle: LineStyle.Dashed,
-          axisLabelVisible: true,
-          title: price.toFixed(2),
-        });
-        hlinesRef.current.push(hl);
-
-        saveHLines(hlinePricesRef.current);
-      }
-
-      chart.subscribeClick(onClick);
-
+      // ── Crosshair → update current price for highlight detection ──
       chart.subscribeCrosshairMove((param) => {
         if (!param.time || !param.point) {
           setCrosshairValues(null);
@@ -354,31 +447,39 @@ export function CandlestickChart({ coinId }: Props) {
         if (!candleSeriesRef.current) return;
         const candleData = param.seriesData.get(candleSeriesRef.current) as { time: UTCTimestamp; open: number; high: number; low: number; close: number } | undefined;
         if (!candleData) return;
-        const t = Number(candleData.time);
-        const idx = data.findIndex((d) => Number(fmtTime(d)) === t);
+        const time = Number(candleData.time);
+        const idx = data.findIndex((d) => Number(fmtTime(d)) === time);
         if (idx === -1) return;
         const vals: { rsi?: string; adx?: string; vol?: string } = {};
-         const candle = data[idx];
-         if (candle) {
-           const v = candle.volume;
-           if (v >= 1e9) vals.vol = (v / 1e9).toFixed(2) + "B";
-           else if (v >= 1e6) vals.vol = (v / 1e6).toFixed(2) + "M";
-           else if (v >= 1e3) vals.vol = (v / 1e3).toFixed(2) + "K";
-           else vals.vol = v.toFixed(0);
-
-           if (candle.rsi !== undefined) vals.rsi = candle.rsi.toFixed(1);
-           if (candle.adx !== undefined) vals.adx = candle.adx.toFixed(1);
-         }
+        const candle = data[idx];
+        if (candle) {
+          const v = candle.volume;
+          if (v >= 1e9) vals.vol = (v / 1e9).toFixed(2) + "B";
+          else if (v >= 1e6) vals.vol = (v / 1e6).toFixed(2) + "M";
+          else if (v >= 1e3) vals.vol = (v / 1e3).toFixed(2) + "K";
+          else vals.vol = v.toFixed(0);
+          if (candle.rsi !== undefined) vals.rsi = candle.rsi.toFixed(1);
+          if (candle.adx !== undefined) vals.adx = candle.adx.toFixed(1);
+        }
         setCrosshairValues(Object.keys(vals).length > 0 ? vals : null);
+
+        // Update highlight based on crosshair close price
+        currentPriceRef.current = candleData.close;
+        scheduleLineUpdate();
       });
 
+      // ── Resize → update zone positions ──
       const ro = new ResizeObserver(() => {
         if (chartRef.current && container) {
           const r = container.getBoundingClientRect();
           chartRef.current.applyOptions({ width: r.width, height: r.height });
+          scheduleLineUpdate();
         }
       });
       ro.observe(container);
+
+      // Initial zone positions after chart is ready
+      requestAnimationFrame(() => scheduleLineUpdate());
 
       return () => {
         ro.disconnect();
@@ -390,13 +491,12 @@ export function CandlestickChart({ coinId }: Props) {
         }
         candleSeriesRef.current = null;
         smaSeriesArrRef.current = [];
-        hlinesRef.current = [];
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
       };
     } catch (err) { console.error("chart creation error:", err); }
-  }, [data, globalTf]);
+  }, [data, globalTf, scheduleLineUpdate]);
 
-  // ── Dynamic Indicator Sync ────────────────────────────────────────────
-  // When indicators toggle, dynamically add/remove panes without chart recreation.
+  // ── Dynamic Indicator Sync ──
   useEffect(() => {
     const pm = paneManagerRef.current;
     const chart = chartRef.current;
@@ -412,6 +512,16 @@ export function CandlestickChart({ coinId }: Props) {
     return unsub;
   }, [indicator, data]);
 
+  // ── Update zone rects when srLines change ──
+  useEffect(() => {
+    scheduleLineUpdate();
+  }, [srLines, scheduleLineUpdate]);
+
+  // ── Click outside zone → close detail ──
+  const handleContainerClick = useCallback(() => {
+    setSelectedZone(null);
+  }, []);
+
   return (
     <div ref={wrapperRef} className={`w-full h-full flex flex-col ${isFullscreen ? `${isDark ? "bg-[#0d1117]" : "bg-white"} p-4` : ""}`}>
       <div className="flex items-center justify-between mb-3 gap-2">
@@ -419,39 +529,6 @@ export function CandlestickChart({ coinId }: Props) {
           <TimeframeTabs />
           <CandleCountdown />
           <IndicatorToolbar manager={indicator} />
-          <div className="hidden sm:flex items-center gap-1 bg-gray-900 rounded-lg p-0.5 border border-gray-800">
-            <button
-              onClick={() => setHLineActive(v => !v)}
-              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${hLineActive
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                : "text-gray-400 hover:text-gray-200 border border-transparent"
-                }`}
-              title={t("chart.h_line")}
-            >
-              ☰ {t("chart.h_line")}
-            </button>
-            <button
-              onClick={() => setShowSMA(v => !v)}
-              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${showSMA
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                : "text-gray-400 hover:text-gray-200 border border-transparent"
-                }`}
-            >
-              {t("chart.sma")}
-            </button>
-
-            {hlinePricesRef.current.length > 0 && (
-              <>
-                <button
-                  onClick={clearAllDrawings}
-                  className="px-2 py-1 text-xs font-medium rounded-md transition-colors text-gray-400 hover:text-red-400 border border-transparent hover:border-red-500/30"
-                  title={t("chart.clear_lines")}
-                >
-                  ✕ {t("chart.clear_lines")}
-                </button>
-              </>
-            )}
-          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -464,15 +541,69 @@ export function CandlestickChart({ coinId }: Props) {
         </div>
       </div>
       <div className="relative flex-1 min-h-0">
-        <div ref={containerRef} className="absolute inset-0 rounded-lg overflow-hidden" />
-        {/* Crosshair tooltip */}
-         {crosshairValues && (
-           <div className="absolute top-2 right-2 z-20 text-[9px] font-semibold pointer-events-none flex flex-col gap-1 items-end">
-              {crosshairValues.vol && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">{t("chart.vol_label")} {crosshairValues.vol}</span>}
-              {crosshairValues.rsi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-purple-400 border border-gray-700/50">{t("chart.rsi_label")} {crosshairValues.rsi}</span>}
-              {crosshairValues.adx && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-orange-400 border border-gray-700/50">{t("chart.adx_label")} {crosshairValues.adx}</span>}
-           </div>
-         )}
+        <div ref={containerRef} className="absolute inset-0 rounded-lg overflow-hidden" onClick={handleContainerClick} />
+
+        {/* ── SR Lines ──────────────────────────────────────────────── */}
+        {hasSr && lineMarkers.map((lm, i) => (
+          <div
+            key={i}
+            className="absolute pointer-events-auto cursor-pointer"
+            style={{
+              top: lm.y,
+              left: 0,
+              right: 0,
+              height: 0,
+              borderTop: `1px ${lm.highlighted ? "solid" : "dashed"} ${
+                lm.line.type === "support"
+                  ? lm.highlighted ? "rgba(52, 211, 153, 0.9)" : "rgba(52, 211, 153, 0.45)"
+                  : lm.highlighted ? "rgba(239, 68, 68, 0.9)" : "rgba(239, 68, 68, 0.45)"
+              }`,
+              zIndex: lm.highlighted ? 5 : 2,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedZone(lm.line);
+            }}
+          />
+        ))}
+
+        {/* ── SR Legend ──────────────────────────────────────────────── */}
+        {(hasSrSupport || hasSrResistance) && (
+          <div className="absolute top-2 left-2 z-20 pointer-events-none flex items-center gap-3">
+            {hasSrSupport && (
+              <span className="flex items-center gap-1.5 text-[9px] font-semibold text-gray-400">
+                <span className="w-4 h-0 border-t border-dashed border-emerald-400/60" />
+                {t("order_book.sr_support")}
+              </span>
+            )}
+            {hasSrResistance && (
+              <span className="flex items-center gap-1.5 text-[9px] font-semibold text-gray-400">
+                <span className="w-4 h-0 border-t border-dashed border-red-400/60" />
+                {t("order_book.sr_resistance")}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* ── Zone Detail Panel ─────────────────────────────────────── */}
+        {selectedZone && (
+          <ZoneDetailPanel
+            zone={selectedZone}
+            onClose={() => setSelectedZone(null)}
+            isDark={isDark}
+          />
+        )}
+
+        {/* ── Crosshair Tooltip ─────────────────────────────────────── */}
+        {crosshairValues && (
+          <div className="absolute top-2 right-2 z-20 text-[9px] font-semibold pointer-events-none flex flex-col gap-1 items-end">
+            {crosshairValues.vol && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-sky-400 border border-gray-700/50">{t("chart.vol_label")} {crosshairValues.vol}</span>}
+            {crosshairValues.rsi && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-purple-400 border border-gray-700/50">{t("chart.rsi_label")} {crosshairValues.rsi}</span>}
+            {crosshairValues.adx && <span className="px-1.5 py-0.5 rounded bg-gray-900/80 text-orange-400 border border-gray-700/50">{t("chart.adx_label")} {crosshairValues.adx}</span>}
+          </div>
+        )}
+
+        {/* ── Loading ────────────────────────────────────────────────── */}
         {status.type === "loading" && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#0d1117]/60 z-10">
             <div className="flex flex-col items-center gap-3">
@@ -485,6 +616,8 @@ export function CandlestickChart({ coinId }: Props) {
             </div>
           </div>
         )}
+
+        {/* ── Error ──────────────────────────────────────────────────── */}
         {status.type === "error" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0d1117]/60 z-10 gap-1">
             <span className="text-xs text-red-400">{t("chart.failed")}</span>
@@ -493,6 +626,8 @@ export function CandlestickChart({ coinId }: Props) {
             )}
           </div>
         )}
+
+        {/* ── No Data ────────────────────────────────────────────────── */}
         {status.type === "ready" && data.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#0d1117]/60 z-10">
             <span className="text-xs text-gray-500">{t("chart.no_data")}</span>

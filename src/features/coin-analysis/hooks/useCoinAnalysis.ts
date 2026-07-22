@@ -3,11 +3,13 @@
 import { useMemo } from "react";
 import { useI18n } from "@/i18n/context";
 import { useAnalysis } from "@/features/analysis-engine/hooks/useAnalysis";
-import { supportResistance } from "@/features/analysis-engine/indicators";
+import { detectMultiTimeframeSR } from "@/features/analysis-engine/services/SmartSupportResistance";
+import type { SmartSupportResistanceInput } from "@/features/analysis-engine/services/SmartSupportResistance";
 import { computeIndicators } from "@/features/analysis-engine/hooks/_computeIndicators";
 import { calcEma } from "@/features/analysis-engine/indicators/_helpers";
 import { buildTradeSetup } from "@/features/analysis-engine/services";
 import type { CoinAnalysisState, MarketCardData, IndicatorItem, TimeframeTrendData, SrLevelDisplay } from "../types";
+import type { CandleCollection } from "@/features/analysis-engine/types";
 import type { ScoreEngineOutput } from "@/features/analysis-engine/services/scoring";
 import type { TradingSignalOutput } from "@/features/analysis-engine/services/signaling";
 import type { TradingSignalType } from "../types/scoring";
@@ -26,32 +28,100 @@ function formatVolume(value: number): string {
   return `$${value.toFixed(0)}`;
 }
 
-function getNearestSR(market: ReturnType<typeof useAnalysis>["market"], interval: string = "1h"): Pick<MarketCardData, "nearestSupport" | "nearestResistance" | "srSupport" | "srResistance"> {
+function rangeCenter(r: { min: number; max: number }): number {
+  return (r.min + r.max) / 2;
+}
+
+function getNearestSR(market: ReturnType<typeof useAnalysis>["market"], _interval: string = "1h"): Pick<MarketCardData, "nearestSupport" | "nearestResistance" | "srSupport" | "srResistance" | "srLevels"> {
   if (!market) return {};
 
-  const key = interval === "4h" || interval === "1d" ? interval : "1h";
-  const candles = market.candles[key];
-  if (candles.length < 20) return {};
-
-  const highs = candles.map((c) => c.high);
-  const lows = candles.map((c) => c.low);
-  const closes = candles.map((c) => c.close);
   const currentPrice = market.price.current;
 
-  const { supportLevels, resistanceLevels } = supportResistance(highs, lows, closes);
+  // Build inputs for all available timeframes (15m, 1h, 4h, 1d, 1w)
+  const tfKeys: (keyof CandleCollection)[] = ["15m", "1h", "4h", "1d", "1w"];
+  const inputs: Record<string, SmartSupportResistanceInput> = {};
 
-  const nearestSupport = supportLevels.length > 0 ? fmtPrice(supportLevels[0].price) : undefined;
-  const nearestResistance = resistanceLevels.length > 0 ? fmtPrice(resistanceLevels[0].price) : undefined;
+  for (const key of tfKeys) {
+    const candles = market.candles[key];
+    if (!candles || candles.length < 20) continue;
+    inputs[key] = {
+      highs: candles.map(c => c.high),
+      lows: candles.map(c => c.low),
+      closes: candles.map(c => c.close),
+      opens: candles.map(c => c.open),
+      volumes: candles.map(c => c.volume),
+      currentPrice,
+    };
+  }
 
-  const srSupport: SrLevelDisplay | null = supportLevels.length > 0
-    ? { price: fmtPrice(supportLevels[0].price), distancePercent: Math.abs(supportLevels[0].distancePercent), strength: supportLevels[0].strength }
+  if (Object.keys(inputs).length === 0) return {};
+
+  // Multi-timeframe detection (runs Layer 1+2 per TF, then merges)
+  const { zones } = detectMultiTimeframeSR(inputs, currentPrice);
+
+  const supports = zones.filter(z => z.type === "support");
+  const resistances = zones.filter(z => z.type === "resistance");
+
+  const nearestSupport = supports.length > 0 ? fmtPrice(rangeCenter(supports[0].priceRange)) : undefined;
+  const nearestResistance = resistances.length > 0 ? fmtPrice(rangeCenter(resistances[0].priceRange)) : undefined;
+
+  const srSupport: SrLevelDisplay | null = supports.length > 0
+    ? {
+        price: fmtPrice(rangeCenter(supports[0].priceRange)),
+        distancePercent: Math.abs((rangeCenter(supports[0].priceRange) - currentPrice) / currentPrice * 100),
+        strength: Math.round(supports[0].confidence / 20),
+        type: "support",
+        reason: supports[0].reason,
+        detectedFrom: supports[0].detectedFrom,
+        priceRange: supports[0].priceRange,
+        volumeNote: supports[0].volumeNote,
+        volumeQuality: supports[0].volumeQuality,
+        detectedTimeframes: supports[0].detectedTimeframes,
+        alignmentScore: supports[0].alignmentScore,
+        touchCount: supports[0].touchCount,
+        reactionStrength: supports[0].reactionStrength,
+        reactionHistory: supports[0].reactionHistory,
+      }
     : null;
 
-  const srResistance: SrLevelDisplay | null = resistanceLevels.length > 0
-    ? { price: fmtPrice(resistanceLevels[0].price), distancePercent: Math.abs(resistanceLevels[0].distancePercent), strength: resistanceLevels[0].strength }
+  const srResistance: SrLevelDisplay | null = resistances.length > 0
+    ? {
+        price: fmtPrice(rangeCenter(resistances[0].priceRange)),
+        distancePercent: Math.abs((rangeCenter(resistances[0].priceRange) - currentPrice) / currentPrice * 100),
+        strength: Math.round(resistances[0].confidence / 20),
+        type: "resistance",
+        reason: resistances[0].reason,
+        detectedFrom: resistances[0].detectedFrom,
+        priceRange: resistances[0].priceRange,
+        volumeNote: resistances[0].volumeNote,
+        volumeQuality: resistances[0].volumeQuality,
+        detectedTimeframes: resistances[0].detectedTimeframes,
+        alignmentScore: resistances[0].alignmentScore,
+        touchCount: resistances[0].touchCount,
+        reactionStrength: resistances[0].reactionStrength,
+        reactionHistory: resistances[0].reactionHistory,
+      }
     : null;
 
-  return { nearestSupport, nearestResistance, srSupport, srResistance };
+  // Build full level list for chart rendering (all detected zones)
+  const srLevels: SrLevelDisplay[] = zones.map(z => ({
+    price: fmtPrice(rangeCenter(z.priceRange)),
+    distancePercent: Math.abs((rangeCenter(z.priceRange) - currentPrice) / currentPrice * 100),
+    strength: Math.round(z.confidence / 20),
+    type: z.type,
+    reason: z.reason,
+    detectedFrom: z.detectedFrom,
+    priceRange: z.priceRange,
+    volumeNote: z.volumeNote,
+    volumeQuality: z.volumeQuality,
+    detectedTimeframes: z.detectedTimeframes,
+    alignmentScore: z.alignmentScore,
+    touchCount: z.touchCount,
+    reactionStrength: z.reactionStrength,
+    reactionHistory: z.reactionHistory,
+  }));
+
+  return { nearestSupport, nearestResistance, srSupport, srResistance, srLevels };
 }
 
 function buildMarketCard(
@@ -78,6 +148,7 @@ function buildMarketCard(
     volatility: "—",
     volatilityStatus: "medium",
     ...sr,
+    srLevels: sr.srLevels ?? [],
   };
 }
 
@@ -105,15 +176,15 @@ function buildIndicatorItems(
     if (rsi.value > 70) {
       status = "bearish";
       statusLabel = "Overbought";
-      interpretation = "Bearish Reversal Possible";
+      interpretation = "bearish_reversal";
     } else if (rsi.value < 30) {
       status = "bullish";
       statusLabel = "Oversold";
-      interpretation = "Bullish Recovery Possible";
+      interpretation = "bullish_recovery";
     } else {
       status = "neutral";
       statusLabel = "Neutral";
-      interpretation = "Normal Trading Range";
+      interpretation = "normal_trading";
     }
 
     items.push({ key: "rsi", label: "RSI", value: val, status, statusLabel, interpretation });
@@ -130,23 +201,23 @@ function buildIndicatorItems(
     if (bullish && hist > 0) {
       status = "bullish";
       statusLabel = "Bullish Cross";
-      interpretation = "Momentum Increasing";
+      interpretation = "momentum_increasing";
     } else if (!bullish && hist < 0) {
       status = "bearish";
       statusLabel = "Bearish Cross";
-      interpretation = "Momentum Decreasing";
+      interpretation = "momentum_decreasing";
     } else if (hist > 0) {
       status = "bullish";
       statusLabel = "Histogram Positive";
-      interpretation = "Early Bullish Bias";
+      interpretation = "early_bullish";
     } else if (hist < 0) {
       status = "bearish";
       statusLabel = "Histogram Negative";
-      interpretation = "Early Bearish Bias";
+      interpretation = "early_bearish";
     } else {
       status = "neutral";
       statusLabel = "Converging";
-      interpretation = "Crossover Forming";
+      interpretation = "crossover_forming";
     }
 
     items.push({ key: "macd", label: "MACD", value: statusLabel, status, statusLabel, interpretation });
@@ -162,19 +233,19 @@ function buildIndicatorItems(
     if (adx.adx >= 40) {
       status = "bullish";
       statusLabel = "Very Strong Trend";
-      interpretation = "High Conviction Move";
+      interpretation = "high_conviction";
     } else if (adx.adx >= 25) {
       status = adx.plusDI > adx.minusDI ? "bullish" : "bearish";
       statusLabel = "Strong Trend";
-      interpretation = adx.plusDI > adx.minusDI ? "Buyers in Control" : "Sellers in Control";
+      interpretation = adx.plusDI > adx.minusDI ? "buyers_in_control" : "sellers_in_control";
     } else if (adx.adx >= 20) {
       status = "neutral";
       statusLabel = "Moderate Trend";
-      interpretation = "Trend Developing";
+      interpretation = "trend_developing";
     } else {
       status = "neutral";
       statusLabel = "Weak Trend";
-      interpretation = "Market Ranging";
+      interpretation = "market_ranging";
     }
 
     items.push({ key: "adx", label: "ADX", value: val, status, statusLabel, interpretation });
@@ -192,15 +263,15 @@ function buildIndicatorItems(
     if (bullishAlign) {
       status = "bullish";
       statusLabel = "Bullish Alignment";
-      interpretation = "Uptrend Structure Intact";
+      interpretation = "uptrend";
     } else if (bearishAlign) {
       status = "bearish";
       statusLabel = "Bearish Alignment";
-      interpretation = "Downtrend Structure Intact";
+      interpretation = "downtrend";
     } else {
       status = "neutral";
       statusLabel = "Mixed";
-      interpretation = "No Clear Trend";
+      interpretation = "no_clear_trend";
     }
 
     items.push({ key: "ema", label: "EMA", value: statusLabel, status, statusLabel, interpretation });
@@ -216,15 +287,15 @@ function buildIndicatorItems(
     if (atrPct > 5) {
       status = "bearish";
       statusLabel = "High Volatility";
-      interpretation = "Wide Stops Needed";
+      interpretation = "wide_stops";
     } else if (atrPct > 2) {
       status = "neutral";
       statusLabel = "Medium Volatility";
-      interpretation = "Normal Conditions";
+      interpretation = "normal_conditions";
     } else {
       status = "bullish";
       statusLabel = "Low Volatility";
-      interpretation = "Breakout Building";
+      interpretation = "breakout_building";
     }
 
     items.push({ key: "atr", label: "ATR", value: statusLabel, status, statusLabel, interpretation });
@@ -239,15 +310,15 @@ function buildIndicatorItems(
     if (bb.pricePosition === "above") {
       status = "bearish";
       statusLabel = "Above Upper Band";
-      interpretation = "Price Extended";
+      interpretation = "price_extended";
     } else if (bb.pricePosition === "below") {
       status = "bullish";
       statusLabel = "Below Lower Band";
-      interpretation = "Potential Bounce";
+      interpretation = "potential_bounce";
     } else {
       status = "neutral";
       statusLabel = "Inside Bands";
-      interpretation = "Normal Range";
+      interpretation = "normal_range";
     }
 
     items.push({ key: "bb", label: "Bollinger", value: statusLabel, status, statusLabel, interpretation });

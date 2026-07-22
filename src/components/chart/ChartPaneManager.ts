@@ -373,19 +373,32 @@ function computeDMI(
     adxArr.push(Math.round((sum / period) * 100) / 100);
   }
 
-  // Map to chart data points (offset by 1 because we skip first element in TR calc)
+  // Map to chart data points (offset by 1 because we skip first element in TR calc).
+  // Carry forward last valid value so the line extends to chart's right edge.
   const pad = (
     arr: number[],
     total: number
   ): { time: UTCTimestamp; value: number }[] => {
     const out: { time: UTCTimestamp; value: number }[] = [];
+    let lastValid: number | null = null;
     for (let i = 0; i < arr.length; i++) {
-      const dataIdx = i + 1; // offset because TR starts from index 1
-      if (dataIdx < total && !isNaN(arr[i])) {
+      const dataIdx = i + 1;
+      if (dataIdx >= total) break;
+      if (!isNaN(arr[i])) {
+        lastValid = Math.round(arr[i] * 10) / 10;
+      }
+      if (lastValid !== null) {
         out.push({
           time: toChartTime(data[dataIdx].timestamp),
-          value: Math.round(arr[i] * 10) / 10,
+          value: lastValid,
         });
+      }
+    }
+    // Extend to last candle if last value doesn't cover it
+    if (lastValid !== null && out.length > 0) {
+      const lastTime = toChartTime(data[total - 1].timestamp);
+      if (out[out.length - 1].time !== lastTime) {
+        out.push({ time: lastTime, value: lastValid });
       }
     }
     return out;

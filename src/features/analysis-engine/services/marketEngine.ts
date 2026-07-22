@@ -78,8 +78,9 @@ export class MarketEngine {
     const signal = options?.signal;
 
     // Fetch ticker + all candle intervals in parallel
-    const [tickerResult, candles1h, candles4h, candles1d] = await Promise.all([
+    const [tickerResult, candles15m, candles1h, candles4h, candles1d] = await Promise.all([
       this.marketRepo.getTicker(binanceSymbol, signal),
+      this.marketRepo.getKlines(binanceSymbol, "15m", 200, signal),
       this.marketRepo.getKlines(binanceSymbol, "1h", 200, signal),
       this.marketRepo.getKlines(binanceSymbol, "4h", 42, signal),
       this.marketRepo.getKlines(binanceSymbol, "1d", 30, signal),
@@ -92,6 +93,7 @@ export class MarketEngine {
     }
 
     return this.buildSnapshot(binanceSymbol, tickerResult, {
+      "15m": candles15m,
       "1h": candles1h,
       "4h": candles4h,
       "1d": candles1d,
@@ -103,7 +105,7 @@ export class MarketEngine {
   private buildSnapshot(
     binanceSymbol: string,
     ticker: MarketData,
-    rawCandles: Record<"1h" | "4h" | "1d", readonly OHLCV[]>,
+    rawCandles: Record<"15m" | "1h" | "4h" | "1d", readonly OHLCV[]>,
   ): MarketSnapshot {
     const price: PriceData = {
       current: normalizePrice(ticker.currentPrice),
@@ -115,6 +117,7 @@ export class MarketEngine {
     };
 
     const candles: CandleCollection = {
+      "15m": rawCandles["15m"].map(normalizeCandle),
       "1h": rawCandles["1h"].map(normalizeCandle),
       "4h": rawCandles["4h"].map(normalizeCandle),
       "1d": rawCandles["1d"].map(normalizeCandle),

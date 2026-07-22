@@ -405,9 +405,11 @@ export interface PriceData {
 }
 
 export interface CandleCollection {
+  readonly "15m": readonly OHLCV[];
   readonly "1h": readonly OHLCV[];
   readonly "4h": readonly OHLCV[];
   readonly "1d": readonly OHLCV[];
+  readonly "1w"?: readonly OHLCV[];
 }
 
 export interface MarketSnapshot {

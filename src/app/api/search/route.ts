@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ALL_BINANCE_SYMBOLS } from "@/api/binance";
 
 const BINANCE_REST = "https://api.binance.com/api/v3";
 
@@ -31,6 +32,11 @@ interface BinanceTicker {
 let exchangeInfoCache: ExchangePair[] | null = null;
 let lastFetch = 0;
 let fetchPromise: Promise<ExchangePair[]> | null = null;
+
+const FALLBACK_PAIRS: ExchangePair[] = ALL_BINANCE_SYMBOLS.map((sym) => ({
+  symbol: sym,
+  baseAsset: sym.replace("USDT", ""),
+}));
 
 async function getExchangeInfo(): Promise<ExchangePair[]> {
   const now = Date.now();
@@ -70,7 +76,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const pairs = await getExchangeInfo();
+    let pairs: ExchangePair[];
+    try {
+      pairs = await getExchangeInfo();
+    } catch {
+      pairs = FALLBACK_PAIRS;
+    }
     if (pairs.length === 0) {
       return NextResponse.json({ results: [] });
     }

@@ -4,7 +4,8 @@ import dynamic from "next/dynamic";
 import { useI18n } from "@/i18n/context";
 import { useTimeframe } from "@/lib/timeframe";
 import { useCoinAnalysis } from "@/features/coin-analysis/hooks/useCoinAnalysis";
-import type { CoinAnalysisState, SrLevelDisplay } from "@/features/coin-analysis/types";
+import type { CoinAnalysisState } from "@/features/coin-analysis/types";
+import type { SrLine } from "@/components/CandlestickChart";
 import { Card } from "@/components/Card";
 
 const CandlestickChart = dynamic(
@@ -48,46 +49,127 @@ export function CoinAnalysisResult({ coinId }: CoinAnalysisResultProps) {
     );
   }
 
+  const srLines: SrLine[] = [];
+  const parsePrice = (s: string) => parseFloat(s.replace(/[$,]/g, ""));
+  if (analysis.market.srLevels) {
+    for (const l of analysis.market.srLevels) {
+      srLines.push({
+        price: parsePrice(l.price),
+        type: l.type,
+        priceRange: l.priceRange,
+        confidence: l.strength != null ? l.strength * 20 : undefined,
+        strength: undefined,
+        reason: l.reason,
+        detectedTimeframes: l.detectedTimeframes,
+        touchCount: l.touchCount,
+        volumeQuality: l.volumeQuality,
+        alignmentScore: l.alignmentScore,
+        reactionStrength: l.reactionStrength,
+      });
+    }
+  } else {
+    // Fallback: single nearest levels
+    if (analysis.market.srSupport) {
+      srLines.push({ price: parsePrice(analysis.market.srSupport.price), type: "support" });
+    }
+    if (analysis.market.srResistance) {
+      srLines.push({ price: parsePrice(analysis.market.srResistance.price), type: "resistance" });
+    }
+  }
+
   return (
       <div className="space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <SignalCard explanation={analysis.explanation} overallScore={analysis.overallScore} />
-          <TradeSetupCard analysis={analysis} />
+          <SignalCard analysis={analysis} />
+          {analysis.trends.length > 0 && (
+            <Card title={t("coin_detail.cards.trend_analysis.title")}>
+              <div className="space-y-2.5">
+                {analysis.trends.map((tf) => {
+                  const trendColor =
+                    tf.trend.toLowerCase().includes("bullish") ? "text-emerald-400" :
+                    tf.trend.toLowerCase().includes("bearish") ? "text-red-400" : "text-yellow-400";
+                  const trendIcon =
+                    tf.trend.toLowerCase().includes("bullish") ? "▲" :
+                    tf.trend.toLowerCase().includes("bearish") ? "▼" : "◆";
+                  const sl = tf.confidence >= 75
+                    ? { label: t("coin_analysis.strength.strong"), color: "text-emerald-400", bg: "bg-emerald-500/10" }
+                    : tf.confidence >= 55
+                      ? { label: t("coin_analysis.strength.moderate"), color: "text-yellow-400", bg: "bg-yellow-500/10" }
+                      : { label: t("coin_analysis.strength.weak"), color: "text-gray-400", bg: "bg-gray-500/10" };
+                  return (
+                    <div
+                      key={tf.timeframe}
+                      className={`rounded-lg p-3 transition-all ${
+                        tf.isActive
+                          ? "bg-gray-800/70 border border-emerald-500/40 shadow-[0_0_10px_rgba(52,211,153,0.08)]"
+                          : "bg-gray-800/30 border border-gray-800/60"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2.5">
+                        <span className={`text-[11px] font-bold uppercase tracking-wider ${
+                          tf.isActive ? "text-emerald-300" : "text-gray-500"
+                        }`}>
+                          {tf.timeframe.toUpperCase()}
+                        </span>
+                        {tf.isActive && (
+                          <span className="text-[9px] font-semibold uppercase tracking-wider text-emerald-400/70">
+                            {t("coin_analysis.active")}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2.5 mb-2.5">
+                        <span className="text-xl font-bold leading-none">{trendIcon}</span>
+                        <span className={`text-sm font-bold ${trendColor}`}>
+                          {t(`coin_analysis.score.status.${tf.trend.toLowerCase().replace(/\s+/g, "_")}`)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${sl.bg} ${sl.color}`}>
+                          {sl.label}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-1.5 bg-gray-700/60 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                tf.confidence >= 75 ? "bg-emerald-500" :
+                                tf.confidence >= 55 ? "bg-yellow-500" : "bg-gray-500"
+                              }`}
+                              style={{ width: `${tf.confidence}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-mono tabular-nums text-gray-400 w-7 text-right">
+                            {tf.confidence}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
           <ScoreOverview analysis={analysis} />
         </div>
-        <WhyThisSignalCard analysis={analysis} />
-        {analysis.trends.length > 0 && <TrendAnalysisCard analysis={analysis} />}
         {analysis.indicators.length > 0 && <TechIndicatorsCard indicators={analysis.indicators} />}
-        {(analysis.market.srSupport || analysis.market.srResistance) && (
-          <SupportResistanceCard
-            support={analysis.market.srSupport}
-            resistance={analysis.market.srResistance}
-          />
-        )}
-        <ChartSection coinId={coinId} />
+        <ChartSection coinId={coinId} srLines={srLines} />
       </div>
   );
 }
 
-function ChartSection({ coinId }: { readonly coinId: string }) {
+function ChartSection({ coinId, srLines }: { readonly coinId: string; readonly srLines?: SrLine[] }) {
   return (
     <div className="bg-gray-900/30 border border-gray-800/50 rounded-xl overflow-hidden" style={{ height: 480 }}>
-      <CandlestickChart coinId={coinId} />
+      <CandlestickChart coinId={coinId} srLines={srLines} />
     </div>
   );
 }
 
-function SignalCard({
-  explanation,
-  overallScore,
-}: {
-  readonly explanation: CoinAnalysisState["explanation"];
-  readonly overallScore: CoinAnalysisState["overallScore"];
-}) {
+function SignalCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
   const { t } = useI18n();
-  const s = overallScore.signal;
+  const s = analysis.overallScore.signal;
   const isAction = s === "Strong Buy" || s === "Buy";
   const isWait = s === "Strong Sell" || s === "Sell";
+  const reasons = buildSignalReasons(analysis, t);
 
   const badgeColor = isAction
     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
@@ -101,10 +183,18 @@ function SignalCard({
       ? t("coin_analysis.recommendation.wait")
       : t("coin_analysis.recommendation.neutral");
 
+  const accentColor = isAction
+    ? "text-emerald-400 border-emerald-500/20"
+    : isWait
+      ? "text-red-400 border-red-500/20"
+      : "text-yellow-400 border-yellow-500/20";
+
+  const bulletIcon = isAction ? "✓" : isWait ? "×" : "●";
+
   return (
     <Card
       title={t("coin_analysis.recommendation.title")}
-      subtitle={`${overallScore.value.toFixed(0)} — ${t("coin_row." + overallScore.signal.toLowerCase().replace(" ", "_"))}`}
+      subtitle={`${analysis.overallScore.value.toFixed(0)} — ${t("coin_row." + analysis.overallScore.signal.toLowerCase().replace(" ", "_"))}`}
     >
       <div className="space-y-3">
         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold ${badgeColor}`}>
@@ -112,16 +202,16 @@ function SignalCard({
         </div>
 
         <p className="text-xs text-gray-300 leading-relaxed">
-          {explanation.summary}
+          {analysis.explanation.summary}
         </p>
 
-        {explanation.strengths.length > 0 && (
+        {analysis.explanation.strengths.length > 0 && (
           <div>
             <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mb-1.5">
               {t("coin_analysis.explanation.strengths")}
             </p>
             <ul className="space-y-0.5">
-              {explanation.strengths.map((s, i) => (
+              {analysis.explanation.strengths.map((s, i) => (
                 <li key={i} className="text-[11px] text-gray-400 flex items-start gap-1.5">
                   <span className="text-emerald-400 mt-0.5 shrink-0">+</span>
                   {s}
@@ -131,13 +221,13 @@ function SignalCard({
           </div>
         )}
 
-        {explanation.weaknesses.length > 0 && (
+        {analysis.explanation.weaknesses.length > 0 && (
           <div>
             <p className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-1.5">
               {t("coin_analysis.explanation.weaknesses")}
             </p>
             <ul className="space-y-0.5">
-              {explanation.weaknesses.map((w, i) => (
+              {analysis.explanation.weaknesses.map((w, i) => (
                 <li key={i} className="text-[11px] text-gray-400 flex items-start gap-1.5">
                   <span className="text-red-400 mt-0.5 shrink-0">−</span>
                   {w}
@@ -147,13 +237,13 @@ function SignalCard({
           </div>
         )}
 
-        {explanation.risks.length > 0 && (
+        {analysis.explanation.risks.length > 0 && (
           <div>
             <p className="text-[10px] font-semibold text-yellow-400 uppercase tracking-wider mb-1.5">
               {t("coin_analysis.explanation.risks")}
             </p>
             <ul className="space-y-0.5">
-              {explanation.risks.map((r, i) => (
+              {analysis.explanation.risks.map((r, i) => (
                 <li key={i} className="text-[11px] text-gray-400 flex items-start gap-1.5">
                   <span className="text-yellow-400 mt-0.5 shrink-0">!</span>
                   {r}
@@ -162,148 +252,28 @@ function SignalCard({
             </ul>
           </div>
         )}
-      </div>
-    </Card>
-  );
-}
 
-function TradeSetupCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
-  const { t } = useI18n();
-  const ts = analysis.tradeSetup;
-  const price = analysis.market.price;
-  const isLong = ts.direction === "long";
-  const hasValidTrade = ts.hasTrade && ts.entry && ts.stopLoss && ts.takeProfit;
-
-  function fmtPrice(v: number): string {
-    return `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
-  }
-
-  /* ── No valid setup ──────────────────────────────── */
-  if (!hasValidTrade) {
-    return (
-      <Card title={t("coin_analysis.trade_setup.title")}>
-        <div className="flex flex-col items-center justify-center py-8 gap-3">
-          <div className="w-14 h-14 rounded-full bg-gray-800/60 border border-gray-700 flex items-center justify-center">
-            <svg className="w-7 h-7 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-            </svg>
-          </div>
-          <p className="text-sm font-semibold text-gray-400">
-            {t("coin_analysis.trade_setup.no_trade")}
-          </p>
-          {analysis.tradeReason && (
-            <p className="text-xs text-gray-500 text-center max-w-[240px] leading-relaxed">
-              {analysis.tradeReason}
+        {/* Signal reasons merged from WhyThisSignal */}
+        {reasons.length > 0 && (
+          <div className="border-t border-gray-800 pt-3 mt-3">
+            <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              {t("coin_analysis.signal_reasons.title")}
             </p>
-          )}
-        </div>
-      </Card>
-    );
-  }
-
-  /* ── Active trade setup ──────────────────────────── */
-  const rrPrimary = ts.riskReward!.tp1;
-  const rrDisplay = `1:${rrPrimary.toFixed(1)}`;
-
-  const expectedProfitPct = isLong
-    ? ((ts.takeProfit!.tp1 - ts.entry!) / ts.entry!) * 100
-    : ((ts.entry! - ts.takeProfit!.tp1) / ts.entry!) * 100;
-  const expectedLossPct = isLong
-    ? ((ts.entry! - ts.stopLoss!) / ts.entry!) * 100
-    : ((ts.stopLoss! - ts.entry!) / ts.entry!) * 100;
-
-  const directionLabel = isLong
-    ? t("coin_analysis.trade_setup.long")
-    : t("coin_analysis.trade_setup.short");
-
-  const riskLevelLabel = (() => {
-    const r = analysis.scores.risk.value;
-    if (r >= 80) return t("coin_row.risk_very_low");
-    if (r >= 60) return t("coin_row.risk_low");
-    if (r >= 40) return t("coin_row.risk_medium");
-    if (r >= 20) return t("coin_row.risk_high");
-    return t("coin_row.risk_extreme");
-  })();
-
-  const riskColor = (() => {
-    const r = analysis.scores.risk.value;
-    if (r >= 60) return "text-emerald-400";
-    if (r >= 40) return "text-yellow-400";
-    return "text-red-400";
-  })();
-
-  const rows: { label: string; value: string; color?: string; icon?: React.ReactNode }[] = [
-    {
-      label: t("coin_analysis.trade_setup.direction"),
-      value: directionLabel,
-      color: isLong ? "text-emerald-400" : "text-red-400",
-      icon: (
-        <svg className={`w-3.5 h-3.5 ${isLong ? "text-emerald-400" : "text-red-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d={isLong ? "M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" : "M19.5 4.5l-15 15m0 0h11.25m-11.25 0V8.25"} />
-        </svg>
-      ),
-    },
-    {
-      label: t("coin_analysis.trade_setup.entry"),
-      value: fmtPrice(ts.entry!),
-      color: "text-cyan-400",
-    },
-    {
-      label: t("coin_analysis.trade_setup.current_price"),
-      value: price ?? "—",
-      color: "text-white",
-    },
-    {
-      label: t("coin_analysis.trade_setup.stop_loss"),
-      value: fmtPrice(ts.stopLoss!),
-      color: "text-red-400",
-    },
-    {
-      label: t("coin_analysis.trade_setup.take_profit"),
-      value: fmtPrice(ts.takeProfit!.tp1),
-      color: "text-emerald-400",
-    },
-    {
-      label: t("coin_analysis.trade_setup.risk_reward"),
-      value: rrDisplay,
-      color: rrPrimary >= 2 ? "text-emerald-400" : "text-yellow-400",
-    },
-    {
-      label: t("coin_analysis.trade_setup.expected_profit"),
-      value: `+${expectedProfitPct.toFixed(2)}%`,
-      color: "text-emerald-400",
-    },
-    {
-      label: t("coin_analysis.trade_setup.expected_loss"),
-      value: `-${Math.abs(expectedLossPct).toFixed(2)}%`,
-      color: "text-red-400",
-    },
-    {
-      label: t("coin_analysis.trade_setup.risk_level"),
-      value: riskLevelLabel,
-      color: riskColor,
-    },
-  ];
-
-  return (
-    <Card title={t("coin_analysis.trade_setup.title")}>
-      <div className="space-y-0">
-        {rows.map((row, i) => (
-          <div
-            key={row.label}
-            className={`flex items-center justify-between py-2.5 ${
-              i < rows.length - 1 ? "border-b border-gray-800/50" : ""
-            }`}
-          >
-            <span className="text-xs text-gray-400 inline-flex items-center gap-1.5">
-              {row.icon}
-              {row.label}
-            </span>
-            <span className={`text-sm font-bold font-mono tabular-nums ${row.color ?? "text-gray-200"}`}>
-              {row.value}
-            </span>
+            <div className="space-y-1.5">
+              {reasons.map((r, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border ${accentColor} bg-gray-800/20`}
+                >
+                  <span className={`text-[10px] font-bold shrink-0 ${accentColor.split(" ")[0]}`}>
+                    {bulletIcon}
+                  </span>
+                  <span className="text-[11px] text-gray-300">{r}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
+        )}
       </div>
     </Card>
   );
@@ -320,6 +290,88 @@ function translateIndicatorLabel(ind: CoinAnalysisState["indicators"][number], t
   };
   const key = map[ind.key]?.[ind.statusLabel];
   return key ? t(key) : ind.statusLabel;
+}
+
+function translateIndicatorInterpretation(ind: CoinAnalysisState["indicators"][number], t: (key: string) => string): string {
+  return t("coin_analysis.interpretations." + ind.key + "_" + ind.interpretation);
+}
+
+const REASON_STATIC_MAP: Record<string, string> = {
+  "Strong bullish alignment: EMA20 > EMA50 > EMA200": "strong_bullish_alignment",
+  "Bullish partial alignment: EMA20 > EMA50": "bullish_partial_alignment",
+  "Strong bearish alignment: EMA20 < EMA50 < EMA200": "strong_bearish_alignment",
+  "Bearish partial alignment: EMA20 < EMA50": "bearish_partial_alignment",
+  "Mixed EMA alignment": "mixed_ema_alignment",
+  "Price above EMA50": "price_above_ema50",
+  "Price below EMA50": "price_below_ema50",
+  "Price above EMA200": "price_above_ema200",
+  "Price below EMA200": "price_below_ema200",
+  "Bullish MACD cross": "bullish_macd_cross",
+  "MACD above signal": "macd_above_signal",
+  "Bearish MACD cross": "bearish_macd_cross",
+  "MACD below signal": "macd_below_signal",
+  "OBV rising": "obv_rising",
+  "OBV falling": "obv_falling",
+  "OBV stable": "obv_stable",
+  "Price above upper Bollinger Band (overbought)": "bb_above_upper",
+  "Price below lower Bollinger Band (oversold)": "bb_below_lower",
+  "Price inside Bollinger Bands": "bb_inside",
+  "All dimensions agree": "all_dims_agree",
+  "Most dimensions agree": "most_dims_agree",
+  "Mixed signals": "mixed_signals",
+  "Conflicting signals": "conflicting_signals",
+  "All data available": "all_data_available",
+  "Some data missing": "some_data_missing",
+  "Significant data missing": "significant_data_missing",
+};
+
+interface ReasonPattern { regex: RegExp; key: string; }
+const REASON_PATTERNS: ReasonPattern[] = [
+  { regex: /^Strong trend: ADX = ([\d.]+)$/, key: "strong_trend_adx" },
+  { regex: /^Trending: ADX = ([\d.]+)$/, key: "trending_adx" },
+  { regex: /^Weak trend: ADX = ([\d.]+)$/, key: "weak_trend_adx" },
+  { regex: /^No clear trend: ADX = ([\d.]+)$/, key: "no_clear_trend_adx" },
+  { regex: /^Oversold: RSI = ([\d.]+)$/, key: "oversold_rsi" },
+  { regex: /^Low: RSI = ([\d.]+)$/, key: "low_rsi" },
+  { regex: /^Neutral: RSI = ([\d.]+)$/, key: "neutral_rsi" },
+  { regex: /^High: RSI = ([\d.]+)$/, key: "high_rsi" },
+  { regex: /^Overbought: RSI = ([\d.]+)$/, key: "overbought_rsi" },
+  { regex: /^Strong upward: \+([\d.]+)%$/, key: "strong_upward_price" },
+  { regex: /^Upward: \+([\d.]+)%$/, key: "upward_price" },
+  { regex: /^Slightly upward: \+([\d.]+)%$/, key: "slightly_upward" },
+  { regex: /^Slightly downward: ([+-]?[\d.]+)%$/, key: "slightly_downward" },
+  { regex: /^Downward: ([+-]?[\d.]+)%$/, key: "downward_price" },
+  { regex: /^Strong downward: ([+-]?[\d.]+)%$/, key: "strong_downward" },
+  { regex: /^Oversold: StochRSI = ([\d.]+)$/, key: "oversold_stochrsi" },
+  { regex: /^Overbought: StochRSI = ([\d.]+)$/, key: "overbought_stochrsi" },
+  { regex: /^High activity: Vol\/MCap = ([\d.]+)$/, key: "high_vol_mcap" },
+  { regex: /^Moderate activity: Vol\/MCap = ([\d.]+)$/, key: "moderate_vol_mcap" },
+  { regex: /^Low activity: Vol\/MCap = ([\d.]+)$/, key: "low_vol_mcap" },
+  { regex: /^Very low activity: Vol\/MCap = ([\d.]+)$/, key: "very_low_vol_mcap" },
+  { regex: /^Low volatility: ATR% = ([\d.]+)%$/, key: "low_volatility_atr" },
+  { regex: /^Normal volatility: ATR% = ([\d.]+)%$/, key: "normal_volatility_atr" },
+  { regex: /^High volatility: ATR% = ([\d.]+)%$/, key: "high_volatility_atr" },
+  { regex: /^Extreme volatility: ATR% = ([\d.]+)%$/, key: "extreme_volatility_atr" },
+  { regex: /^High liquidity: Vol = \$([\d.]+)[A-Z]+$/, key: "high_liquidity" },
+  { regex: /^Medium liquidity: Vol = \$([\d.]+)[A-Z]+$/, key: "medium_liquidity" },
+  { regex: /^Low liquidity: Vol = \$([\d.]+)[A-Z]+$/, key: "low_liquidity" },
+  { regex: /^Very low liquidity: Vol = \$([\d.]+)[A-Z]+$/, key: "very_low_liquidity" },
+  { regex: /^Wide S\/R range: ([\d.]+)%$/, key: "wide_sr_range" },
+  { regex: /^Normal S\/R range: ([\d.]+)%$/, key: "normal_sr_range" },
+  { regex: /^Tight S\/R range: ([\d.]+)%$/, key: "tight_sr_range" },
+  { regex: /^Clear direction: ADX = ([\d.]+)$/, key: "clear_direction_adx" },
+  { regex: /^Moderate direction: ADX = ([\d.]+)$/, key: "moderate_direction_adx" },
+  { regex: /^Choppy market: ADX = ([\d.]+)$/, key: "choppy_market_adx" },
+];
+
+function translateScoreReason(reason: string, t: (key: string, vars?: Record<string, string | number>) => string): string {
+  const staticKey = REASON_STATIC_MAP[reason];
+  if (staticKey) return t("coin_analysis.reasons." + staticKey);
+  for (const p of REASON_PATTERNS) {
+    const m = reason.match(p.regex);
+    if (m) return t("coin_analysis.reasons." + p.key, { value: m[1] });
+  }
+  return reason;
 }
 
 function TechIndicatorsCard({ indicators }: { readonly indicators: readonly CoinAnalysisState["indicators"][number][] }) {
@@ -367,78 +419,11 @@ function TechIndicatorsCard({ indicators }: { readonly indicators: readonly Coin
 
               {/* Interpretation */}
               <p className="text-[11px] text-gray-500 leading-tight">
-                {ind.interpretation}
+                {translateIndicatorInterpretation(ind, t)}
               </p>
             </div>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-function SupportResistanceCard({
-  support,
-  resistance,
-}: {
-  readonly support: SrLevelDisplay | null | undefined;
-  readonly resistance: SrLevelDisplay | null | undefined;
-}) {
-  const { t } = useI18n();
-  const starString = (n: number): string => {
-    const capped = Math.min(5, Math.max(0, Math.round(n)));
-    return "★".repeat(capped) + "☆".repeat(5 - capped);
-  };
-
-  return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-gray-400 mb-4">
-        {t("order_book.sr_title")}
-      </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Support */}
-        <div className="bg-gray-800/30 border border-gray-800/50 rounded-lg p-4">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-3">
-            {t("order_book.sr_support")}
-          </div>
-          {support ? (
-            <>
-              <div className="text-2xl font-bold font-mono tabular-nums text-emerald-400 mb-1">
-                {support.price}
-              </div>
-              <div className="text-xs text-emerald-400/70 mb-2">
-                {t("order_book.sr_percent_below", { pct: support.distancePercent.toFixed(1) })}
-              </div>
-              <div className="text-sm tracking-wider text-emerald-400">
-                {starString(support.strength)}
-              </div>
-            </>
-          ) : (
-            <div className="text-sm text-gray-500">{t("order_book.sr_no_support")}</div>
-          )}
-        </div>
-
-        {/* Resistance */}
-        <div className="bg-gray-800/30 border border-gray-800/50 rounded-lg p-4">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-3">
-            {t("order_book.sr_resistance")}
-          </div>
-          {resistance ? (
-            <>
-              <div className="text-2xl font-bold font-mono tabular-nums text-red-400 mb-1">
-                {resistance.price}
-              </div>
-              <div className="text-xs text-red-400/70 mb-2">
-                {t("order_book.sr_percent_above", { pct: resistance.distancePercent.toFixed(1) })}
-              </div>
-              <div className="text-sm tracking-wider text-red-400">
-                {starString(resistance.strength)}
-              </div>
-            </>
-          ) : (
-            <div className="text-sm text-gray-500">{t("order_book.sr_no_resistance")}</div>
-          )}
-        </div>
       </div>
     </div>
   );
@@ -529,135 +514,7 @@ function buildSignalReasons(a: CoinAnalysisState, t: (key: string, vars?: Record
   return reasons.slice(0, 7);
 }
 
-function WhyThisSignalCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
-  const { t } = useI18n();
-  const reasons = buildSignalReasons(analysis, t);
-  const sig = analysis.overallScore.signal;
-  const isAction = sig === "Strong Buy" || sig === "Buy";
-  const isWait = sig === "Strong Sell" || sig === "Sell";
 
-  const accentColor = isAction
-    ? "text-emerald-400 border-emerald-500/20"
-    : isWait
-      ? "text-red-400 border-red-500/20"
-      : "text-yellow-400 border-yellow-500/20";
-
-  const bulletIcon = isAction ? "✓" : "×";
-
-  return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-gray-400 mb-4">
-        {t("coin_analysis.signal_reasons.title")}
-      </h3>
-      {reasons.length > 0 ? (
-        <div className="space-y-2">
-          {reasons.map((r, i) => (
-            <div
-              key={i}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${accentColor} bg-gray-800/20`}
-            >
-              <span className={`text-xs font-bold shrink-0 ${accentColor.split(" ")[0]}`}>
-                {bulletIcon}
-              </span>
-              <span className="text-xs text-gray-300">{r}</span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-xs text-gray-500">{t("coin_analysis.signal_reasons.no_reasons")}</p>
-      )}
-    </div>
-  );
-}
-
-function TrendAnalysisCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
-  const { t } = useI18n();
-
-  const trendMeta = (trend: string): { text: string; bg: string; dot: string; arrow: string } => {
-    if (trend.startsWith("Strong Bullish")) return { text: "text-emerald-400", bg: "bg-emerald-500/10", dot: "bg-emerald-400", arrow: t("coin_analysis.trend_arrow.strong_bullish") };
-    if (trend.startsWith("Bullish")) return { text: "text-emerald-400", bg: "bg-emerald-500/10", dot: "bg-emerald-400", arrow: t("coin_analysis.trend_arrow.bullish") };
-    if (trend.startsWith("Strong Bearish")) return { text: "text-red-400", bg: "bg-red-500/10", dot: "bg-red-400", arrow: t("coin_analysis.trend_arrow.strong_bearish") };
-    if (trend.startsWith("Bearish")) return { text: "text-red-400", bg: "bg-red-500/10", dot: "bg-red-400", arrow: t("coin_analysis.trend_arrow.bearish") };
-    return { text: "text-gray-400", bg: "bg-gray-500/10", dot: "bg-gray-400", arrow: t("coin_analysis.trend_arrow.sideways") };
-  };
-
-  const strengthLabel = (c: number): { label: string; color: string; bg: string } => {
-    if (c >= 75) return { label: t("coin_analysis.strength.strong"), color: "text-emerald-400", bg: "bg-emerald-500/10" };
-    if (c >= 55) return { label: t("coin_analysis.strength.moderate"), color: "text-yellow-400", bg: "bg-yellow-500/10" };
-    return { label: t("coin_analysis.strength.weak"), color: "text-gray-400", bg: "bg-gray-500/10" };
-  };
-
-  const confidenceBarColor = (c: number): string => {
-    if (c >= 75) return "bg-emerald-500";
-    if (c >= 55) return "bg-yellow-500";
-    return "bg-gray-500";
-  };
-
-  return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-gray-400 mb-4">
-        {t("coin_detail.cards.trend_analysis.title")}
-      </h3>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {analysis.trends.map((tf) => {
-          const tm = trendMeta(tf.trend);
-          const sl = strengthLabel(tf.confidence);
-          const active = tf.isActive;
-          return (
-            <div
-              key={tf.timeframe}
-              className={`rounded-lg p-4 transition-all duration-200 border-2 ${
-                active
-                  ? "bg-gray-800/70 border-emerald-500/60 shadow-[0_0_12px_rgba(52,211,153,0.12)]"
-                  : "bg-gray-800/30 border-gray-800/60"
-              }`}
-            >
-              {/* Timeframe label */}
-              <div className="flex items-center justify-between mb-3">
-                <span className={`text-xs font-bold uppercase tracking-wider ${
-                  active ? "text-emerald-300" : "text-gray-500"
-                }`}>
-                  {tf.timeframe.toUpperCase()}
-                </span>
-                {active && (
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-emerald-400/70">
-                    {t("coin_analysis.active")}
-                  </span>
-                )}
-              </div>
-
-              {/* Trend row: arrow + label */}
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg font-bold leading-none">{tm.arrow}</span>
-                <span className={`text-sm font-bold ${tm.text}`}>{tf.trend}</span>
-              </div>
-
-              {/* Strength badge */}
-              <div className="mb-3">
-                <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded ${sl.bg} ${sl.color}`}>
-                  {sl.label}
-                </span>
-              </div>
-
-              {/* Confidence bar + percentage */}
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-gray-700/60 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${confidenceBarColor(tf.confidence)}`}
-                    style={{ width: `${tf.confidence}%` }}
-                  />
-                </div>
-                <span className={`text-xs font-bold font-mono tabular-nums ${sl.color}`}>
-                  {tf.confidence}%
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 function ScoreOverview({ analysis }: { readonly analysis: CoinAnalysisState }) {
   const { t } = useI18n();
@@ -750,6 +607,7 @@ function ScoreOverview({ analysis }: { readonly analysis: CoinAnalysisState }) {
             {m.reasons.length > 0 && (
               <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
                 {m.reasons.map((r, i) => {
+                  const displayText = translateScoreReason(r, t);
                   const isPositive = r.startsWith("+") || r.startsWith("↑");
                   const isNegative = r.startsWith("-") || r.startsWith("↓");
                   return (
@@ -759,7 +617,7 @@ function ScoreOverview({ analysis }: { readonly analysis: CoinAnalysisState }) {
                         isPositive ? "text-emerald-500" : isNegative ? "text-red-400" : "text-gray-500"
                       }`}
                     >
-                      {r}
+                      {displayText}
                     </span>
                   );
                 })}

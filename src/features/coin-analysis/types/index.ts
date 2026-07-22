@@ -34,10 +34,28 @@ export interface CoinAnalysisState {
 
 // ─── MarketCardData ───────────────────────────────────────────────────────
 
+export interface ZoneReactionDisplay {
+  readonly candleIndex: number;
+  readonly type: "touch" | "rejection" | "pin_bar" | "long_wick" | "engulfing" | "impulsive";
+  readonly price: number;
+  readonly strength: number;
+}
+
 export interface SrLevelDisplay {
   price: string;
   distancePercent: number;
   strength: number;
+  type: "support" | "resistance";
+  reason?: string;
+  detectedFrom?: string;
+  priceRange?: { min: number; max: number };
+  volumeNote?: string;
+  detectedTimeframes?: readonly string[];
+  alignmentScore?: number;
+  touchCount?: number;
+  reactionStrength?: number;
+  reactionHistory?: readonly ZoneReactionDisplay[];
+  volumeQuality?: "strong" | "moderate" | "weak" | "neutral";
 }
 
 export interface MarketCardData {
@@ -56,6 +74,7 @@ export interface MarketCardData {
   nearestResistance?: string;
   srSupport?: SrLevelDisplay | null;
   srResistance?: SrLevelDisplay | null;
+  srLevels?: readonly SrLevelDisplay[];
 }
 
 // ─── IndicatorItem ───────────────────────────────────────────────────────

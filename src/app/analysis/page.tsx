@@ -4,6 +4,7 @@ import { CoinSearch, type CoinSearchCoin } from "@/components/CoinSearch";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { CoinAnalysisResult } from "@/features/coin-analysis";
 import { useI18n } from "@/i18n/context";
+import { KWN_NAMES } from "@/api/binance";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect } from "react";
@@ -18,17 +19,10 @@ const POPULAR_COINS: CoinSearchCoin[] = [
   { symbol: "XRP", name: "XRP" },
 ];
 
-const ALL_COINS: CoinSearchCoin[] = [
-  ...POPULAR_COINS,
-  { symbol: "ADA", name: "Cardano" },
-  { symbol: "DOGE", name: "Dogecoin" },
-  { symbol: "AVAX", name: "Avalanche" },
-  { symbol: "DOT", name: "Polkadot" },
-  { symbol: "POL", name: "Polygon" },
-  { symbol: "LINK", name: "Chainlink" },
-  { symbol: "UNI", name: "Uniswap" },
-  { symbol: "ATOM", name: "Cosmos" },
-];
+const ALL_COINS: CoinSearchCoin[] = Object.entries(KWN_NAMES).map(([symbol, name]) => ({
+  symbol,
+  name,
+}));
 
 /* ── Page (Suspense wrapper required for useSearchParams) ──────────────── */
 
