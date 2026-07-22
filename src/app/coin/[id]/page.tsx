@@ -219,18 +219,18 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                 value={display.rsi.toFixed(1)}
                 status={display.rsi > 70 ? "bearish" : display.rsi < 30 ? "bullish" : "neutral"}
                 statusLabel={
-                  display.rsi > 70 ? t("coin_detail.tech_interpret.rsi.overbought") :
-                  display.rsi < 30 ? t("coin_detail.tech_interpret.rsi.oversold") :
-                  t("coin_detail.tech_interpret.rsi.neutral")
+                  display.rsi > 70 ? t("coin_detail.cards.tech_interpret.rsi.overbought") :
+                  display.rsi < 30 ? t("coin_detail.cards.tech_interpret.rsi.oversold") :
+                  t("coin_detail.cards.tech_interpret.rsi.neutral")
                 }
                 interpretation={
-                  display.rsi > 80 ? t("coin_detail.tech_interpret.rsi.extreme_overbought") :
-                  display.rsi > 70 ? t("coin_detail.tech_interpret.rsi.overbought_desc") :
-                  display.rsi < 20 ? t("coin_detail.tech_interpret.rsi.extreme_oversold") :
-                  display.rsi < 30 ? t("coin_detail.tech_interpret.rsi.oversold_desc") :
-                  display.rsi > 55 ? t("coin_detail.tech_interpret.rsi.bullish_zone") :
-                  display.rsi < 45 ? t("coin_detail.tech_interpret.rsi.bearish_zone") :
-                  t("coin_detail.tech_interpret.rsi.mid_range")
+                  display.rsi > 80 ? t("coin_detail.cards.tech_interpret.rsi.extreme_overbought") :
+                  display.rsi > 70 ? t("coin_detail.cards.tech_interpret.rsi.overbought_desc") :
+                  display.rsi < 20 ? t("coin_detail.cards.tech_interpret.rsi.extreme_oversold") :
+                  display.rsi < 30 ? t("coin_detail.cards.tech_interpret.rsi.oversold_desc") :
+                  display.rsi > 55 ? t("coin_detail.cards.tech_interpret.rsi.bullish_zone") :
+                  display.rsi < 45 ? t("coin_detail.cards.tech_interpret.rsi.bearish_zone") :
+                  t("coin_detail.cards.tech_interpret.rsi.mid_range")
                 }
                 tooltip={t("coin_detail.cards.technical_indicators.tooltips.rsi")}
               />
@@ -242,17 +242,17 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                 status={display.macd.histogram > 0 ? "bullish" : display.macd.histogram < 0 ? "bearish" : "neutral"}
                 statusLabel={
                   display.macd.value > display.macd.signal && display.macd.histogram > 0
-                    ? t("coin_detail.tech_interpret.macd.bullish_cross") :
+                    ? t("coin_detail.cards.tech_interpret.macd.bullish_cross") :
                   display.macd.value < display.macd.signal && display.macd.histogram < 0
-                    ? t("coin_detail.tech_interpret.macd.bearish_cross") :
-                  t("coin_detail.tech_interpret.macd.neutral")
+                    ? t("coin_detail.cards.tech_interpret.macd.bearish_cross") :
+                  t("coin_detail.cards.tech_interpret.macd.neutral")
                 }
                 interpretation={
                   display.macd.histogram > 0 && display.macd.value > display.macd.signal
-                    ? t("coin_detail.tech_interpret.macd.bullish_desc") :
+                    ? t("coin_detail.cards.tech_interpret.macd.bullish_desc") :
                   display.macd.histogram < 0 && display.macd.value < display.macd.signal
-                    ? t("coin_detail.tech_interpret.macd.bearish_desc") :
-                  t("coin_detail.tech_interpret.macd.converging")
+                    ? t("coin_detail.cards.tech_interpret.macd.bearish_desc") :
+                  t("coin_detail.cards.tech_interpret.macd.converging")
                 }
                 tooltip={t("coin_detail.cards.technical_indicators.tooltips.macd")}
               />
@@ -264,17 +264,17 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                 status={display.macd.histogram > 0 ? "bullish" : display.macd.histogram < 0 ? "bearish" : "neutral"}
                 statusLabel={
                   Math.abs(display.macd.histogram) > 1
-                    ? t("coin_detail.tech_interpret.histogram.strong") :
+                    ? t("coin_detail.cards.tech_interpret.histogram.strong") :
                   Math.abs(display.macd.histogram) > 0.3
-                    ? t("coin_detail.tech_interpret.histogram.moderate") :
-                  t("coin_detail.tech_interpret.histogram.weak")
+                    ? t("coin_detail.cards.tech_interpret.histogram.moderate") :
+                  t("coin_detail.cards.tech_interpret.histogram.weak")
                 }
                 interpretation={
-                  display.macd.histogram > 1 ? t("coin_detail.tech_interpret.histogram.strong_bullish") :
-                  display.macd.histogram < -1 ? t("coin_detail.tech_interpret.histogram.strong_bearish") :
-                  display.macd.histogram > 0.3 ? t("coin_detail.tech_interpret.histogram.moderate_bullish") :
-                  display.macd.histogram < -0.3 ? t("coin_detail.tech_interpret.histogram.moderate_bearish") :
-                  t("coin_detail.tech_interpret.histogram.fading")
+                  display.macd.histogram > 1 ? t("coin_detail.cards.tech_interpret.histogram.strong_bullish") :
+                  display.macd.histogram < -1 ? t("coin_detail.cards.tech_interpret.histogram.strong_bearish") :
+                  display.macd.histogram > 0.3 ? t("coin_detail.cards.tech_interpret.histogram.moderate_bullish") :
+                  display.macd.histogram < -0.3 ? t("coin_detail.cards.tech_interpret.histogram.moderate_bearish") :
+                  t("coin_detail.cards.tech_interpret.histogram.fading")
                 }
                 tooltip={t("coin_detail.cards.technical_indicators.tooltips.macd_histogram")}
               />
@@ -285,16 +285,16 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                 value={display.adx.toFixed(1)}
                 status={display.adx >= 25 ? "bullish" : display.adx < 20 ? "bearish" : "neutral"}
                 statusLabel={
-                  display.adx >= 40 ? t("coin_detail.tech_interpret.adx.very_strong") :
-                  display.adx >= 25 ? t("coin_detail.tech_interpret.adx.strong") :
-                  display.adx >= 20 ? t("coin_detail.tech_interpret.adx.moderate") :
-                  t("coin_detail.tech_interpret.adx.weak")
+                  display.adx >= 40 ? t("coin_detail.cards.tech_interpret.adx.very_strong") :
+                  display.adx >= 25 ? t("coin_detail.cards.tech_interpret.adx.strong") :
+                  display.adx >= 20 ? t("coin_detail.cards.tech_interpret.adx.moderate") :
+                  t("coin_detail.cards.tech_interpret.adx.weak")
                 }
                 interpretation={
-                  display.adx >= 40 ? t("coin_detail.tech_interpret.adx.very_strong_desc") :
-                  display.adx >= 25 ? t("coin_detail.tech_interpret.adx.strong_desc") :
-                  display.adx >= 20 ? t("coin_detail.tech_interpret.adx.moderate_desc") :
-                  t("coin_detail.tech_interpret.adx.weak_desc")
+                  display.adx >= 40 ? t("coin_detail.cards.tech_interpret.adx.very_strong_desc") :
+                  display.adx >= 25 ? t("coin_detail.cards.tech_interpret.adx.strong_desc") :
+                  display.adx >= 20 ? t("coin_detail.cards.tech_interpret.adx.moderate_desc") :
+                  t("coin_detail.cards.tech_interpret.adx.weak_desc")
                 }
                 tooltip={t("coin_detail.cards.technical_indicators.tooltips.adx")}
               />
@@ -306,7 +306,7 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                   ? `${display.ema9.toFixed(0)} > ${display.ema21.toFixed(0)} > ${display.ema50.toFixed(0)}`
                   : display.ema9 < display.ema21 && display.ema21 < display.ema50
                     ? `${display.ema9.toFixed(0)} < ${display.ema21.toFixed(0)} < ${display.ema50.toFixed(0)}`
-                    : t("coin_detail.tech_interpret.ema.mixed")
+                    : t("coin_detail.cards.tech_interpret.ema.mixed")
                 }
                 status={
                   display.ema9 > display.ema21 && display.ema21 > display.ema50 ? "bullish" :
@@ -314,17 +314,17 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                 }
                 statusLabel={
                   display.ema9 > display.ema21 && display.ema21 > display.ema50
-                    ? t("coin_detail.tech_interpret.ema.bullish") :
+                    ? t("coin_detail.cards.tech_interpret.ema.bullish") :
                   display.ema9 < display.ema21 && display.ema21 < display.ema50
-                    ? t("coin_detail.tech_interpret.ema.bearish") :
-                  t("coin_detail.tech_interpret.ema.neutral")
+                    ? t("coin_detail.cards.tech_interpret.ema.bearish") :
+                  t("coin_detail.cards.tech_interpret.ema.neutral")
                 }
                 interpretation={
                   display.ema9 > display.ema21 && display.ema21 > display.ema50
-                    ? t("coin_detail.tech_interpret.ema.bullish_desc") :
+                    ? t("coin_detail.cards.tech_interpret.ema.bullish_desc") :
                   display.ema9 < display.ema21 && display.ema21 < display.ema50
-                    ? t("coin_detail.tech_interpret.ema.bearish_desc") :
-                  t("coin_detail.tech_interpret.ema.mixed_desc")
+                    ? t("coin_detail.cards.tech_interpret.ema.bearish_desc") :
+                  t("coin_detail.cards.tech_interpret.ema.mixed_desc")
                 }
                 tooltip={t("coin_detail.cards.technical_indicators.tooltips.ema_alignment")}
               />
@@ -338,14 +338,14 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                   display.atr / md.currentPrice > 0.02 ? "neutral" : "bullish"
                 }
                 statusLabel={
-                  display.atr / md.currentPrice > 0.05 ? t("coin_detail.tech_interpret.atr.high") :
-                  display.atr / md.currentPrice > 0.02 ? t("coin_detail.tech_interpret.atr.medium") :
-                  t("coin_detail.tech_interpret.atr.low")
+                  display.atr / md.currentPrice > 0.05 ? t("coin_detail.cards.tech_interpret.atr.high") :
+                  display.atr / md.currentPrice > 0.02 ? t("coin_detail.cards.tech_interpret.atr.medium") :
+                  t("coin_detail.cards.tech_interpret.atr.low")
                 }
                 interpretation={
-                  display.atr / md.currentPrice > 0.05 ? t("coin_detail.tech_interpret.atr.high_desc") :
-                  display.atr / md.currentPrice > 0.02 ? t("coin_detail.tech_interpret.atr.medium_desc") :
-                  t("coin_detail.tech_interpret.atr.low_desc")
+                  display.atr / md.currentPrice > 0.05 ? t("coin_detail.cards.tech_interpret.atr.high_desc") :
+                  display.atr / md.currentPrice > 0.02 ? t("coin_detail.cards.tech_interpret.atr.medium_desc") :
+                  t("coin_detail.cards.tech_interpret.atr.low_desc")
                 }
                 tooltip={t("coin_detail.cards.technical_indicators.tooltips.atr")}
               />
@@ -355,10 +355,10 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                 label={t("coin_detail.cards.technical_indicators.bb_position")}
                 value={
                   md.currentPrice > display.bollingerBands.upper
-                    ? t("coin_detail.tech_interpret.bb.above") :
+                    ? t("coin_detail.cards.tech_interpret.bb.above") :
                   md.currentPrice < display.bollingerBands.lower
-                    ? t("coin_detail.tech_interpret.bb.below") :
-                  t("coin_detail.tech_interpret.bb.inside")
+                    ? t("coin_detail.cards.tech_interpret.bb.below") :
+                  t("coin_detail.cards.tech_interpret.bb.inside")
                 }
                 status={
                   md.currentPrice > display.bollingerBands.upper ? "bearish" :
@@ -366,17 +366,17 @@ function FullDetail({ coin }: { coin: CoinAnalysis }) {
                 }
                 statusLabel={
                   md.currentPrice > display.bollingerBands.upper
-                    ? t("coin_detail.tech_interpret.bb.upper_tag") :
+                    ? t("coin_detail.cards.tech_interpret.bb.upper_tag") :
                   md.currentPrice < display.bollingerBands.lower
-                    ? t("coin_detail.tech_interpret.bb.lower_tag") :
-                  t("coin_detail.tech_interpret.bb.mid_tag")
+                    ? t("coin_detail.cards.tech_interpret.bb.lower_tag") :
+                  t("coin_detail.cards.tech_interpret.bb.mid_tag")
                 }
                 interpretation={
                   md.currentPrice > display.bollingerBands.upper
-                    ? t("coin_detail.tech_interpret.bb.above_desc") :
+                    ? t("coin_detail.cards.tech_interpret.bb.above_desc") :
                   md.currentPrice < display.bollingerBands.lower
-                    ? t("coin_detail.tech_interpret.bb.below_desc") :
-                  t("coin_detail.tech_interpret.bb.inside_desc")
+                    ? t("coin_detail.cards.tech_interpret.bb.below_desc") :
+                  t("coin_detail.cards.tech_interpret.bb.inside_desc")
                 }
                 tooltip={t("coin_detail.cards.technical_indicators.tooltips.bb_position")}
               />

@@ -20,7 +20,7 @@ function formatPercent(numerator: number, denominator: number): string {
 
 // ─── No-Trade State ─────────────────────────────────────────────────────────
 
-function NoTradeView({ reason }: { readonly reason: string | null }) {
+function NoTradeView() {
   const { t } = useI18n();
   return (
     <div className="flex flex-col items-center justify-center py-8 gap-3">
@@ -32,11 +32,6 @@ function NoTradeView({ reason }: { readonly reason: string | null }) {
       <p className="text-sm font-semibold text-gray-400">
         {t("coin_analysis.trade_setup.no_trade")}
       </p>
-      {reason && (
-        <p className="text-xs text-gray-500 text-center max-w-[240px] leading-relaxed">
-          {reason}
-        </p>
-      )}
     </div>
   );
 }
@@ -154,7 +149,7 @@ export function TradeSetupCard({ coin }: TradeSetupCardProps) {
         {t("coin_analysis.trade_setup.title")}
       </h3>
 
-      {ts.hasTrade ? <ActiveTradeView coin={coin} /> : <NoTradeView reason={ts.reason} />}
+      {ts.hasTrade ? <ActiveTradeView coin={coin} /> : <NoTradeView />}
     </div>
   );
 }

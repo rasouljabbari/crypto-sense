@@ -36,7 +36,7 @@ export function TakeProfitCard({
           ))}
         </div>
       ) : (
-        <EmptyState message={data.reason ?? invalidMessage} />
+        <EmptyState message={invalidMessage} />
       )}
     </Card>
   );

@@ -1,10 +1,10 @@
 "use client";
 
+import { useI18n } from "@/i18n/context";
 import { CoinAnalysis } from "@/lib/types";
 import Link from "next/link";
-import { useI18n } from "@/i18n/context";
-import { CoinImage } from "./CoinImage";
 import { memo, useState } from "react";
+import { CoinImage } from "./CoinImage";
 
 interface Props {
   coin: CoinAnalysis;
@@ -60,18 +60,12 @@ export const CoinRow = memo(function CoinRow({ coin }: Props) {
 
   const isPositive = coin.marketData.priceChangePercent24h >= 0;
 
-  const scoreBadge = coin.overallScore >= 60
-    ? "text-emerald-400 bg-emerald-900/20"
-    : coin.overallScore <= 40
-      ? "text-red-400 bg-red-900/20"
-      : "text-yellow-400 bg-yellow-900/20";
-
   const rc = recConfig[coin.recommendation] ?? recConfig.skip;
 
   return (
     <Link
       href={`/coin/${coin.marketData.symbol}`}
-      className="grid grid-cols-[2fr_repeat(10,1fr)] gap-1 items-center px-3 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
+      className="grid grid-cols-[2fr_repeat(7,1fr)] gap-1 items-center px-3 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
     >
       {/* Coin */}
       <div className="flex items-center gap-2 min-w-0">
@@ -105,13 +99,6 @@ export const CoinRow = memo(function CoinRow({ coin }: Props) {
         )}
       </div>
 
-      {/* Overall Score */}
-      <div className="flex justify-center">
-        <span className={`inline-flex items-center justify-center w-7 h-5 rounded text-[10px] font-bold ${scoreBadge}`}>
-          {coin.overallScore}
-        </span>
-      </div>
-
       {/* Signal */}
       <span className={`text-[10px] font-bold text-center px-1 py-0.5 rounded ${signalBg[coin.signal]} ${signalColors[coin.signal]}`}>
         {t(`coin_row.${coin.signal}`)}
@@ -122,16 +109,6 @@ export const CoinRow = memo(function CoinRow({ coin }: Props) {
 
       {/* Trade Quality */}
       <span className="text-[10px] font-mono text-gray-300 text-center">{coin.tradeQuality}</span>
-
-      {/* Risk */}
-      <span className={`text-[10px] font-bold text-center px-1 py-0.5 rounded ${riskColors[coin.riskLevel]}`}>
-        {t(`coin_row.risk_${coin.riskLevel}`)}
-      </span>
-
-      {/* Risk/Reward */}
-      <span className="text-[10px] font-mono text-gray-400 text-center">
-        {coin.riskReward || "-"}
-      </span>
 
       {/* Trend */}
       <div className={`flex items-center gap-1 justify-start text-[11px] font-semibold ${trendColors[coin.trendLabel]}`}>

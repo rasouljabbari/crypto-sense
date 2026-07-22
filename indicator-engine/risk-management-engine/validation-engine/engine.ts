@@ -66,6 +66,15 @@ export function validateSetup(
     reasons.push("Entry must be below stop loss for short trade");
   }
 
+  if (input.trendDirection === "neutral") {
+    reasons.push("Trend is unclear");
+  }
+
+  const srCount = input.supportLevels.length + input.resistanceLevels.length;
+  if (srCount < MIN_SR_LEVELS) {
+    reasons.push("Support and resistance levels are required");
+  }
+
   const rr1 = risk > 0 ? Math.round((Math.abs(tp1 - entry) / risk) * 100) / 100 : 0;
   if (rr1 < MIN_RISK_REWARD) {
     reasons.push(`Risk/reward for TP1 (${rr1.toFixed(1)}R) is below minimum (${MIN_RISK_REWARD}R)`);

@@ -14,7 +14,7 @@ function determineDirection(input: TradeSetupRawInput): TradeDirection | null {
   return null;
 }
 
-function noTrade(reason: string): TradeSetupResult {
+function noTrade(reason: string, accountBalance?: number, riskPercent?: number): TradeSetupResult {
   return {
     hasTrade: false,
     direction: "long",
@@ -23,7 +23,7 @@ function noTrade(reason: string): TradeSetupResult {
     risk: 0,
     takeProfit: { tp1: 0, tp2: 0, tp3: 0 },
     riskReward: calculateRiskReward(),
-    position: calculatePositionSize(0, 0),
+    position: calculatePositionSize(accountBalance ?? 0, 0, riskPercent),
     expectedProfit: { tp1: 0, tp2: 0, tp3: 0 },
     tradeQuality: 0,
     validation: { isValid: false, reason },
@@ -34,12 +34,12 @@ export function generateTradeSetup(input: TradeSetupRawInput): TradeSetupResult 
   const direction = determineDirection(input);
 
   if (direction === null) {
-    return noTrade("Signal is neutral — cannot determine trade direction");
+    return noTrade("Signal is neutral — cannot determine trade direction", input.accountBalance, input.riskPercent);
   }
 
   const preCheck = validatePreConditions(input);
   if (!preCheck.isValid) {
-    return noTrade(preCheck.reason!);
+    return noTrade(preCheck.reason!, input.accountBalance, input.riskPercent);
   }
 
   const entry = calculateEntry(direction, input);
@@ -53,7 +53,7 @@ export function generateTradeSetup(input: TradeSetupRawInput): TradeSetupResult 
 
   const postCheck = validateSetup(direction, entry, stopLoss, risk, takeProfit.tp1, tradeQuality, input);
   if (!postCheck.isValid) {
-    return noTrade(postCheck.reason!);
+    return noTrade(postCheck.reason!, input.accountBalance, input.riskPercent);
   }
 
   return {

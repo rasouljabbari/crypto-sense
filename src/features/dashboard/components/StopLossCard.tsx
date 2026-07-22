@@ -30,7 +30,7 @@ export function StopLossCard({
           </div>
         </div>
       ) : (
-        <EmptyState message={data.reason ?? invalidMessage} />
+        <EmptyState message={invalidMessage} />
       )}
     </Card>
   );

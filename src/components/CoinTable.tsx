@@ -2,9 +2,9 @@
 
 import { useI18n } from "@/i18n/context";
 import { useStore } from "@/store/useStore";
+import { useMemo, useState } from "react";
 import { CoinRow } from "./CoinRow";
 import { FilterBar } from "./FilterBar";
-import { useMemo, useState } from "react";
 
 function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
   if (!active) return <span className="text-gray-600 ml-0.5">↕</span>;
@@ -80,17 +80,12 @@ export function CoinTable() {
         <div className="overflow-x-auto">
           <div>
             {/* Header */}
-            <div className="grid grid-cols-[2fr_repeat(10,1fr)] gap-1 items-center px-3 py-3 border-b border-gray-800 sticky top-0 z-10 bg-gray-900/80 backdrop-blur-sm">
+            <div className="grid grid-cols-[2fr_repeat(7,1fr)] gap-1 items-center px-3 py-3 border-b border-gray-800 sticky top-0 z-10 bg-gray-900/80 backdrop-blur-sm">
               <span className={headerText}>{t("table.columns.name")}</span>
 
               <button onClick={() => toggleSort("recommendation")} className={`${headerClass} justify-center`}>
                 <span className={headerText}>{t("table.columns.opportunity")}</span>
                 <SortIcon active={filters.sortBy === "recommendation"} dir={filters.sortOrder} />
-              </button>
-
-              <button onClick={() => toggleSort("score")} className={`${headerClass} justify-center`}>
-                <span className={headerText}>{t("table.columns.overall_score")}</span>
-                <SortIcon active={filters.sortBy === "score"} dir={filters.sortOrder} />
               </button>
 
               <button onClick={() => toggleSort("signal")} className={`${headerClass} justify-center`}>
@@ -108,13 +103,6 @@ export function CoinTable() {
                 <SortIcon active={filters.sortBy === "tradeQuality"} dir={filters.sortOrder} />
               </button>
 
-              <button onClick={() => toggleSort("risk")} className={`${headerClass} justify-center`}>
-                <span className={headerText}>{t("table.columns.risk")}</span>
-                <SortIcon active={filters.sortBy === "risk"} dir={filters.sortOrder} />
-              </button>
-
-              <span className={`${headerText} text-center`}>{t("table.columns.risk_reward")}</span>
-
               <button onClick={() => toggleSort("trend")} className={`${headerClass} justify-start`}>
                 <span className={headerText}>{t("table.columns.trend")}</span>
                 <SortIcon active={filters.sortBy === "trend"} dir={filters.sortOrder} />
@@ -122,7 +110,7 @@ export function CoinTable() {
 
               <span className={`${headerText} text-right`}>{t("table.columns.price")}</span>
 
-              <button onClick={() => toggleSort("priceChange")} className={`${headerClass} justify-end`}>
+              <button onClick={() => toggleSort("priceChange")} className={`${headerClass} justify-start`}>
                 <span className={headerText}>{t("table.columns.24h_pct")}</span>
                 <SortIcon active={filters.sortBy === "priceChange"} dir={filters.sortOrder} />
               </button>

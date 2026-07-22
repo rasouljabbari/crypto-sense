@@ -157,7 +157,8 @@ describe("Market Analyzer", () => {
   });
 
   it("accepts custom risk percent", () => {
-    const candles = generateCandles(250, 100);
+    const closes = Array.from({ length: 250 }, (_, i) => 100 + i * 0.5);
+    const candles = makeCandles(closes);
     const r = analyzeMarket({ candles, accountBalance: 10000, riskPercent: 2 });
     expect(r.tradeSetup.position.riskPercent).toBe(2);
   });
