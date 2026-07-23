@@ -972,5 +972,10 @@
     "short_1h": "1S",
     "short_4h": "4S",
     "short_1d": "1G"
+  },
+  "notification": {
+    "ready_long": "LONG için Hazır",
+    "ready_short": "SHORT için Hazır",
+    "close": "Kapat"
   }
 }

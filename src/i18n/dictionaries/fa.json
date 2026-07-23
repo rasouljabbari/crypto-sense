@@ -972,5 +972,10 @@
     "short_1h": "1H",
     "short_4h": "4H",
     "short_1d": "1D"
+  },
+  "notification": {
+    "ready_long": "آماده برای لانگ",
+    "ready_short": "آماده برای شورت",
+    "close": "بستن"
   }
 }

@@ -169,6 +169,8 @@ export const useStore = create<AppState>()(
           old.riskReward === updated.riskReward &&
           old.trendLabel === updated.trendLabel &&
           old.status === updated.status &&
+          old.recommendation === updated.recommendation &&
+          old.position === updated.position &&
           old.marketData.currentPrice === updated.marketData.currentPrice &&
           old.marketData.priceChangePercent24h === updated.marketData.priceChangePercent24h
         ) {

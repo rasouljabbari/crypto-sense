@@ -4,6 +4,7 @@ import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/lib/theme";
 import { TimeframeProvider } from "@/lib/timeframe";
 import { QueryProvider } from "@/components/QueryProvider";
+import { ToastContainer } from "@/components/OpportunityToast";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Vazirmatn } from "next/font/google";
 import "./globals.css";
@@ -49,6 +50,7 @@ export default function RootLayout({
                 <I18nProvider>
                   <SessionProvider>
                     {children}
+                    <ToastContainer />
                   </SessionProvider>
                 </I18nProvider>
               </CountdownBridge>

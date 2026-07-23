@@ -972,5 +972,10 @@
     "short_1h": "1H",
     "short_4h": "4H",
     "short_1d": "1D"
+  },
+  "notification": {
+    "ready_long": "Ready for LONG",
+    "ready_short": "Ready for SHORT",
+    "close": "Close"
   }
 }
