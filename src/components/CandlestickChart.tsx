@@ -218,6 +218,7 @@ export function CandlestickChart({ coinId, srLines }: Props) {
   const [lineMarkers, setLineMarkers] = useState<SrLineMarker[]>([]);
   const [selectedZone, setSelectedZone] = useState<SrLine | null>(null);
   const currentPriceRef = useRef<number>(0);
+  const dataRef = useRef<ChartDataPoint[]>([]);
   const rafRef = useRef<number>(0);
 
   const hasSrSupport = useMemo(() => srLines?.some(sl => sl.type === "support") ?? false, [srLines]);
@@ -296,8 +297,9 @@ export function CandlestickChart({ coinId, srLines }: Props) {
     [status]
   );
 
-  // Track current price from data
+  // Track current price and keep dataRef in sync
   useEffect(() => {
+    dataRef.current = data;
     if (data.length > 0) {
       currentPriceRef.current = data[data.length - 1].close;
     }
@@ -319,74 +321,75 @@ export function CandlestickChart({ coinId, srLines }: Props) {
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
-  // ── Chart creation ──────────────────────────────────────────────────
+  // ── Chart creation (only on mount / timeframe / theme change) ──────
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    if (data.length === 0) return;
-    if (reloadingRef.current) return;
 
-    try {
-      if (chartRef.current) {
-        chartRef.current.remove();
-        chartRef.current = null;
-      }
-      while (container.firstChild) container.removeChild(container.firstChild);
+    // Destroy previous chart
+    if (chartRef.current) {
+      chartRef.current.remove();
+      chartRef.current = null;
+    }
+    while (container.firstChild) container.removeChild(container.firstChild);
 
-      const rect = container.getBoundingClientRect();
-      const width = rect.width || 800;
-      const height = rect.height || 480;
+    const rect = container.getBoundingClientRect();
+    const width = rect.width || 800;
+    const height = rect.height || 480;
 
-      const bgColor = isDark ? "#0d1117" : "#ffffff";
-      const textColor = isDark ? "#9ca3af" : "#6b7280";
-      const gridColor = isDark ? "rgba(55, 65, 81, 0.4)" : "rgba(209, 213, 219, 0.5)";
-      const borderColor = isDark ? "#374151" : "#d1d5db";
-      const crosshairLabelBg = isDark ? "#1f2937" : "#f3f4f6";
-      const crosshairLine = isDark ? "#6b7280" : "#9ca3af";
+    const bgColor = isDark ? "#0d1117" : "#ffffff";
+    const textColor = isDark ? "#9ca3af" : "#6b7280";
+    const gridColor = isDark ? "rgba(55, 65, 81, 0.4)" : "rgba(209, 213, 219, 0.5)";
+    const borderColor = isDark ? "#374151" : "#d1d5db";
+    const crosshairLabelBg = isDark ? "#1f2937" : "#f3f4f6";
+    const crosshairLine = isDark ? "#6b7280" : "#9ca3af";
 
-      const chart = createChart(container, {
-        width,
-        height,
-        layout: {
-          background: { type: ColorType.Solid, color: bgColor },
-          textColor,
-          fontSize: 11,
-        },
-        grid: {
-          vertLines: { color: gridColor },
-          horzLines: { color: gridColor },
-        },
-        crosshair: {
-          mode: CrosshairMode.Normal,
-          vertLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
-          horzLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
-        },
-        timeScale: {
-          borderColor,
-          timeVisible: globalTf === "15m" || globalTf === "1h" || globalTf === "4h",
-          secondsVisible: false,
-        },
-        rightPriceScale: {
-          borderColor,
-        },
-      });
+    const chart = createChart(container, {
+      width,
+      height,
+      layout: {
+        background: { type: ColorType.Solid, color: bgColor },
+        textColor,
+        fontSize: 11,
+      },
+      grid: {
+        vertLines: { color: gridColor },
+        horzLines: { color: gridColor },
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
+        horzLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
+      },
+      timeScale: {
+        borderColor,
+        timeVisible: globalTf === "15m" || globalTf === "1h" || globalTf === "4h",
+        secondsVisible: false,
+      },
+      rightPriceScale: {
+        borderColor,
+      },
+    });
 
-      chartRef.current = chart;
+    chartRef.current = chart;
 
-      const candleSeries = chart.addSeries(CandlestickSeries, {
-        upColor: "#34d399",
-        downColor: "#ef4444",
-        borderUpColor: "#34d399",
-        borderDownColor: "#ef4444",
-        wickUpColor: "#34d399",
-        wickDownColor: "#ef4444",
-        priceFormat: { type: "price", precision: 4, minMove: 0.0001 },
-      });
+    const candleSeries = chart.addSeries(CandlestickSeries, {
+      upColor: "#34d399",
+      downColor: "#ef4444",
+      borderUpColor: "#34d399",
+      borderDownColor: "#ef4444",
+      wickUpColor: "#34d399",
+      wickDownColor: "#ef4444",
+      priceFormat: { type: "price", precision: 4, minMove: 0.0001 },
+    });
 
-      candleSeriesRef.current = candleSeries;
+    candleSeriesRef.current = candleSeries;
 
+    // Set data if already available (skip during reload to avoid stale flash)
+    if (!reloadingRef.current && dataRef.current.length > 0) {
+      const currentData = dataRef.current;
       candleSeries.setData(
-        data.map((k) => ({
+        currentData.map((k) => ({
           time: fmtTime(k),
           open: k.open,
           high: k.high,
@@ -395,27 +398,29 @@ export function CandlestickChart({ coinId, srLines }: Props) {
         }))
       );
 
-      if (data.length > 0) {
-        const from = Math.max(0, data.length - 96);
-        chart.timeScale().setVisibleRange({
-          from: fmtTime(data[from]),
-          to: fmtTime(data[data.length - 1]),
-        });
-      } else {
-        chart.timeScale().fitContent();
-      }
+      const from = Math.max(0, currentData.length - 96);
+      chart.timeScale().setVisibleRange({
+        from: fmtTime(currentData[from]),
+        to: fmtTime(currentData[currentData.length - 1]),
+      });
+    } else {
+      chart.timeScale().fitContent();
+    }
 
-      // ── Indicator Panes ──
-      const paneManager = new ChartPaneManager(chart);
-      paneManagerRef.current = paneManager;
-      paneManager.sync(indicator.getVisibleIds(), data);
+    // ── Indicator Panes ──
+    const paneManager = new ChartPaneManager(chart);
+    paneManagerRef.current = paneManager;
+    if (!reloadingRef.current && dataRef.current.length > 0) {
+      paneManager.sync(indicator.getVisibleIds(), dataRef.current);
+    }
 
-      // ── SMAs ──
-      const sma7Data = calcSMA(data, 7);
-      const sma21Data = calcSMA(data, 21);
-      const sma99Data = calcSMA(data, 99);
-
-      const newSmaSeries: ISeriesApi<"Line">[] = [];
+    // ── SMAs ──
+    const newSmaSeries: ISeriesApi<"Line">[] = [];
+    if (!reloadingRef.current && dataRef.current.length > 0) {
+      const currentData = dataRef.current;
+      const sma7Data = calcSMA(currentData, 7);
+      const sma21Data = calcSMA(currentData, 21);
+      const sma99Data = calcSMA(currentData, 99);
       if (sma7Data.length > 0) {
         const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: true });
         s.setData(sma7Data);
@@ -431,12 +436,13 @@ export function CandlestickChart({ coinId, srLines }: Props) {
         s.setData(sma99Data);
         newSmaSeries.push(s);
       }
-      smaSeriesArrRef.current = newSmaSeries;
+    }
+    smaSeriesArrRef.current = newSmaSeries;
 
-      // ── Subscribe scroll → update zone positions ──
-      chart.timeScale().subscribeVisibleTimeRangeChange(() => {
-        scheduleLineUpdate();
-      });
+    // ── Subscribe scroll → update zone positions ──
+    chart.timeScale().subscribeVisibleTimeRangeChange(() => {
+      scheduleLineUpdate();
+    });
 
       // ── Crosshair → update current price for highlight detection ──
       chart.subscribeCrosshairMove((param) => {
@@ -447,11 +453,12 @@ export function CandlestickChart({ coinId, srLines }: Props) {
         if (!candleSeriesRef.current) return;
         const candleData = param.seriesData.get(candleSeriesRef.current) as { time: UTCTimestamp; open: number; high: number; low: number; close: number } | undefined;
         if (!candleData) return;
+        const latestData = dataRef.current;
         const time = Number(candleData.time);
-        const idx = data.findIndex((d) => Number(fmtTime(d)) === time);
+        const idx = latestData.findIndex((d) => Number(fmtTime(d)) === time);
         if (idx === -1) return;
         const vals: { rsi?: string; adx?: string; vol?: string } = {};
-        const candle = data[idx];
+        const candle = latestData[idx];
         if (candle) {
           const v = candle.volume;
           if (v >= 1e9) vals.vol = (v / 1e9).toFixed(2) + "B";
@@ -463,38 +470,68 @@ export function CandlestickChart({ coinId, srLines }: Props) {
         }
         setCrosshairValues(Object.keys(vals).length > 0 ? vals : null);
 
-        // Update highlight based on crosshair close price
         currentPriceRef.current = candleData.close;
         scheduleLineUpdate();
       });
 
-      // ── Resize → update zone positions ──
-      const ro = new ResizeObserver(() => {
-        if (chartRef.current && container) {
-          const r = container.getBoundingClientRect();
-          chartRef.current.applyOptions({ width: r.width, height: r.height });
-          scheduleLineUpdate();
-        }
-      });
-      ro.observe(container);
+    // ── Resize → update zone positions ──
+    const ro = new ResizeObserver(() => {
+      if (chartRef.current && container) {
+        const r = container.getBoundingClientRect();
+        chartRef.current.applyOptions({ width: r.width, height: r.height });
+        scheduleLineUpdate();
+      }
+    });
+    ro.observe(container);
 
-      // Initial zone positions after chart is ready
-      requestAnimationFrame(() => scheduleLineUpdate());
+    requestAnimationFrame(() => scheduleLineUpdate());
 
-      return () => {
-        ro.disconnect();
-        paneManagerRef.current?.destroy();
-        paneManagerRef.current = null;
-        if (chartRef.current) {
-          chartRef.current.remove();
-          chartRef.current = null;
-        }
-        candleSeriesRef.current = null;
-        smaSeriesArrRef.current = [];
-        if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      };
-    } catch (err) { console.error("chart creation error:", err); }
-  }, [data, globalTf, scheduleLineUpdate]);
+    return () => {
+      ro.disconnect();
+      paneManagerRef.current?.destroy();
+      paneManagerRef.current = null;
+      if (chartRef.current) {
+        chartRef.current.remove();
+        chartRef.current = null;
+      }
+      candleSeriesRef.current = null;
+      smaSeriesArrRef.current = [];
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [globalTf, isDark]);
+
+  // ── Data update in-place (preserves scroll position) ───────────────
+  useEffect(() => {
+    const chart = chartRef.current;
+    const candleSeries = candleSeriesRef.current;
+    if (!chart || !candleSeries || data.length === 0) return;
+
+    candleSeries.setData(
+      data.map((k) => ({
+        time: fmtTime(k),
+        open: k.open,
+        high: k.high,
+        low: k.low,
+        close: k.close,
+      }))
+    );
+
+    // Update SMA series data in-place
+    const sma7Data = calcSMA(data, 7);
+    const sma21Data = calcSMA(data, 21);
+    const sma99Data = calcSMA(data, 99);
+    const smaArr = smaSeriesArrRef.current;
+    if (smaArr.length > 0 && sma7Data.length > 0) smaArr[0].setData(sma7Data);
+    if (smaArr.length > 1 && sma21Data.length > 0) smaArr[1].setData(sma21Data);
+    if (smaArr.length > 2 && sma99Data.length > 0) smaArr[2].setData(sma99Data);
+
+    // Sync indicator panes
+    paneManagerRef.current?.sync(indicator.getVisibleIds(), data);
+
+    // Update price ref for SR highlight
+    currentPriceRef.current = data[data.length - 1].close;
+    scheduleLineUpdate();
+  }, [data]);
 
   // ── Dynamic Indicator Sync ──
   useEffect(() => {

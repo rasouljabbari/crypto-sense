@@ -115,7 +115,33 @@
   "watchlist": {
     "title": "لیست نظارت",
     "empty": "لیست نظارت شما خالی است — برای افزودن ارز، بالای صفحه جستجو کنید",
-    "remove": "حذف"
+    "remove": "حذف",
+    "search_placeholder": "جستجوی ارز برای افزودن...",
+    "search_no_results": "نتیجه‌ای یافت نشد",
+    "watchlist_full": "لیست نظارت پر است",
+    "watchlist_full_desc": "حداکثر {max} ارز قابل پیگیری است. برای افزودن، برخی را حذف کنید.",
+    "add_coin": "افزودن ارز",
+    "summary": {
+      "total_coins": "تعداد ارزها",
+      "ready_long": "لانگ آماده",
+      "ready_short": "شورت آماده",
+      "watch": "نظارت",
+      "wait": "صبر",
+      "weakening": "در حال ضعف",
+      "invalid": "نامعتبر",
+      "next_update": "بروزرسانی بعدی"
+    },
+    "opportunity": {
+      "ready_long": "لانگ آماده",
+      "ready_short": "شورت آماده",
+      "watch": "نظارت",
+      "wait": "صبر",
+      "weakening": "در حال ضعف",
+      "invalid": "نامعتبر"
+    },
+    "market_state": "وضعیت بازار",
+    "strength": "قدرت",
+    "updated": "بروزرسانی"
   },
   "table": {
     "columns": {
@@ -197,7 +223,8 @@
     "rec_tooltip_SKIP_HIGH_RISK": "ریسک برای شرایط فعلی بسیار بالاست. پوزیشن کوچک‌تر یا منتظر ریسک بهتر بمانید.",
     "rec_tooltip_SKIP_WEAK_TREND": "روند یا امتیاز کلی بسیار ضعیف. جهت مشخصی وجود ندارد — رد کنید.",
     "rec_tooltip_SKIP_LOW_RR": "نسبت ریسک به پاداش زیر ۱:۲. پاداش بالقوه ریسک را توجیه نمی‌کند.",
-    "rec_tooltip_SKIP_INVALID_SETUP": "یک یا چند شرط ناموفق — امتیاز کم، جهت اشتباه، یا پارامترهای معاملاتی ناقص."
+    "rec_tooltip_SKIP_INVALID_SETUP": "یک یا چند شرط ناموفق — امتیاز کم، جهت اشتباه، یا پارامترهای معاملاتی ناقص.",
+    "opportunity": "فرصت"
   },
   "chart": {
       "1h": "یک ساعته",

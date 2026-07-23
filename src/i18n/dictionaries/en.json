@@ -115,7 +115,33 @@
   "watchlist": {
     "title": "Watchlist",
     "empty": "Your watchlist is empty — search for coins above to add them",
-    "remove": "Remove"
+    "remove": "Remove",
+    "search_placeholder": "Search coins to add...",
+    "search_no_results": "No results",
+    "watchlist_full": "Watchlist full",
+    "watchlist_full_desc": "Track up to {max} coins. Remove some to add more.",
+    "add_coin": "Add Coin",
+    "summary": {
+      "total_coins": "Total Coins",
+      "ready_long": "Ready Long",
+      "ready_short": "Ready Short",
+      "watch": "Watch",
+      "wait": "Wait",
+      "weakening": "Weakening",
+      "invalid": "Invalid",
+      "next_update": "Next Update"
+    },
+    "opportunity": {
+      "ready_long": "Ready Long",
+      "ready_short": "Ready Short",
+      "watch": "Watch",
+      "wait": "Wait",
+      "weakening": "Weakening",
+      "invalid": "Invalid"
+    },
+    "market_state": "Market State",
+    "strength": "Strength",
+    "updated": "Updated"
   },
   "table": {
     "columns": {
@@ -197,7 +223,8 @@
     "rec_tooltip_SKIP_HIGH_RISK": "Risk level too high for current conditions. Consider smaller position or wait for better risk profile.",
     "rec_tooltip_SKIP_WEAK_TREND": "Overall trend or score too weak. No clear directional bias — skip this setup.",
     "rec_tooltip_SKIP_LOW_RR": "Risk/reward ratio below 1:2. Potential reward does not justify the risk.",
-    "rec_tooltip_SKIP_INVALID_SETUP": "One or more conditions failed — low score, wrong direction, or missing trade parameters."
+    "rec_tooltip_SKIP_INVALID_SETUP": "One or more conditions failed — low score, wrong direction, or missing trade parameters.",
+    "opportunity": "Opportunity"
   },
   "chart": {
       "1h": "1H",

@@ -115,7 +115,33 @@
   "watchlist": {
     "title": "İzleme Listesi",
     "empty": "İzleme listeniz boş — eklemek için yukarıdan coin arayın",
-    "remove": "Kaldır"
+    "remove": "Kaldır",
+    "search_placeholder": "Eklenecek coin ara...",
+    "search_no_results": "Sonuç bulunamadı",
+    "watchlist_full": "İzleme listesi dolu",
+    "watchlist_full_desc": "En fazla {max} coin takip edilebilir. Eklemek için bazılarını kaldırın.",
+    "add_coin": "Coin Ekle",
+    "summary": {
+      "total_coins": "Toplam Coin",
+      "ready_long": "Long Hazır",
+      "ready_short": "Short Hazır",
+      "watch": "İzle",
+      "wait": "Bekle",
+      "weakening": "Zayıflıyor",
+      "invalid": "Geçersiz",
+      "next_update": "Sonraki Güncelleme"
+    },
+    "opportunity": {
+      "ready_long": "Long Hazır",
+      "ready_short": "Short Hazır",
+      "watch": "İzle",
+      "wait": "Bekle",
+      "weakening": "Zayıflıyor",
+      "invalid": "Geçersiz"
+    },
+    "market_state": "Piyasa Durumu",
+    "strength": "Güç",
+    "updated": "Güncellendi"
   },
   "table": {
     "columns": {
@@ -197,7 +223,8 @@
     "rec_tooltip_SKIP_HIGH_RISK": "Risk seviyesi mevcut koşullar için çok yüksek. Daha küçük pozisyon düşünün veya bekleyin.",
     "rec_tooltip_SKIP_WEAK_TREND": "Genel trend veya puan çok zayıf. Net yön yok — bu işlemi geçin.",
     "rec_tooltip_SKIP_LOW_RR": "Risk/getiri oranı 1:2'nin altında. Potansiyel ödül riski haklı çıkarmıyor.",
-    "rec_tooltip_SKIP_INVALID_SETUP": "Bir veya daha fazla koşul başarısız — düşük puan, yanlış yön veya eksik parametreler."
+    "rec_tooltip_SKIP_INVALID_SETUP": "Bir veya daha fazla koşul başarısız — düşük puan, yanlış yön veya eksik parametreler.",
+    "opportunity": "Fırsat"
   },
   "chart": {
       "1h": "1 Saatlik",
