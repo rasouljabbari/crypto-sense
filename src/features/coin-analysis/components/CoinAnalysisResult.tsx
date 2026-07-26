@@ -429,7 +429,7 @@ function buildSignalReasonsFromSnapshot(s: AnalysisSnapshot, t: (key: string, va
 
     if (str.volume >= 60) reasons.push(t("coin_analysis.signal_reasons.volume_confirmation"));
 
-    if (ts.riskReward && ts.riskReward.tp1 >= 1.5) {
+    if (ts.riskReward?.tp1 != null && ts.riskReward.tp1 >= 1.5) {
       reasons.push(t("coin_analysis.signal_reasons.risk_reward", { ratio: ts.riskReward.tp1.toFixed(1) }));
     }
 

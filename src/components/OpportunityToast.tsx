@@ -47,7 +47,7 @@ function useOpportunityWatcher(
   const entries = useMemo(() => Object.values(collection), [collection]);
   const prevSnap = useRef<Map<string, OppKey>>(new Map());
   const lastNotif = useRef<Map<string, OppKey>>(new Map());
-  const checkRef = useRef<() => void>();
+  const checkRef = useRef<(() => void) | null>(null);
   const onTransitionRef = useRef(onTransition);
   const firstCheckDone = useRef(false);
   useEffect(() => { onTransitionRef.current = onTransition; }, [onTransition]);

@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import type { CoinAnalysisState, IndicatorItem, TimeframeTrendData } from "@/features/coin-analysis/types";
+import type { IndicatorItem, SrLevelDisplay, TimeframeTrendData } from "@/features/coin-analysis/types";
 import type { TradeExplanation } from "@/features/coin-analysis/types/scoring";
 import type { CoinAnalysis } from "@/lib/types";
 import type { TimeframeOption } from "@/lib/timeframe";
@@ -67,7 +67,7 @@ export interface AnalysisSnapshot {
   readonly indicators: readonly IndicatorItem[];
   readonly trends: readonly TimeframeTrendData[];
   readonly explanation: TradeExplanation;
-  readonly srLevels: readonly CoinAnalysisState["market"]["srLevels"];
+  readonly srLevels?: readonly SrLevelDisplay[];
   readonly price: number;
   readonly generatedAt: number;
   readonly version: number;
