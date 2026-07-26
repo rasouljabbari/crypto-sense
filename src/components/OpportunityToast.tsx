@@ -1,10 +1,10 @@
 "use client";
 
 import { useI18n } from "@/i18n/context";
-import { useStore } from "@/store/useStore";
+import { useSnapshotStore, type AnalysisSnapshot } from "@/store/useAnalysisSnapshot";
+import { useTimeframe } from "@/lib/timeframe";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { CoinAnalysis } from "@/lib/types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -16,19 +16,18 @@ interface QueuedNotif {
   oppKey: "ready_long" | "ready_short";
 }
 
-// ─── Opportunity Mapping (matches watchlist/page.tsx) ──────────────────────
+// ─── Opportunity Mapping ────────────────────────────────────────────────────
 
-function oppKey(c: CoinAnalysis): OppKey {
-  if (c.recommendation === "ready") {
-    if (c.position === "long") return "ready_long";
-    if (c.position === "short") return "ready_short";
+function oppKey(s: AnalysisSnapshot): OppKey {
+  if (s.opportunity.recommendation === "ready") {
+    if (s.tradeSetup.direction === "long") return "ready_long";
+    if (s.tradeSetup.direction === "short") return "ready_short";
     return "watch";
   }
-  if (c.recommendation === "wait") {
-    if (c.position === "long" || c.position === "short") return "watch";
+  if (s.opportunity.recommendation === "wait") {
+    if (s.tradeSetup.direction) return "watch";
     return "wait";
   }
-  if (c.status === "wait") return "weakening";
   return "invalid";
 }
 
@@ -43,7 +42,9 @@ const READY_KEYS: ReadonlySet<OppKey> = new Set(["ready_long", "ready_short"]);
 function useOpportunityWatcher(
   onTransition: (coinId: string, symbol: string, oppKey: "ready_long" | "ready_short") => void
 ) {
-  const coins = useStore((s) => s.coins);
+  const { timeframe } = useTimeframe();
+  const collection = useSnapshotStore((s) => s.collections[timeframe]);
+  const entries = useMemo(() => Object.values(collection), [collection]);
   const prevSnap = useRef<Map<string, OppKey>>(new Map());
   const lastNotif = useRef<Map<string, OppKey>>(new Map());
   const checkRef = useRef<() => void>();
@@ -53,42 +54,42 @@ function useOpportunityWatcher(
 
   const check = useCallback(() => {
     const curr = new Map<string, OppKey>();
-    for (const c of coins) {
+    for (const c of entries) {
       const key = oppKey(c);
-      curr.set(c.coinId, key);
+      curr.set(c.coin, key);
 
-      const prev = prevSnap.current.get(c.coinId);
+      const prev = prevSnap.current.get(c.coin);
       // Transition: any non-ready → ready
       if (prev !== undefined && NON_READY_KEYS.has(prev) && READY_KEYS.has(key)) {
         // Duplicate protection: skip if we already notified for this exact state
-        if (lastNotif.current.get(c.coinId) !== key) {
-          lastNotif.current.set(c.coinId, key);
-          onTransitionRef.current(c.coinId, c.marketData.symbol.toUpperCase(), key as "ready_long" | "ready_short");
+        if (lastNotif.current.get(c.coin) !== key) {
+          lastNotif.current.set(c.coin, key);
+          onTransitionRef.current(c.coin, c.symbol, key as "ready_long" | "ready_short");
         }
       }
       // Clear lastNotif if state moved away from notified state
-      if (lastNotif.current.get(c.coinId) !== key) {
-        lastNotif.current.delete(c.coinId);
+      if (lastNotif.current.get(c.coin) !== key) {
+        lastNotif.current.delete(c.coin);
       }
     }
     prevSnap.current = curr;
 
     // First load: notify top-3 ready coins that were ready at mount
-    if (!firstCheckDone.current && coins.length > 0) {
+    if (!firstCheckDone.current && entries.length > 0) {
       firstCheckDone.current = true;
-      const ready = coins
+      const ready = entries
         .filter((c) => READY_KEYS.has(oppKey(c)))
-        .sort((a, b) => b.confidence - a.confidence)
+        .sort((a, b) => b.opportunity.confidence - a.opportunity.confidence)
         .slice(0, 3);
       for (const c of ready) {
         const k = oppKey(c) as "ready_long" | "ready_short";
-        if (!lastNotif.current.has(c.coinId)) {
-          lastNotif.current.set(c.coinId, k);
-          onTransitionRef.current(c.coinId, c.marketData.symbol.toUpperCase(), k);
+        if (!lastNotif.current.has(c.coin)) {
+          lastNotif.current.set(c.coin, k);
+          onTransitionRef.current(c.coin, c.symbol, k);
         }
       }
     }
-  }, [coins]);
+  }, [entries]);
 
   // Keep ref in sync (runs every render, always points to latest check)
   checkRef.current = check;
@@ -99,11 +100,11 @@ function useOpportunityWatcher(
     return () => clearInterval(id);
   }, []);
 
-  // Run check immediately when coins change (after analysis refresh)
+  // Run check immediately when entries change (after analysis refresh)
   useEffect(() => {
-    if (coins.length === 0) return;
+    if (entries.length === 0) return;
     checkRef.current?.();
-  }, [coins]);
+  }, [entries]);
 }
 
 // ─── Progress Bar (CSS animation) ─────────────────────────────────────────
@@ -180,7 +181,7 @@ export function ToastContainer() {
   // ── Click: navigate + dismiss ──
   const handleClick = useCallback(() => {
     if (!active) return;
-    router.push(`/coin/${active.coinId}`);
+    router.push(`/analysis?coin=${encodeURIComponent(active.coinId)}`);
     // Don't wait for navigation, dismiss immediately
     setVisible(false);
     if (exitTimer.current) clearTimeout(exitTimer.current);

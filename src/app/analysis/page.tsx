@@ -1,10 +1,11 @@
 "use client";
 
 import { CoinSearch, type CoinSearchCoin } from "@/components/CoinSearch";
+import { AnalysisStatus } from "@/components/AnalysisStatus";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { CoinAnalysisResult } from "@/features/coin-analysis";
 import { useI18n } from "@/i18n/context";
-import { KWN_NAMES } from "@/api/binance";
+import { KWN_NAMES, BASE_SYMBOL_TO_ID } from "@/api/binance";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect } from "react";
@@ -51,7 +52,8 @@ function CoinAnalysisContent() {
 
   const navigateTo = useCallback(
     (symbol: string) => {
-      router.push(`/analysis?coin=${encodeURIComponent(symbol)}`, { scroll: false });
+      const coinId = BASE_SYMBOL_TO_ID[symbol] ?? symbol.toLowerCase();
+      router.push(`/analysis?coin=${encodeURIComponent(coinId)}`, { scroll: false });
     },
     [router],
   );
@@ -79,6 +81,8 @@ function CoinAnalysisContent() {
           {t("coin_analysis.subtitle")}
         </p>
       </div>
+
+      <AnalysisStatus />
 
       {/* ── Coin Search ─────────────────────────────────────── */}
       <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 sm:p-8 mb-8">

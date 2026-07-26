@@ -1,7 +1,8 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
+import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
 import { useI18n } from "@/i18n/context";
+import { useTimeframe } from "@/lib/timeframe";
 import { useMemo } from "react";
 import { CoinImage } from "./CoinImage";
 import Link from "next/link";
@@ -103,7 +104,7 @@ function Card({
         <CoinImage src={opp.image} alt={opp.symbol} />
         <div className="min-w-0">
           <span className="text-sm font-medium text-white">{opp.symbol}</span>
-          <span className="text-[11px] text-gray-400 ml-1.5 hidden sm:inline">{opp.name}</span>
+          <span className="text-[11px] text-gray-400 ml-1.5">{opp.name}</span>
         </div>
       </div>
 
@@ -162,45 +163,50 @@ function ShieldIcon() {
 
 export function MarketOpportunities() {
   const { t } = useI18n();
-  const { coins } = useStore();
+  const { timeframe } = useTimeframe();
+  const collection = useSnapshotStore((s) => s.collections[timeframe]);
+  const entries = useMemo(() => Object.values(collection), [collection]);
 
   const opps = useMemo(() => {
-    const withData = coins.filter((c) => c.marketData.currentPrice > 0);
+    const withData = entries.filter((c) => c.price > 0);
     if (withData.length === 0) {
       return { topBuy: null, topSell: null, topMomentum: null, lowestRisk: null };
     }
 
     const toOpp = (c: typeof withData[number]): OppCard => ({
-      coinId: c.coinId,
-      symbol: c.marketData.symbol,
-      name: c.marketData.name,
-      image: c.marketData.image,
-      overallScore: c.overallScore,
-      signal: c.signal,
-      confidence: c.confidence,
-      tradeQuality: c.tradeQuality,
+      coinId: c.coin,
+      symbol: c.symbol,
+      name: c.name,
+      image: c.image,
+      overallScore: c.opportunity.score,
+      signal: c.opportunity.signal.toLowerCase().replace(/\s+/g, "_"),
+      confidence: c.opportunity.confidence,
+      tradeQuality: c.tradeSetup.quality ?? 0,
     });
 
-    const longest = [...withData].filter((c) => c.signal === "strong_buy" || c.signal === "buy");
+    const isBuy = (s: string) => s.toLowerCase().replace(/\s+/g, "_") === "strong_buy" || s.toLowerCase().replace(/\s+/g, "_") === "buy";
+    const isSell = (s: string) => s.toLowerCase().replace(/\s+/g, "_") === "strong_sell" || s.toLowerCase().replace(/\s+/g, "_") === "sell";
+
+    const longest = withData.filter((c) => isBuy(c.opportunity.signal));
     const topBuy = longest.length > 0
-      ? toOpp(longest.reduce((a, b) => (a.overallScore >= b.overallScore ? a : b)))
+      ? toOpp(longest.reduce((a, b) => (a.opportunity.score >= b.opportunity.score ? a : b)))
       : null;
 
-    const shortest = [...withData].filter((c) => c.signal === "strong_sell" || c.signal === "sell");
+    const shortest = withData.filter((c) => isSell(c.opportunity.signal));
     const topSell = shortest.length > 0
-      ? toOpp(shortest.reduce((a, b) => (a.overallScore <= b.overallScore ? a : b)))
+      ? toOpp(shortest.reduce((a, b) => (a.opportunity.score <= b.opportunity.score ? a : b)))
       : null;
 
-    const sortedMomentum = [...withData].sort((a, b) => b.tradeQuality - a.tradeQuality);
+    const sortedMomentum = [...withData].sort((a, b) => (b.tradeSetup.quality ?? 0) - (a.tradeSetup.quality ?? 0));
     const topMomentum = toOpp(sortedMomentum[0]);
 
-    const lowRiskSorted = [...withData]
-      .filter((c) => c.riskLevel === "low")
-      .sort((a, b) => b.tradeQuality - a.tradeQuality);
+    const lowRiskSorted = withData
+      .filter((c) => c.risk.level === "low")
+      .sort((a, b) => (b.tradeSetup.quality ?? 0) - (a.tradeSetup.quality ?? 0));
     const lowestRisk = lowRiskSorted.length > 0 ? toOpp(lowRiskSorted[0]) : toOpp(sortedMomentum[0]);
 
     return { topBuy, topSell, topMomentum, lowestRisk };
-  }, [coins]);
+  }, [entries]);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
@@ -209,28 +215,28 @@ export function MarketOpportunities() {
         icon={<ArrowUpIcon />}
         accent="emerald"
         opp={opps.topBuy}
-        href={`/coin/${opps.topBuy?.coinId ?? ""}`}
+        href={`/analysis?coin=${opps.topBuy?.coinId ?? ""}`}
       />
       <Card
         title={t("market_opps.top_sell")}
         icon={<ArrowDownIcon />}
         accent="red"
         opp={opps.topSell}
-        href={`/coin/${opps.topSell?.coinId ?? ""}`}
+        href={`/analysis?coin=${opps.topSell?.coinId ?? ""}`}
       />
       <Card
         title={t("market_opps.highest_momentum")}
         icon={<LightningIcon />}
         accent="cyan"
         opp={opps.topMomentum}
-        href={`/coin/${opps.topMomentum?.coinId ?? ""}`}
+        href={`/analysis?coin=${opps.topMomentum?.coinId ?? ""}`}
       />
       <Card
         title={t("market_opps.lowest_risk")}
         icon={<ShieldIcon />}
         accent="teal"
         opp={opps.lowestRisk}
-        href={`/coin/${opps.lowestRisk?.coinId ?? ""}`}
+        href={`/analysis?coin=${opps.lowestRisk?.coinId ?? ""}`}
       />
     </div>
   );

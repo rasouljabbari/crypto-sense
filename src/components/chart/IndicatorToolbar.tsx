@@ -22,6 +22,7 @@ const INDICATOR_META: {
   { id: "volume", labelKey: "chart.vol_label", color: "text-sky-400" },
   { id: "rsi", labelKey: "chart.rsi_label", color: "text-purple-400" },
   { id: "dmi", labelKey: "chart.dmi_label", color: "text-orange-400" },
+  { id: "sma", labelKey: "chart.sma_label", color: "text-amber-400" },
 ];
 
 export function IndicatorToolbar({ manager }: IndicatorToolbarProps) {

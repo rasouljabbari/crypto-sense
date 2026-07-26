@@ -1,7 +1,8 @@
 "use client";
 
 import { useI18n } from "@/i18n/context";
-import { useStore } from "@/store/useStore";
+import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
+import { useTimeframe, TIMEFRAME_OPTIONS } from "@/lib/timeframe";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,9 +26,12 @@ const breadcrumbMap: Record<string, string> = {
 };
 
 export function Header() {
-  const { lastUpdated, refreshData, isLoading } = useStore();
+  const lastUpdated = useSnapshotStore((s) => s.lastUpdated);
+  const triggerRefresh = useSnapshotStore((s) => s.triggerRefresh);
+  const isLoading = useSnapshotStore((s) => s.isLoading);
   const pathname = usePathname();
   const { t, locale, setLocale } = useI18n();
+  const { timeframe, setTimeframe } = useTimeframe();
   const { data: session, status } = useSession();
   const { toggleMobile } = useSidebar();
   const [langOpen, setLangOpen] = useState(false);
@@ -91,7 +95,7 @@ export function Header() {
           </div>
 
           <button
-            onClick={refreshData}
+            onClick={triggerRefresh}
             disabled={isLoading}
             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-theme-card border border-theme text-theme-text rounded-lg hover:bg-theme-hover transition-colors disabled:opacity-50"
           >
@@ -100,6 +104,23 @@ export function Header() {
             </svg>
             <span className="hidden lg:inline">{isLoading ? t("header.refreshing") : t("header.refresh")}</span>
           </button>
+
+          {/* Timeframe selector */}
+          <div className="hidden md:flex items-center bg-theme-card border border-theme rounded-lg overflow-hidden">
+            {TIMEFRAME_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setTimeframe(opt.value)}
+                className={`px-2 py-1.5 text-[11px] font-semibold transition-colors ${
+                  timeframe === opt.value
+                    ? "bg-emerald-500/20 text-emerald-300"
+                    : "text-theme-secondary hover:text-theme-text"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
 
           <div className="relative" ref={langRef}>
             <button

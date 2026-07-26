@@ -441,7 +441,7 @@ export function CoinSearch({
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60" />
               {coin.symbol}
-              <span className="text-gray-500 hidden sm:inline">{coin.name}</span>
+              <span className="text-gray-500">{coin.name}</span>
             </button>
           ))}
         </div>

@@ -86,16 +86,129 @@ export function generateRecommendation(coin: CoinAnalysis): RecommendationResult
     riskReward,
   } = coin;
 
-  // ── SELL / STRONG SELL → always Skip ──────────────────────
+  // ── SELL / STRONG SELL → Ready if criteria met ────────────
   if (isSellSignal(signal)) {
+    if (signal === "strong_sell") {
+      const riskOk = riskLevel !== "high";
+      const qualityOk = tradeQuality >= 80;
+      const confOk = confidence >= 80;
+      const rrOk = rrAtLeast(2, riskReward);
+
+      if (riskOk && qualityOk && confOk && rrOk) {
+        return {
+          recommendation: "ready",
+          reasonCode: "READY",
+          reason: `Strong sell signal confirmed. Score ${overallScore} | Confidence ${confidence}% | Quality ${tradeQuality} | R:R ${riskReward ?? "?"}`,
+          color: "#ef4444",
+          priority: 100,
+        };
+      }
+
+      if (!riskOk) {
+        return {
+          recommendation: "wait",
+          reasonCode: "SKIP_HIGH_RISK",
+          reason: "Strong sell but risk is high — waiting for improvement.",
+          color: "#eab308",
+          priority: 51,
+        };
+      }
+      if (!rrOk) {
+        return {
+          recommendation: "wait",
+          reasonCode: "WAIT_CONFIRMATION",
+          reason: `Strong sell but R:R insufficient (${riskReward ?? "none"}) — waiting for better entry.`,
+          color: "#eab308",
+          priority: 52,
+        };
+      }
+      if (!qualityOk) {
+        return {
+          recommendation: "wait",
+          reasonCode: "WAIT_CONFIRMATION",
+          reason: `Strong sell but quality ${tradeQuality} below 80 — needs improvement.`,
+          color: "#eab308",
+          priority: 53,
+        };
+      }
+      if (!confOk) {
+        return {
+          recommendation: "wait",
+          reasonCode: "WAIT_VOLUME",
+          reason: `Strong sell but confidence ${confidence}% below 80 — volume confirmation needed.`,
+          color: "#eab308",
+          priority: 54,
+        };
+      }
+
+      return {
+        recommendation: "wait",
+        reasonCode: "WAIT_CONFIRMATION",
+        reason: "Strong sell signal — final checks pending.",
+        color: "#eab308",
+        priority: 55,
+      };
+    }
+
+    // Sell (not strong)
+    const riskOk = riskLevel !== "high";
+    const qualityOk = tradeQuality >= 70;
+    const confOk = confidence >= 70;
+    const rrOk = rrAtLeast(1.5, riskReward);
+
+    if (riskOk && qualityOk && confOk && rrOk) {
+      return {
+        recommendation: "ready",
+        reasonCode: "READY",
+        reason: `Sell signal confirmed. Score ${overallScore} | Confidence ${confidence}% | Quality ${tradeQuality} | R:R ${riskReward ?? "?"}`,
+        color: "#ef4444",
+        priority: 100,
+      };
+    }
+
+    if (!riskOk) {
+      return {
+        recommendation: "wait",
+        reasonCode: "SKIP_HIGH_RISK",
+        reason: "Sell signal but risk is high — waiting for improvement.",
+        color: "#eab308",
+        priority: 41,
+      };
+    }
+    if (!rrOk) {
+      return {
+        recommendation: "wait",
+        reasonCode: "WAIT_CONFIRMATION",
+        reason: `Sell signal but R:R insufficient (${riskReward ?? "none"}) — waiting for better entry.`,
+        color: "#eab308",
+        priority: 42,
+      };
+    }
+    if (!qualityOk) {
+      return {
+        recommendation: "wait",
+        reasonCode: "WAIT_CONFIRMATION",
+        reason: `Sell signal but quality ${tradeQuality} below 70 — needs improvement.`,
+        color: "#eab308",
+        priority: 43,
+      };
+    }
+    if (!confOk) {
+      return {
+        recommendation: "wait",
+        reasonCode: "WAIT_VOLUME",
+        reason: `Sell signal but confidence ${confidence}% below 70 — volume confirmation needed.`,
+        color: "#eab308",
+        priority: 44,
+      };
+    }
+
     return {
-      recommendation: "skip",
-      reasonCode: "SKIP_WEAK_TREND",
-      reason: signal === "strong_sell"
-        ? "Strong sell signal — avoid any long entry."
-        : "Sell signal — no valid trade setup.",
-      color: "#ef4444",
-      priority: 0,
+      recommendation: "wait",
+      reasonCode: "WAIT_CONFIRMATION",
+      reason: "Sell signal — final checks pending.",
+      color: "#eab308",
+      priority: 45,
     };
   }
 

@@ -170,32 +170,6 @@ export interface TechnicalAnalysis {
   readonly atr: AtrResult;
 }
 
-// ─── News / Sentiment ─────────────────────────────────────────────────────
-
-export type ArticleSentiment = "positive" | "negative" | "neutral";
-
-export interface NewsArticle {
-  readonly id: string;
-  readonly title: string;
-  readonly source: string;
-  readonly url: string;
-  readonly publishedAt: string;
-  readonly sentiment: ArticleSentiment;
-  readonly relatedCoins: readonly string[];
-  readonly summary: string;
-}
-
-export interface NewsSentiment {
-  readonly overall: ArticleSentiment;
-  readonly score: number;
-  readonly totalArticles: number;
-  readonly positiveCount: number;
-  readonly negativeCount: number;
-  readonly neutralCount: number;
-  readonly positiveRatio: number;
-  readonly recentNews: readonly NewsArticle[];
-}
-
 // ─── Fear & Greed ─────────────────────────────────────────────────────────
 
 export interface FearGreedValue {
@@ -345,7 +319,6 @@ export interface AnalysisResult {
   readonly scores: IndividualScores;
   readonly overallScore: OverallScore;
   readonly signal: TradingSignal;
-  readonly sentiment: NewsSentiment;
   readonly fearGreed: FearGreed | null;
   readonly explanation: TradeExplanation;
   readonly tradeSetup: TradeSetupResult;
@@ -384,7 +357,6 @@ export interface ScoreWeights {
   readonly technical: number;
   readonly trend: number;
   readonly volume: number;
-  readonly sentiment: number;
 }
 
 // ─── Analysis Preferences ─────────────────────────────────────────────────

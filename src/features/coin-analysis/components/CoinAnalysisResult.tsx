@@ -1,12 +1,12 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useI18n } from "@/i18n/context";
-import { useTimeframe } from "@/lib/timeframe";
-import { useCoinAnalysis } from "@/features/coin-analysis/hooks/useCoinAnalysis";
-import type { CoinAnalysisState } from "@/features/coin-analysis/types";
 import type { SrLine } from "@/components/CandlestickChart";
 import { Card } from "@/components/Card";
+import { useI18n } from "@/i18n/context";
+import { useTimeframe } from "@/lib/timeframe";
+import type { AnalysisSnapshot } from "@/store/useAnalysisSnapshot";
+import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
+import dynamic from "next/dynamic";
 
 const CandlestickChart = dynamic(
   () => import("@/components/CandlestickChart").then((m) => m.CandlestickChart),
@@ -20,9 +20,9 @@ interface CoinAnalysisResultProps {
 export function CoinAnalysisResult({ coinId }: CoinAnalysisResultProps) {
   const { t } = useI18n();
   const { timeframe } = useTimeframe();
-  const analysis = useCoinAnalysis(coinId, timeframe);
+  const snapshot = useSnapshotStore((s) => coinId ? s.collections[timeframe][coinId] : undefined);
 
-  if (analysis.status === "loading") {
+  if (!snapshot) {
     return (
       <div className="space-y-4">
         <div className="h-[300px] bg-gray-900/30 border border-gray-800/50 rounded-xl animate-pulse" />
@@ -31,30 +31,12 @@ export function CoinAnalysisResult({ coinId }: CoinAnalysisResultProps) {
     );
   }
 
-  if (analysis.status === "error") {
-    const errMsg = String(analysis.error ?? "");
-    const translated = errMsg.includes("Cannot resolve symbol")
-      ? t("errors.cannot_resolve_symbol", { symbol: coinId })
-      : errMsg;
-    return <Card error={translated} title={t("coin_analysis.error_title")} />;
-  }
-
-  if (analysis.status === "noResult") {
-    return (
-      <Card title={t("coin_analysis.no_result_title")}>
-        <p className="text-sm text-gray-400">
-          {t("coin_analysis.no_result_description", { coin: coinId })}
-        </p>
-      </Card>
-    );
-  }
-
   const srLines: SrLine[] = [];
-  const parsePrice = (s: string) => parseFloat(s.replace(/[$,]/g, ""));
-  if (analysis.market.srLevels) {
-    for (const l of analysis.market.srLevels) {
+  if (snapshot.srLevels) {
+    for (const l of snapshot.srLevels) {
+      const p = parseFloat(l.price.replace(/[$,]/g, ""));
       srLines.push({
-        price: parsePrice(l.price),
+        price: p,
         type: l.type,
         priceRange: l.priceRange,
         confidence: l.strength != null ? l.strength * 20 : undefined,
@@ -67,92 +49,81 @@ export function CoinAnalysisResult({ coinId }: CoinAnalysisResultProps) {
         reactionStrength: l.reactionStrength,
       });
     }
-  } else {
-    // Fallback: single nearest levels
-    if (analysis.market.srSupport) {
-      srLines.push({ price: parsePrice(analysis.market.srSupport.price), type: "support" });
-    }
-    if (analysis.market.srResistance) {
-      srLines.push({ price: parsePrice(analysis.market.srResistance.price), type: "resistance" });
-    }
   }
 
   return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <SignalCard analysis={analysis} />
-          {analysis.trends.length > 0 && (
-            <Card title={t("coin_detail.cards.trend_analysis.title")}>
-              <div className="space-y-2.5">
-                {analysis.trends.map((tf) => {
-                  const trendColor =
-                    tf.trend.toLowerCase().includes("bullish") ? "text-emerald-400" :
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SignalCardFromSnapshot snapshot={snapshot} />
+        {snapshot.trends.length > 0 && (
+          <Card title={t("coin_analysis.trend_analysis_title")}>
+            <div className="space-y-2.5">
+              {snapshot.trends.map((tf) => {
+                const trendColor =
+                  tf.trend.toLowerCase().includes("bullish") ? "text-emerald-400" :
                     tf.trend.toLowerCase().includes("bearish") ? "text-red-400" : "text-yellow-400";
-                  const trendIcon =
-                    tf.trend.toLowerCase().includes("bullish") ? "▲" :
+                const trendIcon =
+                  tf.trend.toLowerCase().includes("bullish") ? "▲" :
                     tf.trend.toLowerCase().includes("bearish") ? "▼" : "◆";
-                  const sl = tf.confidence >= 75
-                    ? { label: t("coin_analysis.strength.strong"), color: "text-emerald-400", bg: "bg-emerald-500/10" }
-                    : tf.confidence >= 55
-                      ? { label: t("coin_analysis.strength.moderate"), color: "text-yellow-400", bg: "bg-yellow-500/10" }
-                      : { label: t("coin_analysis.strength.weak"), color: "text-gray-400", bg: "bg-gray-500/10" };
-                  return (
-                    <div
-                      key={tf.timeframe}
-                      className={`rounded-lg p-3 transition-all ${
-                        tf.isActive
-                          ? "bg-gray-800/70 border border-emerald-500/40 shadow-[0_0_10px_rgba(52,211,153,0.08)]"
-                          : "bg-gray-800/30 border border-gray-800/60"
+                const sl = tf.confidence >= 75
+                  ? { label: t("coin_analysis.strength.strong"), color: "text-emerald-400", bg: "bg-emerald-500/10" }
+                  : tf.confidence >= 55
+                    ? { label: t("coin_analysis.strength.moderate"), color: "text-yellow-400", bg: "bg-yellow-500/10" }
+                    : { label: t("coin_analysis.strength.weak"), color: "text-gray-400", bg: "bg-gray-500/10" };
+                return (
+                  <div
+                    key={tf.timeframe}
+                    className={`rounded-lg p-3 transition-all ${tf.isActive
+                        ? "bg-gray-900/70 border border-emerald-500/40 shadow-[0_0_10px_rgba(52,211,153,0.08)]"
+                        : "bg-gray-800/30 border border-gray-800/60"
                       }`}
-                    >
-                      <div className="flex items-center justify-between mb-2.5">
-                        <span className={`text-[11px] font-bold uppercase tracking-wider ${
-                          tf.isActive ? "text-emerald-300" : "text-gray-500"
+                  >
+                    <div className="flex items-center justify-between mb-2.5">
+                      <span className={`text-[11px] font-bold uppercase tracking-wider ${tf.isActive ? "text-emerald-300" : "text-gray-500"
                         }`}>
-                          {tf.timeframe.toUpperCase()}
+                        {tf.timeframe.toUpperCase()}
+                      </span>
+                      {tf.isActive && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-emerald-400/70">
+                          {t("coin_analysis.active")}
                         </span>
-                        {tf.isActive && (
-                          <span className="text-[9px] font-semibold uppercase tracking-wider text-emerald-400/70">
-                            {t("coin_analysis.active")}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2.5 mb-2.5">
-                        <span className="text-xl font-bold leading-none">{trendIcon}</span>
-                        <span className={`text-sm font-bold ${trendColor}`}>
-                          {t(`coin_analysis.score.status.${tf.trend.toLowerCase().replace(/\s+/g, "_")}`)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${sl.bg} ${sl.color}`}>
-                          {sl.label}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-1.5 bg-gray-700/60 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${
-                                tf.confidence >= 75 ? "bg-emerald-500" :
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2.5 mb-2.5">
+                      <span className="text-xl font-bold leading-none">{trendIcon}</span>
+                      <span className={`text-sm font-bold ${trendColor}`}>
+                        {t(`coin_analysis.score.status.${tf.trend.toLowerCase().replace(/\s+/g, "_")}`)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${sl.bg} ${sl.color}`}>
+                        {sl.label}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-gray-700/60 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${tf.confidence >= 75 ? "bg-emerald-500" :
                                 tf.confidence >= 55 ? "bg-yellow-500" : "bg-gray-500"
                               }`}
-                              style={{ width: `${tf.confidence}%` }}
-                            />
-                          </div>
-                          <span className="text-[10px] font-mono tabular-nums text-gray-400 w-7 text-right">
-                            {tf.confidence}%
-                          </span>
+                            style={{ width: `${tf.confidence}%` }}
+                          />
                         </div>
+                        <span className="text-[10px] font-mono tabular-nums text-gray-400 w-7 text-right">
+                          {tf.confidence}%
+                        </span>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </Card>
-          )}
-          <ScoreOverview analysis={analysis} />
-        </div>
-        {analysis.indicators.length > 0 && <TechIndicatorsCard indicators={analysis.indicators} />}
-        <ChartSection coinId={coinId} srLines={srLines} />
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+        <ScoreOverviewFromSnapshot snapshot={snapshot} />
       </div>
+      {snapshot.indicators.length > 0 && <TechIndicatorsCard indicators={snapshot.indicators} />}
+      <ChartSection coinId={coinId} srLines={srLines} />
+    </div>
   );
 }
 
@@ -164,12 +135,12 @@ function ChartSection({ coinId, srLines }: { readonly coinId: string; readonly s
   );
 }
 
-function SignalCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
+function SignalCardFromSnapshot({ snapshot }: { readonly snapshot: AnalysisSnapshot }) {
   const { t } = useI18n();
-  const s = analysis.overallScore.signal;
-  const isAction = s === "Strong Buy" || s === "Buy";
-  const isWait = s === "Strong Sell" || s === "Sell";
-  const reasons = buildSignalReasons(analysis, t);
+  const signal = snapshot.opportunity.signal;
+  const isAction = signal === "Strong Buy" || signal === "Buy";
+  const isWait = signal === "Strong Sell" || signal === "Sell";
+  const reasons = buildSignalReasonsFromSnapshot(snapshot, t);
 
   const badgeColor = isAction
     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
@@ -194,7 +165,7 @@ function SignalCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
   return (
     <Card
       title={t("coin_analysis.recommendation.title")}
-      subtitle={`${analysis.overallScore.value.toFixed(0)} — ${t("coin_row." + analysis.overallScore.signal.toLowerCase().replace(" ", "_"))}`}
+      subtitle={`${snapshot.opportunity.score.toFixed(0)} — ${t("coin_row." + snapshot.opportunity.signal.toLowerCase().replace(" ", "_"))}`}
     >
       <div className="space-y-3">
         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold ${badgeColor}`}>
@@ -202,16 +173,16 @@ function SignalCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
         </div>
 
         <p className="text-xs text-gray-300 leading-relaxed">
-          {analysis.explanation.summary}
+          {snapshot.explanation.summary}
         </p>
 
-        {analysis.explanation.strengths.length > 0 && (
+        {snapshot.explanation.strengths.length > 0 && (
           <div>
             <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mb-1.5">
               {t("coin_analysis.explanation.strengths")}
             </p>
             <ul className="space-y-0.5">
-              {analysis.explanation.strengths.map((s, i) => (
+              {snapshot.explanation.strengths.map((s, i) => (
                 <li key={i} className="text-[11px] text-gray-400 flex items-start gap-1.5">
                   <span className="text-emerald-400 mt-0.5 shrink-0">+</span>
                   {s}
@@ -221,13 +192,13 @@ function SignalCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
           </div>
         )}
 
-        {analysis.explanation.weaknesses.length > 0 && (
+        {snapshot.explanation.weaknesses.length > 0 && (
           <div>
             <p className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-1.5">
               {t("coin_analysis.explanation.weaknesses")}
             </p>
             <ul className="space-y-0.5">
-              {analysis.explanation.weaknesses.map((w, i) => (
+              {snapshot.explanation.weaknesses.map((w, i) => (
                 <li key={i} className="text-[11px] text-gray-400 flex items-start gap-1.5">
                   <span className="text-red-400 mt-0.5 shrink-0">−</span>
                   {w}
@@ -237,13 +208,13 @@ function SignalCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
           </div>
         )}
 
-        {analysis.explanation.risks.length > 0 && (
+        {snapshot.explanation.risks.length > 0 && (
           <div>
             <p className="text-[10px] font-semibold text-yellow-400 uppercase tracking-wider mb-1.5">
               {t("coin_analysis.explanation.risks")}
             </p>
             <ul className="space-y-0.5">
-              {analysis.explanation.risks.map((r, i) => (
+              {snapshot.explanation.risks.map((r, i) => (
                 <li key={i} className="text-[11px] text-gray-400 flex items-start gap-1.5">
                   <span className="text-yellow-400 mt-0.5 shrink-0">!</span>
                   {r}
@@ -253,7 +224,6 @@ function SignalCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
           </div>
         )}
 
-        {/* Signal reasons merged from WhyThisSignal */}
         {reasons.length > 0 && (
           <div className="border-t border-gray-800 pt-3 mt-3">
             <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
@@ -279,20 +249,20 @@ function SignalCard({ analysis }: { readonly analysis: CoinAnalysisState }) {
   );
 }
 
-function translateIndicatorLabel(ind: CoinAnalysisState["indicators"][number], t: (key: string) => string): string {
+function translateIndicatorLabel(ind: AnalysisSnapshot["indicators"][number], t: (key: string) => string): string {
   const map: Record<string, Record<string, string>> = {
-    rsi: { "Overbought": "coin_detail.cards.tech_interpret.rsi.overbought", "Oversold": "coin_detail.cards.tech_interpret.rsi.oversold", "Neutral": "coin_detail.cards.tech_interpret.rsi.neutral" },
-    macd: { "Bullish Cross": "coin_detail.cards.tech_interpret.macd.bullish_cross", "Bearish Cross": "coin_detail.cards.tech_interpret.macd.bearish_cross", "Converging": "coin_detail.cards.tech_interpret.macd.converging" },
-    adx: { "Very Strong Trend": "coin_detail.cards.tech_interpret.adx.very_strong", "Strong Trend": "coin_detail.cards.tech_interpret.adx.strong", "Moderate Trend": "coin_detail.cards.tech_interpret.adx.moderate", "Weak Trend": "coin_detail.cards.tech_interpret.adx.weak" },
-    ema: { "Bullish Alignment": "coin_detail.cards.tech_interpret.ema.bullish", "Bearish Alignment": "coin_detail.cards.tech_interpret.ema.bearish", "Mixed": "coin_detail.cards.tech_interpret.ema.mixed" },
-    atr: { "High Volatility": "coin_detail.cards.tech_interpret.atr.high", "Medium Volatility": "coin_detail.cards.tech_interpret.atr.medium", "Low Volatility": "coin_detail.cards.tech_interpret.atr.low" },
-    bb: { "Above Upper Band": "coin_detail.cards.tech_interpret.bb.above", "Below Lower Band": "coin_detail.cards.tech_interpret.bb.below", "Inside Bands": "coin_detail.cards.tech_interpret.bb.inside" },
+    rsi: { "Overbought": "coin_analysis.tech_interpret.rsi.overbought", "Oversold": "coin_analysis.tech_interpret.rsi.oversold", "Neutral": "coin_analysis.tech_interpret.rsi.neutral" },
+    macd: { "Bullish Cross": "coin_analysis.tech_interpret.macd.bullish_cross", "Bearish Cross": "coin_analysis.tech_interpret.macd.bearish_cross", "Converging": "coin_analysis.tech_interpret.macd.converging" },
+    adx: { "Very Strong Trend": "coin_analysis.tech_interpret.adx.very_strong", "Strong Trend": "coin_analysis.tech_interpret.adx.strong", "Moderate Trend": "coin_analysis.tech_interpret.adx.moderate", "Weak Trend": "coin_analysis.tech_interpret.adx.weak" },
+    ema: { "Bullish Alignment": "coin_analysis.tech_interpret.ema.bullish", "Bearish Alignment": "coin_analysis.tech_interpret.ema.bearish", "Mixed": "coin_analysis.tech_interpret.ema.mixed" },
+    atr: { "High Volatility": "coin_analysis.tech_interpret.atr.high", "Medium Volatility": "coin_analysis.tech_interpret.atr.medium", "Low Volatility": "coin_analysis.tech_interpret.atr.low" },
+    bb: { "Above Upper Band": "coin_analysis.tech_interpret.bb.above", "Below Lower Band": "coin_analysis.tech_interpret.bb.below", "Inside Bands": "coin_analysis.tech_interpret.bb.inside" },
   };
   const key = map[ind.key]?.[ind.statusLabel];
   return key ? t(key) : ind.statusLabel;
 }
 
-function translateIndicatorInterpretation(ind: CoinAnalysisState["indicators"][number], t: (key: string) => string): string {
+function translateIndicatorInterpretation(ind: AnalysisSnapshot["indicators"][number], t: (key: string) => string): string {
   return t("coin_analysis.interpretations." + ind.key + "_" + ind.interpretation);
 }
 
@@ -374,7 +344,7 @@ function translateScoreReason(reason: string, t: (key: string, vars?: Record<str
   return reason;
 }
 
-function TechIndicatorsCard({ indicators }: { readonly indicators: readonly CoinAnalysisState["indicators"][number][] }) {
+function TechIndicatorsCard({ indicators }: { readonly indicators: readonly AnalysisSnapshot["indicators"][number][] }) {
   const { t } = useI18n();
 
   const statusStyles: Record<string, { bg: string; text: string; dot: string; ring: string }> = {
@@ -386,7 +356,7 @@ function TechIndicatorsCard({ indicators }: { readonly indicators: readonly Coin
   return (
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-5">
       <h3 className="text-sm font-semibold text-gray-400 mb-4">
-        {t("coin_detail.cards.technical_indicators.title")}
+        {t("coin_analysis.indicators.title")}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {indicators.map((ind) => {
@@ -429,12 +399,13 @@ function TechIndicatorsCard({ indicators }: { readonly indicators: readonly Coin
   );
 }
 
-function buildSignalReasons(a: CoinAnalysisState, t: (key: string, vars?: Record<string, string | number>) => string): string[] {
+function buildSignalReasonsFromSnapshot(s: AnalysisSnapshot, t: (key: string, vars?: Record<string, string | number>) => string): string[] {
   const reasons: string[] = [];
-  const sig = a.overallScore.signal;
-  const ind = a.indicators;
-  const sc = a.scores;
-  const ts = a.tradeSetup;
+  const sig = s.opportunity.signal;
+  const ind = s.indicators;
+  const str = s.strength;
+  const risk = s.risk;
+  const ts = s.tradeSetup;
 
   const indByKey = (k: string) => ind.find((i) => i.key === k);
 
@@ -456,15 +427,15 @@ function buildSignalReasons(a: CoinAnalysisState, t: (key: string, vars?: Record
       reasons.push(t("coin_analysis.signal_reasons.high_conviction_trend"));
     }
 
-    if (sc.volume.value >= 60) reasons.push(t("coin_analysis.signal_reasons.volume_confirmation"));
+    if (str.volume >= 60) reasons.push(t("coin_analysis.signal_reasons.volume_confirmation"));
 
     if (ts.riskReward && ts.riskReward.tp1 >= 1.5) {
       reasons.push(t("coin_analysis.signal_reasons.risk_reward", { ratio: ts.riskReward.tp1.toFixed(1) }));
     }
 
-    if (sc.momentum.value >= 60) reasons.push(t("coin_analysis.signal_reasons.momentum_positive"));
+    if (str.momentum >= 60) reasons.push(t("coin_analysis.signal_reasons.momentum_positive"));
 
-    if (reasons.length < 7 && a.confidence >= 70) reasons.push(t("coin_analysis.signal_reasons.high_confidence"));
+    if (reasons.length < 7 && s.opportunity.confidence >= 70) reasons.push(t("coin_analysis.signal_reasons.high_confidence"));
   } else if (sig === "Strong Sell" || sig === "Sell") {
     const ema = indByKey("ema");
     if (ema?.status === "bearish") reasons.push(t("coin_analysis.signal_reasons.ema_bearish"));
@@ -479,20 +450,20 @@ function buildSignalReasons(a: CoinAnalysisState, t: (key: string, vars?: Record
     const adx = indByKey("adx");
     if (adx?.statusLabel === "Weak Trend" || adx?.statusLabel === "Moderate Trend") reasons.push(t("coin_analysis.signal_reasons.trend_momentum_weak"));
 
-    if (sc.volume.value < 40) reasons.push(t("coin_analysis.signal_reasons.weak_volume"));
+    if (str.volume < 40) reasons.push(t("coin_analysis.signal_reasons.weak_volume"));
 
-    if (sc.risk.value < 40) reasons.push(t("coin_analysis.signal_reasons.elevated_risk"));
+    if (risk.score < 40) reasons.push(t("coin_analysis.signal_reasons.elevated_risk"));
 
-    if (sc.momentum.value < 40) reasons.push(t("coin_analysis.signal_reasons.momentum_negative"));
-    else if (sc.momentum.value < 50) reasons.push(t("coin_analysis.signal_reasons.momentum_fading"));
+    if (str.momentum < 40) reasons.push(t("coin_analysis.signal_reasons.momentum_negative"));
+    else if (str.momentum < 50) reasons.push(t("coin_analysis.signal_reasons.momentum_fading"));
 
-    if (reasons.length < 7 && a.market.srSupport) reasons.push(t("coin_analysis.signal_reasons.price_near_support"));
+    if (reasons.length < 7 && s.marketState.nearestSupport) reasons.push(t("coin_analysis.signal_reasons.price_near_support"));
   } else {
-    if (sc.risk.value < 40) reasons.push(t("coin_analysis.signal_reasons.high_risk"));
-    if (sc.trend.value < 40) reasons.push(t("coin_analysis.signal_reasons.weak_trend"));
-    if (sc.volume.value < 40) reasons.push(t("coin_analysis.signal_reasons.low_volume"));
-    if (sc.momentum.value >= 40 && sc.momentum.value < 60) reasons.push(t("coin_analysis.signal_reasons.mixed_momentum"));
-    if (a.confidence < 50) reasons.push(t("coin_analysis.signal_reasons.low_confidence"));
+    if (risk.score < 40) reasons.push(t("coin_analysis.signal_reasons.high_risk"));
+    if (str.trend < 40) reasons.push(t("coin_analysis.signal_reasons.weak_trend"));
+    if (str.volume < 40) reasons.push(t("coin_analysis.signal_reasons.low_volume"));
+    if (str.momentum >= 40 && str.momentum < 60) reasons.push(t("coin_analysis.signal_reasons.mixed_momentum"));
+    if (s.opportunity.confidence < 50) reasons.push(t("coin_analysis.signal_reasons.low_confidence"));
 
     const adx = indByKey("adx");
     if (adx?.statusLabel === "Weak Trend" || adx?.statusLabel === "Moderate Trend") reasons.push(t("coin_analysis.signal_reasons.market_ranging"));
@@ -500,14 +471,14 @@ function buildSignalReasons(a: CoinAnalysisState, t: (key: string, vars?: Record
     if (!ts.hasTrade) {
       reasons.push(t("coin_analysis.signal_reasons.invalid_trade_setup"));
     } else {
-      if (ts.entry && a.market.price) {
-        const currentPrice = parseFloat(a.market.price.replace(/[$,]/g, ""));
+      if (ts.entry && s.marketState.price) {
+        const currentPrice = parseFloat(s.marketState.price.replace(/[$,]/g, ""));
         if (!isNaN(currentPrice) && ts.entry) {
           if (ts.direction === "long" && currentPrice > ts.entry) reasons.push(t("coin_analysis.signal_reasons.price_above_entry"));
           if (ts.direction === "short" && currentPrice < ts.entry) reasons.push(t("coin_analysis.signal_reasons.price_below_entry"));
         }
       }
-      if (reasons.length < 4 && sc.volume.value >= 40 && sc.volume.value < 60) reasons.push(t("coin_analysis.signal_reasons.volume_neutral"));
+      if (reasons.length < 4 && str.volume >= 40 && str.volume < 60) reasons.push(t("coin_analysis.signal_reasons.volume_neutral"));
     }
   }
 
@@ -516,9 +487,13 @@ function buildSignalReasons(a: CoinAnalysisState, t: (key: string, vars?: Record
 
 
 
-function ScoreOverview({ analysis }: { readonly analysis: CoinAnalysisState }) {
+function ScoreOverviewFromSnapshot({ snapshot }: { readonly snapshot: AnalysisSnapshot }) {
   const { t } = useI18n();
-  const { scores, overallScore } = analysis;
+  const opp = snapshot.opportunity;
+  const str = snapshot.strength;
+  const strR = snapshot.strengthReasons;
+  const risk = snapshot.risk;
+  const ts = snapshot.tradeSetup;
 
   function scoreColor(v: number): string {
     if (v >= 65) return "bg-emerald-500";
@@ -536,58 +511,24 @@ function ScoreOverview({ analysis }: { readonly analysis: CoinAnalysisState }) {
     key: string;
     label: string;
     value: number;
-    reasons: string[];
+    reasons: readonly string[];
   }
 
   const metrics: MetricRow[] = [
-    {
-      key: "overall",
-      label: t("coin_analysis.score.overall"),
-      value: overallScore.value,
-      reasons: [],
-    },
-    {
-      key: "trend",
-      label: t("coin_analysis.score.trend"),
-      value: scores.trend.value,
-      reasons: scores.trend.reasons,
-    },
-    {
-      key: "momentum",
-      label: t("coin_analysis.score.momentum"),
-      value: scores.momentum.value,
-      reasons: scores.momentum.reasons,
-    },
-    {
-      key: "volume",
-      label: t("coin_analysis.score.volume"),
-      value: scores.volume.value,
-      reasons: scores.volume.reasons,
-    },
-    {
-      key: "confidence",
-      label: t("coin_analysis.score.confidence"),
-      value: analysis.confidence,
-      reasons: [],
-    },
-    {
-      key: "trade_quality",
-      label: t("coin_analysis.score.trade_quality"),
-      value: analysis.tradeQuality,
-      reasons: [],
-    },
-    {
-      key: "risk",
-      label: t("coin_analysis.score.risk"),
-      value: scores.risk.value,
-      reasons: scores.risk.reasons,
-    },
+    { key: "overall", label: t("coin_analysis.score.overall"), value: opp.score, reasons: [] },
+    { key: "trend", label: t("coin_analysis.score.trend"), value: str.trend, reasons: strR.trend },
+    { key: "momentum", label: t("coin_analysis.score.momentum"), value: str.momentum, reasons: strR.momentum },
+    { key: "volume", label: t("coin_analysis.score.volume"), value: str.volume, reasons: strR.volume },
+    { key: "volatility", label: t("coin_analysis.score.volatility"), value: str.volatility, reasons: strR.volatility },
+    { key: "confidence", label: t("coin_analysis.score.confidence"), value: opp.confidence, reasons: [] },
+    { key: "trade_quality", label: t("coin_analysis.score.trade_quality"), value: ts.quality ?? 0, reasons: [] },
+    { key: "risk", label: t("coin_analysis.score.risk"), value: risk.score, reasons: risk.reasons },
   ];
 
   return (
     <Card
       title={t("coin_analysis.score.title")}
-      subtitle={`${overallScore.value.toFixed(0)} — ${t("coin_row." + overallScore.signal.toLowerCase().replace(" ", "_"))}`}
+      subtitle={`${opp.score.toFixed(0)} — ${t("coin_row." + opp.signal.toLowerCase().replace(" ", "_"))}`}
     >
       <div className="space-y-3">
         {metrics.map((m) => (
@@ -613,9 +554,8 @@ function ScoreOverview({ analysis }: { readonly analysis: CoinAnalysisState }) {
                   return (
                     <span
                       key={i}
-                      className={`text-[10px] leading-tight ${
-                        isPositive ? "text-emerald-500" : isNegative ? "text-red-400" : "text-gray-500"
-                      }`}
+                      className={`text-[10px] leading-tight ${isPositive ? "text-emerald-500" : isNegative ? "text-red-400" : "text-gray-500"
+                        }`}
                     >
                       {displayText}
                     </span>

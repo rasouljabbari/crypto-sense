@@ -58,26 +58,6 @@ export interface TrendAnalysis {
   score: number;
 }
 
-export interface NewsItem {
-  id: string;
-  title: string;
-  source: string;
-  url: string;
-  publishedAt: string;
-  sentiment: "positive" | "negative" | "neutral";
-  relatedCoins: string[];
-  summary: string;
-}
-
-export interface SentimentData {
-  overall: "positive" | "negative" | "neutral";
-  score: number;
-  twitterMentions: number;
-  positiveRatio: number;
-  newsCount: number;
-  recentNews: NewsItem[];
-}
-
 export interface CoinAnalysis {
   coinId: string;
   position: PositionType;
@@ -85,13 +65,11 @@ export interface CoinAnalysis {
   volumeScore: number;
   trendScore: number;
   momentumScore: number;
-  sentimentScore: number;
   technicalScore: number;
   riskScore: number;
   marketData: MarketData;
   technicalIndicators: TechnicalIndicators;
   trendAnalysis: TrendAnalysis;
-  sentiment: SentimentData;
   lastUpdated: string;
   signal: SignalType;
   confidence: number;
@@ -182,7 +160,7 @@ export interface MarketIndicators {
 }
 
 export interface WebSocketMessage {
-  type: "price_update" | "analysis_update" | "news_alert";
+  type: "price_update" | "analysis_update";
   data: Partial<CoinAnalysis>;
   coinId?: string;
 }

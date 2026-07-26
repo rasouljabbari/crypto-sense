@@ -3,6 +3,7 @@
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { Locale, useI18n } from "@/i18n/context";
 import { useTheme } from "@/lib/theme";
+import { useTimeframe, TIMEFRAME_OPTIONS, type TimeframeOption } from "@/lib/timeframe";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -70,6 +71,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { t, locale, setLocale, dir } = useI18n();
   const { theme, toggleTheme } = useTheme();
+  const { timeframe, setTimeframe } = useTimeframe();
   const { data: session, status } = useSession();
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
@@ -230,6 +232,28 @@ export function Sidebar() {
             </div>
           ))}
         </nav>
+
+        {/* ── Timeframe ──────────────────────────────────────── */}
+        <div className="px-3 pb-2">
+          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-theme-secondary/60">
+            {t("timeframe.label")}
+          </p>
+          <div className="flex gap-1">
+            {TIMEFRAME_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setTimeframe(opt.value)}
+                className={`flex-1 px-2 py-1.5 text-[11px] font-semibold rounded-lg transition-colors ${
+                  timeframe === opt.value
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                    : "text-theme-secondary hover:text-theme-text hover:bg-theme-hover border border-transparent"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* ── Bottom Controls ────────────────────────────────────── */}
         <div className="shrink-0 border-t border-theme p-3 space-y-1">

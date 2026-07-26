@@ -1,11 +1,11 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
 import { useI18n } from "@/i18n/context";
+import { useTimeframe } from "@/lib/timeframe";
+import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
 import { useMemo } from "react";
-import { SignalType } from "@/lib/types";
 
-const signalRank: Record<SignalType, number> = {
+const signalRank: Record<string, number> = {
   strong_buy: 5, buy: 4, neutral: 3, sell: 2, strong_sell: 1,
 };
 
@@ -13,15 +13,25 @@ const trendStrength: Record<string, number> = {
   strong_bullish: 5, bullish: 4, sideways: 3, bearish: 2, strong_bearish: 1,
 };
 
+function normalizeSignal(s: string): string {
+  return s.toLowerCase().replace(/\s+/g, "_");
+}
+
+function normalizeTrend(t: string): string {
+  return t.toLowerCase().replace(/\s+/g, "_");
+}
+
 export function MarketSummary() {
-  const { coins } = useStore();
+  const { timeframe } = useTimeframe();
+  const collection = useSnapshotStore((s) => s.collections[timeframe]);
+  const entries = useMemo(() => Object.values(collection), [collection]);
   const { t } = useI18n();
 
   const summary = useMemo(() => {
-    const total = coins.length;
+    const total = entries.length;
     if (total === 0) return null;
 
-    const signalCount: Record<SignalType, number> = {
+    const signalCount: Record<string, number> = {
       strong_buy: 0, buy: 0, neutral: 0, sell: 0, strong_sell: 0,
     };
 
@@ -30,12 +40,13 @@ export function MarketSummary() {
     let confidenceSum = 0;
     let trendSum = 0;
 
-    for (const c of coins) {
-      signalCount[c.signal]++;
-      scoreSum += c.overallScore;
-      riskSum += c.riskLevel === "low" ? 1 : c.riskLevel === "medium" ? 2 : 3;
-      confidenceSum += c.confidence;
-      trendSum += trendStrength[c.trendLabel] ?? 3;
+    for (const c of entries) {
+      const sig = normalizeSignal(c.opportunity.signal);
+      if (signalCount[sig] !== undefined) signalCount[sig]++;
+      scoreSum += c.opportunity.score;
+      riskSum += c.risk.level === "low" ? 1 : c.risk.level === "medium" ? 2 : 3;
+      confidenceSum += c.opportunity.confidence;
+      trendSum += trendStrength[normalizeTrend(c.marketState.trend)] ?? 3;
     }
 
     return {
@@ -46,7 +57,7 @@ export function MarketSummary() {
       avgTrend: (trendSum / total).toFixed(1),
       total,
     };
-  }, [coins]);
+  }, [entries]);
 
   if (!summary) return null;
 
@@ -136,7 +147,8 @@ function SummaryMetric({
     <div className="bg-gray-800/40 rounded-lg p-3">
       <div className="text-[10px] text-gray-400 mb-1">{label}</div>
       <div className={`text-lg font-bold ${color}`}>
-        {value}{suffix ?? ""}
+        {value}
+        {suffix ?? ""}
       </div>
       <div className="w-full h-1 bg-gray-700 rounded-full overflow-hidden mt-1.5">
         <div

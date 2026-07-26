@@ -1,13 +1,13 @@
 "use client";
 
-import { fetchMarketDataList } from "@/api/binance";
+import { AnalysisStatus } from "@/components/AnalysisStatus";
 import { CoinImage } from "@/components/CoinImage";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
-import { analyzeAllCoins } from "@/lib/analysisEngine";
-import type { CoinAnalysis } from "@/lib/types";
+import type { AnalysisSnapshot } from "@/store/useAnalysisSnapshot";
+import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
+import { useTimeframe } from "@/lib/timeframe";
 import { addToWatchlist, getWatchlist, removeFromWatchlist } from "@/lib/watchlist";
-import { useStore } from "@/store/useStore";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -48,17 +48,16 @@ const TREND_STYLE: Record<string, { color: string; bg: string }> = {
 // Helpers
 // ───────────────────────────────────────
 
-function getOpportunityKey(c: CoinAnalysis): OpportunityKey {
-  if (c.recommendation === "ready") {
-    if (c.position === "long") return "ready_long";
-    if (c.position === "short") return "ready_short";
+function getOpportunityKey(c: AnalysisSnapshot): OpportunityKey {
+  if (c.opportunity.recommendation === "ready") {
+    if (c.tradeSetup.direction === "long") return "ready_long";
+    if (c.tradeSetup.direction === "short") return "ready_short";
     return "watch";
   }
-  if (c.recommendation === "wait") {
-    if (c.position === "long" || c.position === "short") return "watch";
+  if (c.opportunity.recommendation === "wait") {
+    if (c.tradeSetup.direction) return "watch";
     return "wait";
   }
-  if (c.status === "wait") return "weakening";
   return "invalid";
 }
 
@@ -77,16 +76,14 @@ function formatUpdated(ts: string): string {
   return `${Math.floor(diff / 86400)}d`;
 }
 
-function coinHash(c: CoinAnalysis): string {
-  return `${c.marketData.currentPrice}|${c.confidence}|${c.recommendation}|${c.trendLabel}`;
-}
+function ns(s: string): string { return s.toLowerCase().replace(/\s+/g, "_"); }
 
-function sortCoins(list: CoinAnalysis[]): CoinAnalysis[] {
+function sortCoins(list: AnalysisSnapshot[]): AnalysisSnapshot[] {
   return [...list].sort((a, b) => {
     const pa = OPPORTUNITY_ORDER[getOpportunityKey(a)];
     const pb = OPPORTUNITY_ORDER[getOpportunityKey(b)];
     if (pa !== pb) return pa - pb;
-    return b.confidence - a.confidence;
+    return b.opportunity.confidence - a.opportunity.confidence;
   });
 }
 
@@ -99,20 +96,22 @@ function CoinCard({
   highlighted,
   onRemove,
 }: {
-  coin: CoinAnalysis;
+  coin: AnalysisSnapshot;
   highlighted: boolean;
   onRemove: (s: string) => void;
 }) {
   const { t } = useI18n();
   const router = useRouter();
-  const isPos = coin.marketData.priceChangePercent24h >= 0;
+  const changePct = parseFloat(coin.marketState.changePercent24h.replace(/[^0-9.\-]/g, "")) || 0;
+  const isPos = changePct >= 0;
   const oppKey = getOpportunityKey(coin);
   const opConf = OP_CONFIG[oppKey];
-  const trend = TREND_STYLE[coin.trendLabel] ?? TREND_STYLE.sideways;
+  const trendKey = ns(coin.marketState.trend);
+  const trend = TREND_STYLE[trendKey] ?? TREND_STYLE.sideways;
 
   return (
     <div
-      onClick={() => router.push(`/coin/${coin.marketData.symbol}`)}
+      onClick={() => router.push(`/analysis?coin=${encodeURIComponent(coin.coin)}`)}
       className={`
         relative bg-gray-900/50 border border-gray-800 rounded-xl p-4
         cursor-pointer select-none
@@ -122,7 +121,7 @@ function CoinCard({
       `}
     >
       <button
-        onClick={(e) => { e.stopPropagation(); onRemove(coin.marketData.symbol); }}
+        onClick={(e) => { e.stopPropagation(); onRemove(coin.symbol); }}
         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity text-[10px] font-semibold px-1.5 py-0.5 rounded border border-red-500/30 text-red-400 bg-gray-900 hover:bg-red-900/40 z-10"
         aria-label={t("watchlist.remove")}
       >
@@ -132,33 +131,33 @@ function CoinCard({
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <CoinImage
-            src={coin.marketData.image}
-            alt={coin.marketData.symbol}
-            symbol={coin.marketData.symbol}
+            src={coin.image}
+            alt={coin.symbol}
+            symbol={coin.symbol}
             className="w-8 h-8 rounded-full shrink-0"
             size={32}
           />
           <div className="min-w-0">
-            <div className="text-sm font-semibold text-white truncate">{coin.marketData.symbol}</div>
-            <div className="text-[11px] text-gray-500 truncate leading-tight">{coin.marketData.name}</div>
+            <div className="text-sm font-semibold text-white truncate">{coin.symbol}</div>
+            <div className="text-[11px] text-gray-500 truncate leading-tight">{coin.name}</div>
           </div>
         </div>
         <div className={`text-right shrink-0 ${isPos ? "text-emerald-400" : "text-red-400"}`}>
           <div className="text-sm font-semibold font-mono leading-tight">
-            {isPos ? "+" : ""}{coin.marketData.priceChangePercent24h.toFixed(2)}%
+            {isPos ? "+" : ""}{changePct.toFixed(2)}%
           </div>
         </div>
       </div>
 
       <div className="text-lg font-bold font-mono text-white mb-3">
-        {formatPrice(coin.marketData.currentPrice)}
+        {formatPrice(coin.price)}
       </div>
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-[11px]">
           <span className="text-gray-500">{t("watchlist.market_state")}</span>
           <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${trend.bg} ${trend.color}`}>
-            {t(`coin_row.${coin.trendLabel}`)}
+            {t(`coin_row.${trendKey}`)}
           </span>
         </div>
 
@@ -168,10 +167,10 @@ function CoinCard({
             <div className="w-14 h-1.5 bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
-                style={{ width: `${coin.confidence}%` }}
+                style={{ width: `${coin.opportunity.confidence}%` }}
               />
             </div>
-            <span className="text-[10px] font-mono text-gray-300 min-w-[1.8rem] text-end">{coin.confidence}</span>
+            <span className="text-[10px] font-mono text-gray-300 min-w-[1.8rem] text-end">{coin.opportunity.confidence}</span>
           </div>
         </div>
 
@@ -266,169 +265,18 @@ function SummaryBar({ counts }: { counts: Record<string, number> }) {
 // ───────────────────────────────────────
 export default function WatchlistPage() {
   const { t } = useI18n();
+  const { timeframe } = useTimeframe();
+  const collection = useSnapshotStore((s) => s.collections[timeframe]);
+  const triggerRefresh = useSnapshotStore((s) => s.triggerRefresh);
+  const isLoading = useSnapshotStore((s) => s.isLoading);
 
   const [symbols, setSymbols] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
-
-  // Frozen snapshot — only updated during refresh cycles
-  const [frozenCoins, setFrozenCoins] = useState<CoinAnalysis[]>([]);
-  const [displayCountdown, setDisplayCountdown] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
-
   const searchRef = useRef<HTMLDivElement>(null);
-  const symbolsRef = useRef(symbols);
-  const prevHashRef = useRef<Record<string, string>>({});
-  const countdownRef = useRef(REFRESH_SECONDS);
-
-  // Keep ref in sync with state
-  useEffect(() => { symbolsRef.current = symbols; }, [symbols]);
 
   // Load watchlist from localStorage
   useEffect(() => { setSymbols(getWatchlist()); }, []);
-
-  // ── Read-only helpers (capture symbols via ref, never stale) ──
-  const filterAndDetect = useCallback((allCoins: CoinAnalysis[]): CoinAnalysis[] => {
-    const currentSymbols = symbolsRef.current;
-    const filtered = allCoins.filter((c) => currentSymbols.includes(c.marketData.symbol));
-    return sortCoins(filtered);
-  }, []);
-
-  const computeCounts = useCallback((list: CoinAnalysis[]) => {
-    const c: Record<string, number> = {
-      total: symbolsRef.current.length,
-      ready_long: 0, ready_short: 0, watch: 0, wait: 0, weakening: 0, invalid: 0,
-    };
-    for (const coin of list) {
-      const key = getOpportunityKey(coin);
-      c[key] = (c[key] || 0) + 1;
-    }
-    return c;
-  }, []);
-
-  // ── Single source of truth: 1‑second tick ──
-  // First run fetches initial data, subsequent runs honour the countdown.
-  useEffect(() => {
-    let cancelled = false;
-    let isRefreshing = false;
-
-    const tick = async () => {
-      if (cancelled) return;
-
-      countdownRef.current = Math.max(0, countdownRef.current - 1);
-
-      // Refresh when countdown hits 0 (skip on very first tick so initial
-      // fetch can complete first — countdown starts at REFRESH_SECONDS)
-      if (countdownRef.current === 0 && !isRefreshing) {
-        isRefreshing = true;
-        setIsUpdating(true);
-
-        try {
-          const marketData = await fetchMarketDataList();
-          const freshAll = analyzeAllCoins(marketData);
-
-          // Silently update store for cross-page consistency
-          useStore.setState({
-            coins: freshAll,
-            lastUpdated: new Date().toISOString(),
-            isLive: true,
-          });
-
-          const sorted = filterAndDetect(freshAll);
-
-          // Highlight detection vs previous snapshot
-          const newHl = new Set<string>();
-          const newHash: Record<string, string> = {};
-          for (const c of sorted) {
-            const h = coinHash(c);
-            newHash[c.marketData.symbol] = h;
-            if (prevHashRef.current[c.marketData.symbol] && prevHashRef.current[c.marketData.symbol] !== h) {
-              newHl.add(c.marketData.symbol);
-            }
-          }
-          prevHashRef.current = newHash;
-
-          if (!cancelled) {
-            setFrozenCoins(sorted);
-            if (newHl.size > 0) {
-              setHighlighted(newHl);
-              setTimeout(() => { if (!cancelled) setHighlighted(new Set()); }, 2000);
-            }
-          }
-        } catch {
-          // Keep current data on error
-        }
-
-        if (!cancelled) {
-          setIsUpdating(false);
-          countdownRef.current = REFRESH_SECONDS;
-        }
-        isRefreshing = false;
-      }
-
-      // Update countdown display every second
-      if (!cancelled) {
-        const rem = countdownRef.current;
-        const m = Math.floor(rem / 60);
-        const s = rem % 60;
-        setDisplayCountdown(`${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`);
-      }
-    };
-
-    // First tick: fetch initial data immediately, then start countdown
-    (async () => {
-      try {
-        const marketData = await fetchMarketDataList();
-        const freshAll = analyzeAllCoins(marketData);
-
-        useStore.setState({
-          coins: freshAll,
-          lastUpdated: new Date().toISOString(),
-          isLive: true,
-        });
-
-        const sorted = filterAndDetect(freshAll);
-
-        // Init hash tracking
-        const initHash: Record<string, string> = {};
-        for (const c of sorted) {
-          initHash[c.marketData.symbol] = coinHash(c);
-        }
-        prevHashRef.current = initHash;
-
-        if (!cancelled) {
-          setFrozenCoins(sorted);
-          setDisplayCountdown(
-            `${Math.floor(REFRESH_SECONDS / 60).toString().padStart(2, "0")}:${(REFRESH_SECONDS % 60).toString().padStart(2, "0")}`
-          );
-        }
-      } catch {
-        // Initial fetch failed — countdown already running, next tick will retry
-      }
-    })();
-
-    // Start the 1-second interval
-    const id = setInterval(tick, 1000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [filterAndDetect]); // stable callback, runs once
-
-  // Re-sync when symbols change (without restarting the tick cycle)
-  useEffect(() => {
-    const storeCoins = useStore.getState().coins;
-    if (storeCoins.length > 0) {
-      const sorted = filterAndDetect(storeCoins);
-      const newHash: Record<string, string> = {};
-      for (const c of sorted) {
-        newHash[c.marketData.symbol] = coinHash(c);
-      }
-      prevHashRef.current = newHash;
-      setFrozenCoins(sorted);
-    }
-  }, [symbols, filterAndDetect]);
 
   // Click outside search
   useEffect(() => {
@@ -442,27 +290,43 @@ export default function WatchlistPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ── Derived state from frozenCoins ──
+  // ── Derived from snapshots ──
+  const watchlistCoins = useMemo(() => {
+    const all = Object.values(collection);
+    const filtered = all.filter((c) => symbols.includes(c.symbol));
+    return sortCoins(filtered);
+  }, [collection, symbols]);
+
   const pendingSymbols = useMemo(
-    () => symbols.filter((s) => !frozenCoins.some((c) => c.marketData.symbol === s)),
-    [symbols, frozenCoins],
+    () => symbols.filter((s) => !watchlistCoins.some((c) => c.symbol === s)),
+    [symbols, watchlistCoins],
   );
 
-  const counts = useMemo(() => computeCounts(frozenCoins), [frozenCoins, computeCounts]);
+  const counts = useMemo(() => {
+    const c: Record<string, number> = {
+      total: symbols.length,
+      ready_long: 0, ready_short: 0, watch: 0, wait: 0, weakening: 0, invalid: 0,
+    };
+    for (const coin of watchlistCoins) {
+      const key = getOpportunityKey(coin);
+      c[key] = (c[key] || 0) + 1;
+    }
+    return c;
+  }, [watchlistCoins, symbols.length]);
 
-  // Search results from live store (not frozen)
-  const storeCoins = useStore((s) => s.coins);
+  // Search from collection for current timeframe
+  const allSnapshots = useMemo(() => Object.values(collection), [collection]);
   const searchResults = useMemo(() => {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
-    return storeCoins
+    return allSnapshots
       .filter(
         (c) =>
-          !symbols.includes(c.marketData.symbol) &&
-          (c.marketData.symbol.toLowerCase().includes(q) || c.marketData.name.toLowerCase().includes(q)),
+          !symbols.includes(c.symbol) &&
+          (c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)),
       )
       .slice(0, 10);
-  }, [storeCoins, symbols, query]);
+  }, [allSnapshots, symbols, query]);
 
   const handleAdd = useCallback(
     (symbol: string) => {
@@ -480,40 +344,12 @@ export default function WatchlistPage() {
     setSymbols([...updated]);
   }, []);
 
-  const handleManualRefresh = useCallback(async () => {
-    if (isUpdating) return;
-    setIsUpdating(true);
-    try {
-      const marketData = await fetchMarketDataList();
-      const freshAll = analyzeAllCoins(marketData);
-      useStore.setState({ coins: freshAll, lastUpdated: new Date().toISOString(), isLive: true });
-      const sorted = filterAndDetect(freshAll);
-      const newHl = new Set<string>();
-      const newHash: Record<string, string> = {};
-      for (const c of sorted) {
-        const h = coinHash(c);
-        newHash[c.marketData.symbol] = h;
-        if (prevHashRef.current[c.marketData.symbol] && prevHashRef.current[c.marketData.symbol] !== h) {
-          newHl.add(c.marketData.symbol);
-        }
-      }
-      prevHashRef.current = newHash;
-      setFrozenCoins(sorted);
-      if (newHl.size > 0) {
-        setHighlighted(newHl);
-        setTimeout(() => setHighlighted(new Set()), 2000);
-      }
-    } catch { /* keep current data */ }
-    setIsUpdating(false);
-    countdownRef.current = REFRESH_SECONDS;
-  }, [isUpdating, filterAndDetect]);
-
   const showAddCard = symbols.length < MAX;
-  const skeletonCount = Math.min(pendingSymbols.length, MAX - frozenCoins.length);
+  const skeletonCount = Math.min(pendingSymbols.length, MAX - watchlistCoins.length);
 
   return (
     <DashboardLayout>
-      {/* Header with countdown */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold text-white">{t("watchlist.title")}</h2>
@@ -521,8 +357,8 @@ export default function WatchlistPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={handleManualRefresh}
-            disabled={isUpdating}
+            onClick={triggerRefresh}
+            disabled={isLoading}
             className="text-gray-500 hover:text-emerald-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label={t("header.refresh")}
           >
@@ -530,17 +366,10 @@ export default function WatchlistPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </button>
-          {isUpdating ? (
-            <span className="text-[11px] text-emerald-400 font-medium animate-pulse">
-              {t("header.refreshing")}
-            </span>
-          ) : displayCountdown && (
-            <span className="text-[11px] font-mono text-gray-300">
-              {displayCountdown}
-            </span>
-          )}
         </div>
       </div>
+
+      <AnalysisStatus />
 
       {/* Summary */}
       {symbols.length > 0 && <SummaryBar counts={counts} />}
@@ -567,13 +396,13 @@ export default function WatchlistPage() {
               ) : searchResults.length > 0 ? (
                 searchResults.map((c) => (
                   <button
-                    key={c.marketData.symbol}
-                    onClick={() => handleAdd(c.marketData.symbol)}
+                    key={c.symbol}
+                    onClick={() => handleAdd(c.symbol)}
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-gray-800 transition-colors"
                   >
-                    <CoinImage src={c.marketData.image} alt={c.marketData.symbol} symbol={c.marketData.symbol} size={20} />
-                    <span className="font-medium text-white">{c.marketData.symbol}</span>
-                    <span className="text-gray-400 text-xs">{c.marketData.name}</span>
+                    <CoinImage src={c.image} alt={c.symbol} symbol={c.symbol} size={20} />
+                    <span className="font-medium text-white">{c.symbol}</span>
+                    <span className="text-gray-400 text-xs">{c.name}</span>
                     <span className="ml-auto text-emerald-400 text-xs">+{t("watchlist.add_coin")}</span>
                   </button>
                 ))
@@ -603,11 +432,11 @@ export default function WatchlistPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {frozenCoins.map((coin) => (
-            <div key={coin.marketData.symbol} className="group">
+          {watchlistCoins.map((coin) => (
+            <div key={coin.symbol} className="group">
               <CoinCard
                 coin={coin}
-                highlighted={highlighted.has(coin.marketData.symbol)}
+                highlighted={false}
                 onRemove={handleRemove}
               />
             </div>

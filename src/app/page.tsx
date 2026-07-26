@@ -7,8 +7,7 @@ import { Sparkline } from "@/components/Sparkline";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
 import { useTimeframe } from "@/lib/timeframe";
-import { useStore } from "@/store/useStore";
-import { useBinanceWebSocket } from "@/store/useWebSocket";
+import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -57,10 +56,13 @@ function formatPrice(n: number): string {
 }
 
 export default function MarketOverviewPage() {
-  const { loadFromBinance, isLive, indicators, coins } = useStore();
   const { t } = useI18n();
   const { timeframe, getLimit } = useTimeframe();
-  useBinanceWebSocket();
+  const collection = useSnapshotStore((s) => s.collections[timeframe]);
+  const indicators = useSnapshotStore((s) => s.indicators);
+  const lastUpdated = useSnapshotStore((s) => s.lastUpdated);
+  const entries = useMemo(() => Object.values(collection), [collection]);
+  const isLive = lastUpdated !== null;
 
   const [fng, setFng] = useState<FngSnapshot | null>(null);
   const [weeklyData, setWeeklyData] = useState<Record<string, number[]>>({});
@@ -69,8 +71,6 @@ export default function MarketOverviewPage() {
   const [mcLoading, setMcLoading] = useState(false);
 
   useEffect(() => {
-    loadFromBinance();
-
     const end = Math.floor(Date.now() / 1000);
     const start7d = end - 7 * 86400;
     const start1y = end - 365 * 86400;
@@ -95,7 +95,7 @@ export default function MarketOverviewPage() {
       for (const r of klineResults) map[r.id] = r.closes;
       setWeeklyData(map);
     });
-  }, [loadFromBinance, timeframe]);
+  }, [timeframe]);
 
   useEffect(() => {
     setMcLoading(true);
@@ -127,22 +127,22 @@ export default function MarketOverviewPage() {
     return () => { cancelled = true; };
   }, [mcDays, indicators.btcDominance, indicators.totalVolume24h]);
 
-  const longCount = useMemo(() => coins.filter((c) => c.position === "long").length, [coins]);
-  const shortCount = useMemo(() => coins.filter((c) => c.position === "short").length, [coins]);
+  const longCount = useMemo(() => entries.filter((c) => c.tradeSetup.direction === "long").length, [entries]);
+  const shortCount = useMemo(() => entries.filter((c) => c.tradeSetup.direction === "short").length, [entries]);
   const coinCards: CoinCardData[] = useMemo(() => {
     return TOP_COINS.map((tc) => {
-      const coin = coins.find((c) => c.coinId === tc.id);
+      const coin = collection[tc.id];
       return {
         id: tc.id,
         symbol: tc.symbol,
         name: tc.name,
         image: tc.image,
-        price: coin?.marketData.currentPrice ?? 0,
-        change: coin?.marketData.priceChangePercent24h ?? 0,
+        price: coin?.price ?? 0,
+        change: parseFloat(coin?.marketState.changePercent24h?.replace(/[^0-9.\-]/g, "") ?? "0"),
         weeklyClose: weeklyData[tc.id] ?? [],
       };
     });
-  }, [coins, weeklyData]);
+  }, [collection, weeklyData]);
 
   const dominanceSegments = useMemo(() => {
     const total = indicators.totalMarketCap || 1;
@@ -180,7 +180,7 @@ export default function MarketOverviewPage() {
               return (
                 <Link
                   key={coin.id}
-                  href={`/coin/${coin.id}`}
+                  href={`/analysis?coin=${coin.id}`}
                   className="block group bg-gray-900/50 border border-gray-800 rounded-xl hover:bg-gray-800/50 hover:border-gray-700 transition-all overflow-hidden mb-3"
                 >
                   <div className="p-3.5 pb-0">
@@ -217,7 +217,7 @@ export default function MarketOverviewPage() {
                 return (
                   <Link
                     key={coin.id}
-                    href={`/coin/${coin.id}`}
+                    href={`/analysis?coin=${coin.id}`}
                     className="group bg-gray-900/50 border border-gray-800 rounded-xl hover:bg-gray-800/50 hover:border-gray-700 transition-all overflow-hidden"
                   >
                     <div className="p-3.5 pb-0">
@@ -257,7 +257,7 @@ export default function MarketOverviewPage() {
               return (
                 <Link
                   key={coin.id}
-                  href={`/coin/${coin.id}`}
+                  href={`/analysis?coin=${coin.id}`}
                   className="group bg-gray-900/50 border border-gray-800 rounded-xl hover:bg-gray-800/50 hover:border-gray-700 transition-all overflow-hidden"
                 >
                   <div className="p-3.5 pb-0">

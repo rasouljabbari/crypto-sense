@@ -3,7 +3,7 @@ import type { IChartApi, ISeriesApi, UTCTimestamp } from "lightweight-charts";
 
 // ─── Indicator Identifiers ─────────────────────────────────────────────────
 
-export type IndicatorId = "volume" | "rsi" | "dmi";
+export type IndicatorId = "volume" | "rsi" | "dmi" | "sma";
 
 // ─── Indicator Configuration ───────────────────────────────────────────────
 

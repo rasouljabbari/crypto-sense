@@ -102,7 +102,7 @@ export class ChartPaneManager {
 
   private addVolume(data: readonly ChartDataPoint[]): void {
     const pane = this.chart.addPane();
-    pane.setStretchFactor(0.15);
+    pane.setStretchFactor(0.4);
 
     const series = this.chart.addSeries(
       HistogramSeries,
@@ -120,8 +120,8 @@ export class ChartPaneManager {
         value: k.volume,
         color:
           k.close >= k.open
-            ? "rgba(52, 211, 153, 0.35)"
-            : "rgba(239, 68, 68, 0.35)",
+            ? "rgba(52, 211, 153, 0.5)"
+            : "rgba(239, 68, 68, 0.5)",
       }))
     );
 

@@ -17,7 +17,6 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 import { ChartPaneManager } from "./chart/ChartPaneManager";
 import { IndicatorToolbar } from "./chart/IndicatorToolbar";
 import { useIndicatorManager } from "./chart/useIndicatorManager";
-import { CandleCountdown } from "./CandleCountdown";
 import { TimeframeTabs } from "./TimeframeTabs";
 
 // ─── Helpers ────────────────────────────────────────────────────────────
@@ -419,20 +418,21 @@ export function CandlestickChart({ coinId, srLines }: Props) {
     if (!reloadingRef.current && dataRef.current.length > 0) {
       const currentData = dataRef.current;
       const sma7Data = calcSMA(currentData, 7);
-      const sma21Data = calcSMA(currentData, 21);
+      const sma25Data = calcSMA(currentData, 25);
       const sma99Data = calcSMA(currentData, 99);
+      const smaVisible = indicator.isEnabled("sma");
       if (sma7Data.length > 0) {
-        const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: true });
+        const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: smaVisible });
         s.setData(sma7Data);
         newSmaSeries.push(s);
       }
-      if (sma21Data.length > 0) {
-        const s = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: true });
-        s.setData(sma21Data);
+      if (sma25Data.length > 0) {
+        const s = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: smaVisible });
+        s.setData(sma25Data);
         newSmaSeries.push(s);
       }
       if (sma99Data.length > 0) {
-        const s = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: true });
+        const s = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: smaVisible });
         s.setData(sma99Data);
         newSmaSeries.push(s);
       }
@@ -516,14 +516,36 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       }))
     );
 
-    // Update SMA series data in-place
+    // Create or update SMA series
     const sma7Data = calcSMA(data, 7);
-    const sma21Data = calcSMA(data, 21);
+    const sma25Data = calcSMA(data, 25);
     const sma99Data = calcSMA(data, 99);
     const smaArr = smaSeriesArrRef.current;
-    if (smaArr.length > 0 && sma7Data.length > 0) smaArr[0].setData(sma7Data);
-    if (smaArr.length > 1 && sma21Data.length > 0) smaArr[1].setData(sma21Data);
-    if (smaArr.length > 2 && sma99Data.length > 0) smaArr[2].setData(sma99Data);
+    if (smaArr.length === 0 && data.length > 7) {
+      // First load — create SMA series
+      const smaVisible = indicator.isEnabled("sma");
+      const newSeries: ISeriesApi<"Line">[] = [];
+      if (sma7Data.length > 0) {
+        const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: smaVisible });
+        s.setData(sma7Data);
+        newSeries.push(s);
+      }
+      if (sma25Data.length > 0) {
+        const s = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: smaVisible });
+        s.setData(sma25Data);
+        newSeries.push(s);
+      }
+      if (sma99Data.length > 0) {
+        const s = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: smaVisible });
+        s.setData(sma99Data);
+        newSeries.push(s);
+      }
+      smaSeriesArrRef.current = newSeries;
+    } else if (smaArr.length > 0) {
+      if (sma7Data.length > 0) smaArr[0].setData(sma7Data);
+      if (smaArr.length > 1 && sma25Data.length > 0) smaArr[1].setData(sma25Data);
+      if (smaArr.length > 2 && sma99Data.length > 0) smaArr[2].setData(sma99Data);
+    }
 
     // Sync indicator panes
     paneManagerRef.current?.sync(indicator.getVisibleIds(), data);
@@ -533,7 +555,7 @@ export function CandlestickChart({ coinId, srLines }: Props) {
     scheduleLineUpdate();
   }, [data]);
 
-  // ── Dynamic Indicator Sync ──
+  // ── Dynamic Indicator Sync (panes + SMA visibility) ──
   useEffect(() => {
     const pm = paneManagerRef.current;
     const chart = chartRef.current;
@@ -544,6 +566,9 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       if (pm2) {
         pm2.sync(indicator.getVisibleIds(), data);
       }
+      // Toggle SMA lines
+      const smaVisible = indicator.isEnabled("sma");
+      smaSeriesArrRef.current.forEach((s) => s.applyOptions({ visible: smaVisible }));
     });
 
     return unsub;
@@ -564,7 +589,6 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       <div className="flex items-center justify-between mb-3 gap-2">
         <div className="flex items-center gap-2">
           <TimeframeTabs />
-          <CandleCountdown />
           <IndicatorToolbar manager={indicator} />
         </div>
         <div className="flex items-center gap-2">

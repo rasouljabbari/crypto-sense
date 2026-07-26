@@ -120,7 +120,7 @@ export function TreemapChart({ coins }: Props) {
   const total = useMemo(() => data.reduce((s, c) => s + c.size, 0), [data]);
 
   const handleClick = useMemo(() => (node: CoinNode) => {
-    if (node.coinId) router.push(`/coin/${node.coinId}`);
+    if (node.coinId) router.push(`/analysis?coin=${encodeURIComponent(node.coinId)}`);
   }, [router]);
 
   return (
@@ -162,7 +162,7 @@ export function TreemapChart({ coins }: Props) {
       </ResponsiveContainer>
       {data.length > 0 && (
         <div className="absolute bottom-3 left-3 text-[10px] text-gray-500 pointer-events-none">
-          {data.length} coins · ${formatCompact(total)}
+          {t("treemap.coins_count", { count: data.length })} · ${formatCompact(total)}
         </div>
       )}
     </div>

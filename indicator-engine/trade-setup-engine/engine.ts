@@ -28,7 +28,7 @@ import {
   SR_MODERATE_THRESHOLD,
   MIN_TRADE_QUALITY,
 } from "./constants";
-import { roundTo, clamp } from "./utils";
+import { roundTo, clamp } from "../risk-management-engine/utils";
 
 function determineDirection(signal: string): TradeDirection | null {
   if (signal === "strong_buy" || signal === "buy") return "long";

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { useI18n } from "@/i18n/context";
 import type { IChartApi, ISeriesApi } from "lightweight-charts";
 import type { Drawing, DragTarget } from "./useDrawingTools";
 
@@ -106,6 +107,7 @@ export function DrawingOverlay({
   onDeleteSelected,
   onDismissContextMenu,
 }: Props) {
+  const { t } = useI18n();
   const activeDragRef = useRef<{ drawingId: string; target: DragTarget } | null>(null);
 
   // Window-level mousemove / mouseup for drag
@@ -203,7 +205,7 @@ export function DrawingOverlay({
             onClick={() => onDeleteSelected()}
             className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-800 transition-colors"
           >
-            Delete
+            {t("chart.drawing_delete")}
           </button>
         </div>
       )}

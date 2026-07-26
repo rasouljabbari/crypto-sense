@@ -68,7 +68,13 @@
   "treemap": {
     "title": "Market Heatmap",
     "subtitle": "Live crypto market visualized by market cap & price change",
-    "live": "Live"
+    "live": "Live",
+    "coins_count": "{count} coins"
+  },
+  "analysis_status": {
+    "last_closed_candle": "Last Closed Candle",
+    "snapshot_version": "Snapshot Version",
+    "next_snapshot": "Next Snapshot"
   },
   "header": {
     "live": "Live",
@@ -108,9 +114,7 @@
   },
   "search": {
     "placeholder": "Search coins...",
-    "no_results": "No coins found",
-    "add_to_watchlist": "Add to Watchlist",
-    "remove_from_watchlist": "Remove"
+    "no_results": "No coins match your search"
   },
   "watchlist": {
     "title": "Watchlist",
@@ -169,10 +173,6 @@
     "legend_neutral": "Neutral",
     "timeframe": "TF"
   },
-  "search": {
-    "placeholder": "Search coins...",
-    "no_results": "No coins match your search"
-  },
   "coin_row": {
     "long": "LONG",
     "short": "SHORT",
@@ -227,8 +227,8 @@
     "opportunity": "Opportunity"
   },
   "chart": {
-      "1h": "1H",
-      "4h": "4H",
+    "1h": "1H",
+    "4h": "4H",
     "loading": "Loading",
     "failed": "Failed to load chart",
     "no_data": "No data",
@@ -244,6 +244,7 @@
     "adx_label": "ADX",
     "vol_label": "VOL",
     "dmi_label": "DMI",
+    "sma_label": "SMA",
     "ind_label": "Ind",
     "hide_indicator": "Hide {label}",
     "show_indicator": "Show {label}",
@@ -258,7 +259,10 @@
     "vol_quality_moderate": "Moderate volume confirmation",
     "vol_quality_weak": "Weak volume confirmation",
     "vol_quality_neutral": "Neutral volume",
-    "alignment_prefix": "{score}% alignment across {timeframes}"
+    "alignment_prefix": "{score}% alignment across {timeframes}",
+    "drawing_clear_drawings": "Clear drawings",
+    "drawing_clear": "Clear",
+    "drawing_delete": "Delete"
   },
   "dmi": {
     "title": "DMI (14)",
@@ -268,224 +272,6 @@
     "adx": "ADX",
     "trending": "Trending ({val})",
     "ranging": "Ranging ({val})"
-  },
-  "coin_detail": {
-    "back": "Back to Dashboard",
-    "not_found": "Coin not found",
-    "back_dashboard": "Back to dashboard",
-    "rank": "Rank #{rank}",
-    "updated": "Updated {time}",
-    "24h": "24h",
-    "cards": {
-      "analysis_score": {
-        "title": "Analysis Score",
-        "tooltip": "Weighted score (0–100): Volume (35%), Trend (25%), Technicals (20%), Sentiment (20%). ≥60 = LONG, ≤40 = SHORT.",
-        "interpretation": {
-          "zone": "Direction",
-          "conviction": "Conviction",
-          "action_strong_buy": "High conviction — all factors align for a long position.",
-          "action_buy": "Moderate conviction — favorable setup for a long position.",
-          "action_hold": "Slightly bullish — but not enough to act, wait for confirmation.",
-          "action_watch": "Slightly bearish — no clear signal, monitor for direction.",
-          "action_short_entry": "Moderate conviction — favorable setup for a short position.",
-          "action_strong_short": "High conviction — all factors align for a short position."
-        }
-      },
-      "market_stats": {
-        "title": "Market Stats",
-        "tooltip": "Real-time market data from Binance. Hover each stat for details.",
-        "market_cap": "Market Cap",
-        "volume_24h": "24h Volume",
-        "high_24h": "24h High",
-        "low_24h": "24h Low",
-        "ath": "All-Time High",
-        "atl": "All-Time Low",
-        "circ_supply": "Circulating Supply",
-        "vol_mcap": "Volume / M.Cap",
-        "tooltips": {
-          "market_cap": "Total market value = currentPrice × circulatingSupply",
-          "volume_24h": "Total trading volume in the last 24 hours (USD)",
-          "high_24h": "Highest price in the last 24 hours",
-          "low_24h": "Lowest price in the last 24 hours",
-          "ath": "Highest price since the coin's launch",
-          "atl": "Lowest price since the coin's launch",
-          "circ_supply": "Number of coins currently in circulation",
-          "vol_mcap": "24h Volume ÷ Market Cap — liquidity indicator; higher = more active trading"
-        }
-      },
-      "technical_indicators": {
-        "title": "Technical Indicators",
-        "tooltip": "Hover each indicator for a brief explanation of what it means.",
-        "rsi": "RSI (14)",
-        "macd": "MACD",
-        "macd_signal": "MACD Signal",
-        "macd_histogram": "MACD Histogram",
-        "adx": "ADX",
-        "ema_9": "EMA 9",
-        "ema_21": "EMA 21",
-        "ema_alignment": "EMA Alignment",
-        "atr": "ATR",
-        "bb_upper": "Bollinger Upper",
-        "bb_lower": "Bollinger Lower",
-        "bb_position": "Bollinger Position",
-        "tooltips": {
-          "rsi": "Relative Strength Index (14 periods): >70 = overbought, <30 = oversold. Helps identify potential reversal points.",
-          "macd": "Moving Average Convergence Divergence: trend-following momentum indicator. MACD > Signal = bullish momentum.",
-          "macd_signal": "9-period EMA of MACD line. Crossovers with MACD generate trade signals.",
-          "macd_histogram": "MACD line − Signal line. Positive = increasing momentum, negative = decreasing momentum.",
-          "adx": "Average Directional Index: measures trend strength regardless of direction. >25 = strong trend, <20 = weak/no trend.",
-          "ema_9": "9-period Exponential Moving Average. Shorter-term trend indicator. Price above = short-term uptrend.",
-          "ema_21": "21-period Exponential Moving Average. Medium-term trend indicator. Price above = medium-term uptrend.",
-          "ema_alignment": "Relative positioning of EMA 9, 21, and 50. Bullish alignment: 9 > 21 > 50. Bearish: 9 < 21 < 50.",
-          "atr": "Average True Range: measures volatility. High ATR = large price swings, low ATR = quiet market.",
-          "bb_upper": "Upper band (2 std dev above middle). Price touching this may indicate overbought conditions.",
-          "bb_lower": "Lower band (2 std dev below middle). Price touching this may indicate oversold conditions.",
-          "bb_position": "Price position relative to Bollinger Bands. Above upper = overbought, below lower = oversold."
-        }
-      },
-      "tech_interpret": {
-        "rsi": {
-          "oversold": "Oversold",
-          "neutral": "Neutral",
-          "overbought": "Overbought",
-          "extreme_oversold": "Extreme oversold — strong reversal signal likely",
-          "oversold_desc": "Oversold territory — bullish recovery possible",
-          "extreme_overbought": "Extreme overbought — pullback risk elevated",
-          "overbought_desc": "Overbought territory — selling pressure may increase",
-          "bullish_zone": "Bullish zone — momentum favoring buyers",
-          "bearish_zone": "Bearish zone — momentum favoring sellers",
-          "mid_range": "Mid range — no strong directional signal"
-        },
-        "macd": {
-          "bullish_cross": "Bullish Cross",
-          "bearish_cross": "Bearish Cross",
-          "neutral": "Neutral",
-          "bullish_desc": "Momentum increasing — bullish crossover confirmed",
-          "bearish_desc": "Momentum decreasing — bearish crossover confirmed",
-          "converging": "Lines converging — potential crossover forming"
-        },
-        "histogram": {
-          "strong": "Strong",
-          "moderate": "Moderate",
-          "weak": "Weak",
-          "strong_bullish": "Strong bullish momentum — buyers in control",
-          "strong_bearish": "Strong bearish momentum — sellers in control",
-          "moderate_bullish": "Moderate bullish momentum building",
-          "moderate_bearish": "Moderate bearish momentum building",
-          "fading": "Momentum fading — direction unclear"
-        },
-        "adx": {
-          "very_strong": "Very Strong",
-          "strong": "Strong",
-          "moderate": "Moderate",
-          "weak": "Weak",
-          "very_strong_desc": "Very strong trend — high conviction direction",
-          "strong_desc": "Strong trend — directional bias clear",
-          "moderate_desc": "Moderate trend — direction forming",
-          "weak_desc": "Weak trend — choppy/ranging market likely"
-        },
-        "ema": {
-          "bullish": "Bullish",
-          "bearish": "Bearish",
-          "neutral": "Mixed",
-          "mixed": "Mixed",
-          "bullish_desc": "Bullish alignment — all EMAs stacked bullishly",
-          "bearish_desc": "Bearish alignment — all EMAs stacked bearishly",
-          "mixed_desc": "Mixed alignment — no clear trend direction"
-        },
-        "atr": {
-          "high": "High Volatility",
-          "medium": "Medium Volatility",
-          "low": "Low Volatility",
-          "high_desc": "High volatility — wider stops needed, larger swings expected",
-          "medium_desc": "Medium volatility — normal trading conditions",
-          "low_desc": "Low volatility — breakout potential building"
-        },
-        "bb": {
-          "above": "Above Upper",
-          "below": "Below Lower",
-          "inside": "Inside Bands",
-          "upper_tag": "Upper Band",
-          "lower_tag": "Lower Band",
-          "mid_tag": "Mid Band",
-          "above_desc": "Price above upper band — overbought, potential reversal",
-          "below_desc": "Price below lower band — oversold, potential bounce",
-          "inside_desc": "Price inside bands — normal range, no extreme"
-        }
-      },
-      "trend_analysis": {
-        "title": "Trend Analysis",
-        "tooltip": "Analysis of short, medium, and long-term price trends based on recent price action.",
-        "short_term": "Short Term",
-        "medium_term": "Medium Term",
-        "long_term": "Long Term",
-        "trend_score": "Trend Score",
-        "bullish": "Bullish",
-        "bearish": "Bearish",
-        "neutral": "Neutral",
-        "description_bullish": "Strong upward momentum with increasing buying pressure",
-        "description_bearish": "Downward trend with selling pressure dominating",
-        "description_neutral": "Consolidating with no clear directional bias"
-      },
-      "news_sentiment": {
-        "title": "News & Sentiment",
-        "tooltip": "Aggregated sentiment from news and social media sources.",
-        "positive": "Positive",
-        "negative": "Negative",
-        "neutral": "Neutral",
-        "positive_ratio": "{pct}% positive",
-        "mentions": "{count} mentions",
-        "no_news": "No recent news for this coin"
-      },
-      "support_resistance": {
-        "title": "Support & Resistance",
-        "tooltip": "Key price levels where the coin has historically found support (buying pressure) or resistance (selling pressure).",
-        "support": "Support {level}",
-        "resistance": "Resistance {level}",
-        "support_levels": "Support Levels",
-        "resistance_levels": "Resistance Levels"
-      }
-    },
-    "subscores": {
-      "volume": "Volume",
-      "trend": "Trend",
-      "momentum": "Momentum",
-      "technicals": "Technicals",
-      "sentiment": "Sentiment",
-      "confidence": "Confidence",
-      "trade_quality": "Trade Quality",
-      "risk": "Risk"
-    },
-    "data_source": "Binance",
-    "signal": "Signal",
-    "score": "Score: {score}",
-    "price_chart": "Price Chart",
-    "fallback_message": "Full analysis not available for this coin. Only Binance market data is shown.",
-    "hero": {
-      "opportunity": "Opportunity",
-      "score": "Score",
-      "confidence": "Confidence",
-      "quality": "Trade Quality",
-      "risk": "Risk",
-      "analysis_period": "{timeframe} Analysis",
-      "last_updated": "Updated {time}",
-      "opportunity_question": "Is this coin worth trading right now?"
-    },
-    "trade_setup": {
-      "title": "Trade Setup",
-      "direction": "Direction",
-      "long": "Long",
-      "short": "Short",
-      "entry": "Entry Price",
-      "current_price": "Current Price",
-      "stop_loss": "Stop Loss",
-      "take_profit": "Take Profit",
-      "risk_reward": "Risk / Reward",
-      "expected_profit": "Expected Profit",
-      "expected_loss": "Expected Loss",
-      "risk_level": "Risk Level",
-      "no_trade": "No Valid Trade Setup"
-    }
   },
   "order_book": {
     "title": "Order Book",
@@ -540,7 +326,6 @@
       "trend": "Trend",
       "momentum": "Momentum",
       "volume": "Volume",
-      "sentiment": "Sentiment",
       "risk": "Risk",
       "confidence": "Confidence"
     },
@@ -609,12 +394,6 @@
         "neutral": "Neutral",
         "warning": "Alert"
       }
-    },
-    "news": {
-      "articles": "Articles",
-      "duplicates_removed": "Duplicates removed",
-      "topics": "Topics",
-      "no_news": "No news available"
     },
     "ai_summary": {
       "no_key": "Configure OPENAI_API_KEY for AI analysis",
@@ -730,6 +509,7 @@
       "weak": "Weak"
     },
     "active": "Active",
+    "trend_analysis_title": "Trend Analysis",
     "signal_reasons": {
       "title": "Why This Signal",
       "no_reasons": "No signal reasons available",
@@ -814,6 +594,39 @@
       "rr_below_min": "Risk/reward for TP1 ({value}R) is below minimum ({min}R)",
       "quality_below_min": "Trade quality ({value}) is below minimum ({min})",
       "no_valid_setup": "No valid trade setup."
+    },
+    "tech_interpret": {
+      "rsi": {
+        "overbought": "Overbought",
+        "oversold": "Oversold",
+        "neutral": "Neutral"
+      },
+      "macd": {
+        "bullish_cross": "Bullish Cross",
+        "bearish_cross": "Bearish Cross",
+        "converging": "Converging"
+      },
+      "adx": {
+        "very_strong": "Very Strong Trend",
+        "strong": "Strong Trend",
+        "moderate": "Moderate Trend",
+        "weak": "Weak Trend"
+      },
+      "ema": {
+        "bullish": "Bullish Alignment",
+        "bearish": "Bearish Alignment",
+        "mixed": "Mixed"
+      },
+      "atr": {
+        "high": "High Volatility",
+        "medium": "Medium Volatility",
+        "low": "Low Volatility"
+      },
+      "bb": {
+        "above": "Above Upper Band",
+        "below": "Below Lower Band",
+        "inside": "Inside Bands"
+      }
     },
     "reasons": {
       "strong_bullish_alignment": "Strong bullish alignment: EMA20 > EMA50 > EMA200",
@@ -964,6 +777,7 @@
     "fa": "فارسی"
   },
   "timeframe": {
+    "label": "Timeframe",
     "15m": "15 Minutes",
     "1h": "1 Hour",
     "4h": "4 Hours",

@@ -1,5 +1,5 @@
-import { MarketData, TechnicalIndicators, TrendAnalysis, SentimentData, NewsItem, CoinAnalysis, PositionType, SignalType, RiskLevel, TrendLabel, TradeStatus, TradeSetupData } from "./types";
-import { generateTechnicalIndicators, MOCK_NEWS } from "./mockData";
+import { MarketData, TechnicalIndicators, TrendAnalysis, CoinAnalysis, PositionType, SignalType, RiskLevel, TrendLabel, TradeStatus, TradeSetupData } from "./types";
+import { generateTechnicalIndicators } from "./mockData";
 import { generateRecommendation } from "./recommendationEngine";
 import { generateTradeSetup } from "indicator-engine/risk-management-engine";
 import { trendStrength } from "indicator-engine";
@@ -57,17 +57,6 @@ function calculateTrendScore(priceChange: number, indicators: TechnicalIndicator
   if (priceChange > 0 && volMcapRatio > 0.1) score += 5;
   else if (priceChange < 0 && volMcapRatio > 0.1) score -= 5;
 
-  return cap(score);
-}
-
-function calculateSentimentScore(news: NewsItem[], coinId: string): number {
-  const relevantNews = news.filter(n => n.relatedCoins.includes(coinId));
-  if (relevantNews.length === 0) return 50;
-  let score = 50;
-  for (const n of relevantNews) {
-    if (n.sentiment === "positive") score += 10;
-    else if (n.sentiment === "negative") score -= 10;
-  }
   return cap(score);
 }
 
@@ -132,11 +121,10 @@ function calculateMomentumScore(indicators: TechnicalIndicators): number {
 function determinePosition(
   trendScore: number,
   volumeScore: number,
-  sentimentScore: number,
   technicalScore: number
 ): { position: PositionType; overallScore: number } {
   const overallScore = cap(
-    trendScore * 0.30 + volumeScore * 0.25 + sentimentScore * 0.15 + technicalScore * 0.30
+    trendScore * 0.35 + volumeScore * 0.30 + technicalScore * 0.35
   );
 
   let position: PositionType;
@@ -338,12 +326,11 @@ function computeConfidence(
   volumeScore: number,
   trendScore: number,
   technicalScore: number,
-  sentimentScore: number,
   overallScore: number,
   position: PositionType,
 ): number {
   // Weighted average of raw scores (each sub-score contributes)
-  const raw = volumeScore * 0.15 + trendScore * 0.35 + technicalScore * 0.35 + sentimentScore * 0.15;
+  const raw = volumeScore * 0.20 + trendScore * 0.40 + technicalScore * 0.40;
 
   // Bonus: overallScore alignment with position direction
   let bonus = 0;
@@ -514,13 +501,6 @@ function validateInternalConsistency(coin: CoinAnalysis): ValidationResult {
     return { valid: false, reason: `score=${overallScore} but signal=${signal}` };
   }
 
-  // 4. Opportunity vs Signal (strict rules)
-  if (signal === "strong_sell" || signal === "sell") {
-    if (recommendation !== "skip") {
-      return { valid: false, reason: `signal=${signal} must map to opportunity=skip, got ${recommendation}` };
-    }
-  }
-
   if (signal === "neutral" && recommendation === "ready") {
     return { valid: false, reason: `neutral signal cannot produce ready opportunity` };
   }
@@ -573,28 +553,17 @@ export function analyzeCoin(
 
   const volumeScore = calculateVolumeScore(marketData.volume24h, marketData.marketCap);
   const trendScore = calculateTrendScore(marketData.priceChangePercent24h, indicators, marketData);
-  const sentimentScore = calculateSentimentScore(MOCK_NEWS, marketData.id);
   const technicalScore = calculateTechnicalScore(indicators);
   const momentumScore = calculateMomentumScore(indicators);
 
-  const { position, overallScore } = determinePosition(trendScore, volumeScore, sentimentScore, technicalScore);
+  const { position, overallScore } = determinePosition(trendScore, volumeScore, technicalScore);
   const trendLabel = computeTrendLabel(indicators);
   const trendAnalysis = generateTrendAnalysis(marketData.priceChangePercent24h, indicators);
-
-  const coinNews = MOCK_NEWS.filter(n => n.relatedCoins.includes(marketData.id));
-  const sentiment: SentimentData = {
-    overall: sentimentScore > 60 ? "positive" : sentimentScore < 40 ? "negative" : "neutral",
-    score: sentimentScore,
-    twitterMentions: Math.floor(Math.random() * 50000) + 5000,
-    positiveRatio: sentimentScore / 100,
-    newsCount: coinNews.length,
-    recentNews: coinNews,
-  };
 
   const riskScore = computeRiskScore({ position, overallScore, trendLabel, technicalIndicators: indicators });
   const riskReward = computeRiskReward(marketData.currentPrice, indicators.supportLevels, indicators.resistanceLevels, position, indicators.atr);
   const signal = computeSignal(position, overallScore, trendLabel, indicators.macd.histogram, indicators.adx);
-  const confidence = computeConfidence(volumeScore, trendScore, technicalScore, sentimentScore, overallScore, position);
+  const confidence = computeConfidence(volumeScore, trendScore, technicalScore, overallScore, position);
   const tradeQuality = computeTradeQuality(position, trendLabel, technicalScore, volumeScore, overallScore, indicators.adx);
   const riskLevel = computeRiskLevel(riskScore);
 
@@ -644,13 +613,11 @@ export function analyzeCoin(
     volumeScore,
     trendScore,
     momentumScore,
-    sentimentScore,
     technicalScore,
     riskScore,
     marketData,
     technicalIndicators: indicators,
     trendAnalysis,
-    sentiment,
     lastUpdated: new Date().toISOString(),
     signal,
     confidence,

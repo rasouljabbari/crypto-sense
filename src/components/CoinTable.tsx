@@ -1,10 +1,14 @@
 "use client";
 
 import { useI18n } from "@/i18n/context";
+import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
+import { useTimeframe } from "@/lib/timeframe";
 import { useStore } from "@/store/useStore";
 import { useMemo, useState } from "react";
 import { CoinRow } from "./CoinRow";
 import { FilterBar } from "./FilterBar";
+
+function ss(s: string): string { return s.toLowerCase().replace(/\s+/g, "_"); }
 
 function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
   if (!active) return <span className="text-gray-600 ml-0.5">↕</span>;
@@ -12,23 +16,58 @@ function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
 }
 
 export function CoinTable() {
-  const { filteredCoins, coins, filters, setFilters } = useStore();
+  const { timeframe } = useTimeframe();
+  const collection = useSnapshotStore((s) => s.collections[timeframe]);
+  const entries = useMemo(() => Object.values(collection), [collection]);
+  const { filters, setFilters } = useStore();
   const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const longCount = coins.filter((c) => c.position === "long").length;
-  const shortCount = coins.filter((c) => c.position === "short").length;
-  const neutralCount = coins.filter((c) => c.position === "neutral").length;
+  const longCount = entries.filter((c) => c.tradeSetup.direction === "long").length;
+  const shortCount = entries.filter((c) => c.tradeSetup.direction === "short").length;
+  const neutralCount = entries.filter((c) => !c.tradeSetup.direction).length;
 
   const searched = useMemo(() => {
-    if (!searchQuery.trim()) return filteredCoins;
+    let list = [...entries];
+    // position filter
+    if (filters.positionType !== "all") {
+      list = list.filter((c) => c.tradeSetup.direction === filters.positionType);
+    }
+    // min score filter
+    if (filters.minScore > 0) {
+      list = list.filter((c) => (c.opportunity.confidence ?? 0) >= filters.minScore);
+    }
+    // sort
+    const order = filters.sortOrder === "asc" ? 1 : -1;
+    list.sort((a, b) => {
+      const sa = ss(a.opportunity.signal);
+      const sb = ss(b.opportunity.signal);
+      switch (filters.sortBy) {
+        case "name": return a.symbol.localeCompare(b.symbol) * order;
+        case "recommendation": return (a.opportunity.recommendation < b.opportunity.recommendation ? -1 : 1) * order;
+        case "signal": return (sa < sb ? -1 : 1) * order;
+        case "confidence":
+        case "score": return (a.opportunity.confidence - b.opportunity.confidence) * order;
+        case "tradeQuality": return ((a.tradeSetup.quality ?? 0) - (b.tradeSetup.quality ?? 0)) * order;
+        case "trend": return (ss(a.marketState.trend) < ss(b.marketState.trend) ? -1 : 1) * order;
+        case "volume": {
+          const va = parseFloat(a.marketState.volume.replace(/[^0-9.]/g, "")) || 0;
+          const vb = parseFloat(b.marketState.volume.replace(/[^0-9.]/g, "")) || 0;
+          return (va - vb) * order;
+        }
+        case "priceChange": {
+          const pa = parseFloat(a.marketState.changePercent24h.replace(/[^0-9.\-]/g, "")) || 0;
+          const pb = parseFloat(b.marketState.changePercent24h.replace(/[^0-9.\-]/g, "")) || 0;
+          return (pa - pb) * order;
+        }
+        default: return 0;
+      }
+    });
+
+    if (!searchQuery.trim()) return list;
     const q = searchQuery.toLowerCase();
-    return filteredCoins.filter(
-      (c) =>
-        c.marketData.name.toLowerCase().includes(q) ||
-        c.marketData.symbol.toLowerCase().includes(q)
-    );
-  }, [filteredCoins, searchQuery]);
+    return list.filter((c) => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q));
+  }, [entries, filters, searchQuery]);
 
   function toggleSort(col: string) {
     if (filters.sortBy === col) {
@@ -118,7 +157,7 @@ export function CoinTable() {
 
             <div className="divide-y divide-gray-800/50">
               {searched.map((coin) => (
-                <CoinRow key={coin.coinId} coin={coin} />
+                <CoinRow key={coin.coin} coin={coin} />
               ))}
             </div>
 
@@ -132,7 +171,7 @@ export function CoinTable() {
       </div>
 
       <p className="text-xs text-gray-600 text-right">
-        {t("table.showing", { visible: searched.length, total: coins.length })}
+        {t("table.showing", { visible: searched.length, total: entries.length })}
       </p>
     </div>
   );

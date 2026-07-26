@@ -26,7 +26,8 @@ interface McDataPoint {
 }
 
 export default function MarketCapChartInner({ mcData, mcDays }: { mcData: McDataPoint[]; mcDays: number }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const dateLocale = locale === "fa" ? "fa-IR" : locale === "tr" ? "tr-TR" : "en-US";
 
   const vals = mcData.map((d) => d.value);
   const last = vals[vals.length - 1];
@@ -56,8 +57,8 @@ export default function MarketCapChartInner({ mcData, mcDays }: { mcData: McData
           tickFormatter={(ts: number) => {
             const d = new Date(ts * 1000);
             return mcDays === 0
-              ? d.toLocaleDateString("en-US", { month: "short", year: "2-digit" })
-              : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+              ? d.toLocaleDateString(dateLocale, { month: "short", year: "2-digit" })
+              : d.toLocaleDateString(dateLocale, { month: "short", day: "numeric" });
           }}
           interval="preserveStartEnd"
           minTickGap={50}
@@ -97,7 +98,7 @@ export default function MarketCapChartInner({ mcData, mcDays }: { mcData: McData
             return (
               <div className="bg-gray-900/90 backdrop-blur-sm border border-gray-700 rounded-lg px-3 py-2 shadow-xl text-xs space-y-1">
                 <p className="text-gray-400">
-                  {new Date(d.timestamp * 1000).toLocaleDateString("en-US", {
+                  {new Date(d.timestamp * 1000).toLocaleDateString(dateLocale, {
                     month: "short", day: "numeric", year: "numeric",
                   })}
                 </p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
+import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
 import { useI18n } from "@/i18n/context";
 import { useState, useEffect } from "react";
 
@@ -22,7 +22,9 @@ function timeUntil(iso: string): string {
 }
 
 export function RefreshStatus() {
-  const { isLoading, isRefreshing, lastUpdated, nextRefreshAt, refreshError, reanalyzeSilent, startAutoRefresh } = useStore();
+  const isLoading = useSnapshotStore((s) => s.isLoading);
+  const lastUpdated = useSnapshotStore((s) => s.lastUpdated);
+  const triggerRefresh = useSnapshotStore((s) => s.triggerRefresh);
   const { t } = useI18n();
   const [now, setNow] = useState(Date.now());
 
@@ -31,70 +33,22 @@ export function RefreshStatus() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const cleanup = startAutoRefresh();
-    return cleanup;
-  }, [startAutoRefresh]);
-
   if (isLoading) return null;
 
   return (
     <div className="flex items-center gap-3 px-1 mb-3 text-[11px] flex-wrap">
-      {isRefreshing && (
-        <span className="flex items-center gap-1.5 text-emerald-400">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          {t("header.refreshing")}
-        </span>
-      )}
-
       {lastUpdated && (
         <span className="text-gray-500">
           {t("refresh_status.updated")} <span className="text-gray-400 font-mono">{timeAgo(lastUpdated)} {t("refresh_status.ago")}</span>
         </span>
       )}
 
-      {nextRefreshAt && !isRefreshing && (
-        <span className="text-gray-500">
-          {t("refresh_status.next")} <span className="text-gray-400 font-mono">{timeUntil(nextRefreshAt)}</span>
-        </span>
-      )}
-
-      {refreshError && (
-        <span className="flex items-center gap-1.5 text-red-400">
-          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 8v4M12 16h.01" />
-          </svg>
-          {refreshError}
-          <button
-            onClick={() => reanalyzeSilent()}
-            className="underline hover:text-red-300 transition-colors"
-          >
-            {t("header.refresh")}
-          </button>
-        </span>
-      )}
-
       <button
-        onClick={() => {
-          reanalyzeSilent();
-          if (nextRefreshAt) {
-            const ms = 5 * 60 * 1000;
-            useStore.setState({ nextRefreshAt: new Date(Date.now() + ms).toISOString() });
-          }
-        }}
-        className={`ml-auto flex items-center gap-1 text-gray-500 hover:text-gray-300 transition-colors ${isRefreshing ? "opacity-50 pointer-events-none" : ""}`}
+        onClick={triggerRefresh}
+        className="ml-auto flex items-center gap-1 text-gray-500 hover:text-gray-300 transition-colors"
         title={t("header.refresh")}
       >
-        <svg
-          className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="23 4 23 10 17 10" />
           <polyline points="1 20 1 14 7 14" />
           <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />

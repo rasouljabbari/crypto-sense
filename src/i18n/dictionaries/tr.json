@@ -68,7 +68,13 @@
   "treemap": {
     "title": "Piyasa Isı Haritası",
     "subtitle": "Canlı kripto piyasası, piyasa değeri ve fiyat değişimine göre görselleştirildi",
-    "live": "Canlı"
+    "live": "Canlı",
+    "coins_count": "{count} coin"
+  },
+  "analysis_status": {
+    "last_closed_candle": "Son Kapanan Mum",
+    "snapshot_version": "Anlık Görüntü Sürümü",
+    "next_snapshot": "Sonraki Anlık Görüntü"
   },
   "header": {
     "live": "Canlı",
@@ -108,9 +114,7 @@
   },
   "search": {
     "placeholder": "Coin ara...",
-    "no_results": "Coin bulunamadı",
-    "add_to_watchlist": "İzleme Listesine Ekle",
-    "remove_from_watchlist": "Kaldır"
+    "no_results": "Aramanızla eşleşen coin yok"
   },
   "watchlist": {
     "title": "İzleme Listesi",
@@ -169,10 +173,6 @@
     "legend_neutral": "Nötr",
     "timeframe": "ZF"
   },
-  "search": {
-    "placeholder": "Coin ara...",
-    "no_results": "Aramanızla eşleşen coin yok"
-  },
   "coin_row": {
     "long": "LONG",
     "short": "SHORT",
@@ -227,8 +227,8 @@
     "opportunity": "Fırsat"
   },
   "chart": {
-      "1h": "1 Saatlik",
-      "4h": "4 Saatlik",
+    "1h": "1 Saatlik",
+    "4h": "4 Saatlik",
     "loading": "Yükleniyor",
     "failed": "Grafik yüklenemedi",
     "no_data": "Veri yok",
@@ -244,6 +244,7 @@
     "adx_label": "ADX",
     "vol_label": "VOL",
     "dmi_label": "DMI",
+    "sma_label": "SMA",
     "ind_label": "Ind",
     "hide_indicator": "{label} Gizle",
     "show_indicator": "{label} Göster",
@@ -258,7 +259,10 @@
     "vol_quality_moderate": "Orta hacim onayı",
     "vol_quality_weak": "Zayıf hacim onayı",
     "vol_quality_neutral": "Nötr hacim",
-    "alignment_prefix": "{timeframes} arasında {score}% uyum"
+    "alignment_prefix": "{timeframes} arasında {score}% uyum",
+    "drawing_clear_drawings": "Çizimleri temizle",
+    "drawing_clear": "Temizle",
+    "drawing_delete": "Sil"
   },
   "dmi": {
     "title": "DMI (14)",
@@ -268,224 +272,6 @@
     "adx": "ADX",
     "trending": "Trendli ({val})",
     "ranging": "Yatay ({val})"
-  },
-  "coin_detail": {
-    "back": "Panoya Dön",
-    "not_found": "Coin bulunamadı",
-    "back_dashboard": "Panoya dön",
-    "rank": "Sıra #{rank}",
-    "updated": "Güncellendi {time}",
-    "24h": "24s",
-    "cards": {
-      "analysis_score": {
-        "title": "Analiz Puanı",
-        "tooltip": "Ağırlıklı puan (0–100): Hacim (%35), Trend (%25), Teknikler (%20), Duyarlılık (%20). ≥60 = LONG, ≤40 = SHORT.",
-        "interpretation": {
-          "zone": "Yön",
-          "conviction": "Güven",
-          "action_strong_buy": "Yüksek güven — tüm faktörler long pozisyon için uyumlu.",
-          "action_buy": "Orta güven — long pozisyon için uygun durum.",
-          "action_hold": "Hafif yükseliş — ama yeterli değil, onay bekleyin.",
-          "action_watch": "Hafif düşüş — net sinyal yok, yönü izleyin.",
-          "action_short_entry": "Orta güven — short pozisyon için uygun durum.",
-          "action_strong_short": "Yüksek güven — tüm faktörler short pozisyon için uyumlu."
-        }
-      },
-      "market_stats": {
-        "title": "Piyasa İstatistikleri",
-        "tooltip": "Binance'den gerçek zamanlı piyasa verileri. Detaylar için her istatistiğin üzerine gelin.",
-        "market_cap": "Piyasa Değeri",
-        "volume_24h": "24s Hacim",
-        "high_24h": "24s En Yüksek",
-        "low_24h": "24s En Düşük",
-        "ath": "Tüm Zamanların En Yükseği",
-        "atl": "Tüm Zamanların En Düşüğü",
-        "circ_supply": "Dolaşımdaki Arz",
-        "vol_mcap": "Hacim / Piy.D.",
-        "tooltips": {
-          "market_cap": "Toplam piyasa değeri = güncelFiyat × dolaşımdakiArz",
-          "volume_24h": "Son 24 saatteki toplam işlem hacmi (USD)",
-          "high_24h": "Son 24 saatteki en yüksek fiyat",
-          "low_24h": "Son 24 saatteki en düşük fiyat",
-          "ath": "Coin'in çıkışından bu yana en yüksek fiyat",
-          "atl": "Coin'in çıkışından bu yana en düşük fiyat",
-          "circ_supply": "Şu anda dolaşımda olan coin sayısı",
-          "vol_mcap": "24s Hacim ÷ Piyasa Değeri — likidite göstergesi; yüksek = daha aktif işlem"
-        }
-      },
-      "technical_indicators": {
-        "title": "Teknik Göstergeler",
-        "tooltip": "Kısa bir açıklama görmek için her göstergenin üzerine gelin.",
-        "rsi": "RSI (14)",
-        "macd": "MACD",
-        "macd_signal": "MACD Sinyali",
-        "macd_histogram": "MACD Histogramı",
-        "adx": "ADX",
-        "ema_9": "EMA 9",
-        "ema_21": "EMA 21",
-        "ema_alignment": "EMA Hizalaması",
-        "atr": "ATR",
-        "bb_upper": "Bollinger Üst",
-        "bb_lower": "Bollinger Alt",
-        "bb_position": "Bollinger Pozisyonu",
-        "tooltips": {
-          "rsi": "Göreceli Güç Endeksi (14 dönem): >70 = aşırı alım, <30 = aşırı satım. Potansiyel dönüş noktalarını belirlemeye yardımcı olur.",
-          "macd": "Hareketli Ortalama Yakınsama Iraksama: trend takip momentum göstergesi. MACD > Sinyal = yükseliş momentumu.",
-          "macd_signal": "MACD çizgisinin 9 dönemlik EMA'sı. MACD ile kesişmeler alım/satım sinyali üretir.",
-          "macd_histogram": "MACD çizgisi − Sinyal çizgisi. Pozitif = artan momentum, negatif = azalan momentum.",
-          "adx": "Ortalama Yön Endeksi: yön ne olursa olsun trend gücünü ölçer. >25 = güçlü trend, <20 = zayıf/trend yok.",
-          "ema_9": "9 dönemlik Üstel Hareketli Ortalama. Kısa vadeli trend göstergesi. Fiyat üstünde = kısa vadeli yükseliş trendi.",
-          "ema_21": "21 dönemlik Üstel Hareketli Ortalama. Orta vadeli trend göstergesi. Fiyat üstünde = orta vadeli yükseliş trendi.",
-          "ema_alignment": "EMA 9, 21 ve 50'nin göreli konumlanması. Yükseliş hizalaması: 9 > 21 > 50. Düşüş: 9 < 21 < 50.",
-          "atr": "Ortalama Gerçek Aralık: volatiliteyi ölçer. Yüksek ATR = büyük fiyat salınımları, düşük ATR = sessiz piyasa.",
-          "bb_upper": "Üst bant (orta bandın 2 std sapma üstü). Fiyatın bu banda değmesi aşırı alım koşullarını gösterebilir.",
-          "bb_lower": "Alt bant (orta bandın 2 std sapma altı). Fiyatın bu banda değmesi aşırı satım koşullarını gösterebilir.",
-          "bb_position": "Fiyatın Bollinger Bantlarına göre pozisyonu. Üst bant üstü = aşırı alım, alt bant altı = aşırı satım."
-        }
-      },
-      "tech_interpret": {
-        "rsi": {
-          "oversold": "Aşırı Satılmış",
-          "neutral": "Nötr",
-          "overbought": "Aşırı Alınmış",
-          "extreme_oversold": "Aşırı satılmış — güçlü ters sinyal olası",
-          "oversold_desc": "Aşırı satım bölgesi — yükseliş kurtulması mümkün",
-          "extreme_overbought": "Aşırı alınmış — geri çekilme riski yüksek",
-          "overbought_desc": "Aşırı alım bölgesi — satış baskısı artabilir",
-          "bullish_zone": "Yükseliş bölgesi — alıcılar lehine momentum",
-          "bearish_zone": "Düşüş bölgesi — satıcılar lehine momentum",
-          "mid_range": "Orta aralık — güçlü yön sinyali yok"
-        },
-        "macd": {
-          "bullish_cross": "Yükseliş Kesişimi",
-          "bearish_cross": "Düşüş Kesişimi",
-          "neutral": "Nötr",
-          "bullish_desc": "Momentum artıyor — yükseliş kesişimi doğrulandı",
-          "bearish_desc": "Momentum azalıyor — düşüş kesişimi doğrulandı",
-          "converging": "Çizgiler yaklaşıyor — olası kesişme oluşuyor"
-        },
-        "histogram": {
-          "strong": "Güçlü",
-          "moderate": "Orta",
-          "weak": "Zayıf",
-          "strong_bullish": "Güçlü yükseliş momentumu — alıcılar kontrolde",
-          "strong_bearish": "Güçlü düşüş momentumu — satıcılar kontrolde",
-          "moderate_bullish": "Orta yükseliş momentumu artıyor",
-          "moderate_bearish": "Orta düşüş momentumu artıyor",
-          "fading": "Momentum azalıyor — yön belirsiz"
-        },
-        "adx": {
-          "very_strong": "Çok Güçlü",
-          "strong": "Güçlü",
-          "moderate": "Orta",
-          "weak": "Zayıf",
-          "very_strong_desc": "Çok güçlü trend — yüksek güven yönü",
-          "strong_desc": "Güçlü trend — yönel önyargı net",
-          "moderate_desc": "Orta trend — yön oluşuyor",
-          "weak_desc": "Zayıf trend — dalgalı/piyasa olası"
-        },
-        "ema": {
-          "bullish": "Yükseliş",
-          "bearish": "Düşüş",
-          "neutral": "Karışık",
-          "mixed": "Karışık",
-          "bullish_desc": "Yükseliş hizalaması — tüm EMAs yükselişte",
-          "bearish_desc": "Düşüş hizalaması — tüm EMAs düşüşte",
-          "mixed_desc": "Karışık hizalama — net trend yönü yok"
-        },
-        "atr": {
-          "high": "Yüksek Volatilite",
-          "medium": "Orta Volatilite",
-          "low": "Düşük Volatilite",
-          "high_desc": "Yüksek volatilite — daha geniş durmalar gerekli, daha büyük salınımlar bekleniyor",
-          "medium_desc": "Orta volatilite — normal ticaret koşulları",
-          "low_desc": "Düşük volatilite — kırılma potansiyeli artıyor"
-        },
-        "bb": {
-          "above": "Üst Üzerinde",
-          "below": "Alt Altında",
-          "inside": "Bantlar İçinde",
-          "upper_tag": "Üst Bant",
-          "lower_tag": "Alt Bant",
-          "mid_tag": "Orta Bant",
-          "above_desc": "Fiyat üst bant üzerinde — aşırı alınmış, olası tersine çevirme",
-          "below_desc": "Fiyat alt bant altında — aşırı satılmış, olası sıçrama",
-          "inside_desc": "Fiyat bantlar içinde — normal aralık, aşırı yok"
-        }
-      },
-      "trend_analysis": {
-        "title": "Trend Analizi",
-        "tooltip": "Son fiyat hareketlerine dayalı kısa, orta ve uzun vadeli fiyat trendlerinin analizi.",
-        "short_term": "Kısa Vade",
-        "medium_term": "Orta Vade",
-        "long_term": "Uzun Vade",
-        "trend_score": "Trend Puanı",
-        "bullish": "Yükseliş",
-        "bearish": "Düşüş",
-        "neutral": "Nötr",
-        "description_bullish": "Güçlü yükseliş momentumu, artan alım baskısı",
-        "description_bearish": "Düşüş trendi, satış baskısı hakim",
-        "description_neutral": "Net bir yön olmadan konsolidasyon"
-      },
-      "news_sentiment": {
-        "title": "Haber ve Duyarlılık",
-        "tooltip": "Haber ve sosyal medya kaynaklarından toplanan duyarlılık verileri.",
-        "positive": "olumlu",
-        "negative": "olumsuz",
-        "neutral": "nötr",
-        "positive_ratio": "%{pct} olumlu",
-        "mentions": "{count} bahsedilme",
-        "no_news": "Bu coin için yakın zamanda haber bulunamadı"
-      },
-      "support_resistance": {
-        "title": "Destek ve Direnç",
-        "tooltip": "Coin'in geçmişte destek (alım baskısı) veya direnç (satış baskısı) bulduğu kilit fiyat seviyeleri.",
-        "support": "Destek {level}",
-        "resistance": "Direnç {level}",
-        "support_levels": "Destek Seviyeleri",
-        "resistance_levels": "Direnç Seviyeleri"
-      }
-    },
-    "subscores": {
-      "volume": "Hacim",
-      "trend": "Trend",
-      "momentum": "Momentum",
-      "technicals": "Teknikler",
-      "sentiment": "Duyarlılık",
-      "confidence": "Güven",
-      "trade_quality": "İşlem Kalitesi",
-      "risk": "Risk"
-    },
-    "data_source": "Binance",
-    "signal": "Sinyal",
-    "score": "Puan: {score}",
-    "price_chart": "Fiyat Grafiği",
-    "fallback_message": "Bu coin için tam analiz mevcut değil. Yalnızca Binance piyasa verileri gösteriliyor.",
-    "hero": {
-      "opportunity": "Fırsat",
-      "score": "Puan",
-      "confidence": "Güven",
-      "quality": "İşlem Kalitesi",
-      "risk": "Risk",
-      "analysis_period": "{timeframe} Analiz",
-      "last_updated": "Güncellendi {time}",
-      "opportunity_question": "Bu coin şu anda işlem yapmaya değer mi?"
-    },
-    "trade_setup": {
-      "title": "İşlem Kurulumu",
-      "direction": "Yön",
-      "long": "Uzun",
-      "short": "Kısa",
-      "entry": "Giriş Fiyatı",
-      "current_price": "Mevcut Fiyat",
-      "stop_loss": "Zarar Durdur",
-      "take_profit": "Kar Al",
-      "risk_reward": "Risk / Ödül",
-      "expected_profit": "Beklenen Kar",
-      "expected_loss": "Beklenen Zarar",
-      "risk_level": "Risk Seviyesi",
-      "no_trade": "Geçerli İşlem Kurulumu Yok"
-    }
   },
   "order_book": {
     "title": "Emir Defteri",
@@ -540,7 +326,6 @@
       "trend": "Trend",
       "momentum": "Momentum",
       "volume": "Hacim",
-      "sentiment": "Duygu",
       "risk": "Risk",
       "confidence": "Güven"
     },
@@ -609,12 +394,6 @@
         "neutral": "Nötr",
         "warning": "Uyarı"
       }
-    },
-    "news": {
-      "articles": "Makaleler",
-      "duplicates_removed": "Kopyalar silindi",
-      "topics": "Konular",
-      "no_news": "Haber bulunamadı"
     },
     "ai_summary": {
       "no_key": "AI analizi için OPENAI_API_KEY yapılandırın",
@@ -730,6 +509,7 @@
       "weak": "Zayıf"
     },
     "active": "Aktif",
+    "trend_analysis_title": "Trend Analizi",
     "signal_reasons": {
       "title": "Bu Sinyalin Sebebi",
       "no_reasons": "Sinyal sebebi mevcut değil",
@@ -814,6 +594,39 @@
       "rr_below_min": "TP1 için risk/getiri ({value}R) minimumun ({min}R) altında",
       "quality_below_min": "İşlem kalitesi ({value}) minimumun ({min}) altında",
       "no_valid_setup": "Geçerli işlem kurulumu yok."
+    },
+    "tech_interpret": {
+      "rsi": {
+        "overbought": "Aşırı Alım",
+        "oversold": "Aşırı Satım",
+        "neutral": "Nötr"
+      },
+      "macd": {
+        "bullish_cross": "Yükseliş Kesişimi",
+        "bearish_cross": "Düşüş Kesişimi",
+        "converging": "Yakınsıyor"
+      },
+      "adx": {
+        "very_strong": "Çok Güçlü Trend",
+        "strong": "Güçlü Trend",
+        "moderate": "Orta Trend",
+        "weak": "Zayıf Trend"
+      },
+      "ema": {
+        "bullish": "Yükseliş Hizalaması",
+        "bearish": "Düşüş Hizalaması",
+        "mixed": "Karma"
+      },
+      "atr": {
+        "high": "Yüksek Volatilite",
+        "medium": "Orta Volatilite",
+        "low": "Düşük Volatilite"
+      },
+      "bb": {
+        "above": "Üst Bant Üstü",
+        "below": "Alt Bant Altı",
+        "inside": "Bant İçi"
+      }
     },
     "reasons": {
       "strong_bullish_alignment": "Güçlü yükseliş hizalaması: EMA20 > EMA50 > EMA200",
@@ -964,6 +777,7 @@
     "fa": "فارسی"
   },
   "timeframe": {
+    "label": "Zaman Dilimi",
     "15m": "15 Dakika",
     "1h": "1 Saat",
     "4h": "4 Saat",

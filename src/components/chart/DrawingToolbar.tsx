@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/context";
 import type { DrawTool } from "./useDrawingTools";
 
 interface Props {
@@ -45,6 +46,7 @@ const TOOLS: { key: DrawTool; label: string; icon: React.ReactNode }[] = [
 ];
 
 export function DrawingToolbar({ activeTool, onSelectTool, drawingCount, onClearAll }: Props) {
+  const { t } = useI18n();
   return (
     <div
       className="absolute z-30 flex gap-0.5 p-1 bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-800 shadow-lg
@@ -82,13 +84,13 @@ export function DrawingToolbar({ activeTool, onSelectTool, drawingCount, onClear
         <button
           onClick={onClearAll}
           className="flex items-center justify-center px-1.5 py-1 text-[10px] font-medium rounded-md transition-colors text-gray-400 hover:text-red-400 border border-transparent hover:border-red-500/30"
-          title="Clear drawings"
+          title={t("chart.drawing_clear_drawings")}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
             <line x1="3" y1="3" x2="11" y2="11" />
             <line x1="11" y1="3" x2="3" y2="11" />
           </svg>
-          <span className="hidden sm:inline ml-1">Clear</span>
+          <span className="hidden sm:inline ml-1">{t("chart.drawing_clear")}</span>
         </button>
       )}
     </div>

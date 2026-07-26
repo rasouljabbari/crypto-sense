@@ -1,5 +1,5 @@
 import { SessionProvider } from "@/components/SessionProvider";
-import { CountdownBridge } from "@/components/CountdownBridge";
+import { AnalysisProvider } from "@/components/AnalysisProvider";
 import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/lib/theme";
 import { TimeframeProvider } from "@/lib/timeframe";
@@ -28,7 +28,7 @@ const vazirmatn = Vazirmatn({
 export const metadata: Metadata = {
   title: "CryptoSense — Smart Crypto Market Analysis",
   description:
-    "Professional cryptocurrency analysis platform. Real-time Long/Short signals powered by volume, trend, technicals & sentiment analysis.",
+    "Professional cryptocurrency momentum analysis platform. Real-time Long/Short signals powered by volume, trend & technical analysis.",
   icons: {
     icon: "/logo.svg",
     apple: "/logo.svg",
@@ -44,19 +44,19 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${vazirmatn.variable}`}>
       <body className="min-h-screen bg-theme-bg text-theme-text antialiased">
         <QueryProvider>
-          <ThemeProvider>
-            <TimeframeProvider>
-              <CountdownBridge>
-                <I18nProvider>
-                  <SessionProvider>
-                    {children}
-                    <ToastContainer />
-                  </SessionProvider>
-                </I18nProvider>
-              </CountdownBridge>
-            </TimeframeProvider>
-          </ThemeProvider>
-        </QueryProvider>
+            <ThemeProvider>
+              <TimeframeProvider>
+                <AnalysisProvider>
+                  <I18nProvider>
+                    <SessionProvider>
+                      {children}
+                      <ToastContainer />
+                    </SessionProvider>
+                  </I18nProvider>
+                </AnalysisProvider>
+              </TimeframeProvider>
+            </ThemeProvider>
+          </QueryProvider>
       </body>
     </html>
   );

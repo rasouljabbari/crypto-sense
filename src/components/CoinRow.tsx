@@ -1,13 +1,18 @@
 "use client";
 
 import { useI18n } from "@/i18n/context";
-import { CoinAnalysis } from "@/lib/types";
+import type { AnalysisSnapshot } from "@/store/useAnalysisSnapshot";
 import Link from "next/link";
 import { memo, useState } from "react";
 import { CoinImage } from "./CoinImage";
 
 interface Props {
-  coin: CoinAnalysis;
+  coin: AnalysisSnapshot;
+}
+
+/** Normalize signal/trend to underscore format. */
+function ss(s: string): string {
+  return s.toLowerCase().replace(/\s+/g, "_");
 }
 
 const signalColors: Record<string, string> = {
@@ -58,21 +63,27 @@ export const CoinRow = memo(function CoinRow({ coin }: Props) {
   const { t } = useI18n();
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
-  const isPositive = coin.marketData.priceChangePercent24h >= 0;
+  function priceChange(s: AnalysisSnapshot): number {
+    return parseFloat(s.marketState.changePercent24h.replace(/[^0-9.\-]/g, "")) || 0;
+  }
 
-  const rc = recConfig[coin.recommendation] ?? recConfig.skip;
+  const change24h = priceChange(coin);
+  const isPositive = change24h >= 0;
+  const signal = ss(coin.opportunity.signal);
+  const trend = ss(coin.marketState.trend);
+  const rc = recConfig[coin.opportunity.recommendation] ?? recConfig.skip;
 
   return (
     <Link
-      href={`/coin/${coin.marketData.symbol}`}
+      href={`/analysis?coin=${coin.coin}`}
       className="grid grid-cols-[2fr_repeat(7,1fr)] gap-1 items-center px-3 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
     >
       {/* Coin */}
       <div className="flex items-center gap-2 min-w-0">
-        <CoinImage src={coin.marketData.image} alt={coin.marketData.symbol} />
+        <CoinImage src={coin.image} alt={coin.symbol} />
         <div className="truncate">
-          <span className="font-medium text-white text-sm">{coin.marketData.symbol}</span>
-          <span className="text-gray-400 ml-1 text-[11px] hidden sm:inline">{coin.marketData.name}</span>
+          <span className="font-medium text-white text-sm">{coin.symbol}</span>
+          <span className="text-gray-400 ml-1 text-[11px]">{coin.name}</span>
         </div>
       </div>
 
@@ -85,45 +96,45 @@ export const CoinRow = memo(function CoinRow({ coin }: Props) {
       >
         <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${rc.bg} ${rc.color}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${rc.dot}`} />
-          {t(`coin_row.rec_${coin.recommendation}`)}
+          {t(`coin_row.rec_${coin.opportunity.recommendation}`)}
         </div>
-        <span className="text-[8px] text-gray-500 leading-tight mt-0.5">{t(`coin_row.rec_reason_${coin.recommendationReasonCode}`)}</span>
+        <span className="text-[8px] text-gray-500 leading-tight mt-0.5">{t(`coin_row.rec_reason_${coin.opportunity.reasonCode}`)}</span>
 
         {tooltipOpen && (
           <div className="absolute top-full mt-1 z-50 w-56 p-2 rounded-lg bg-gray-800 border border-gray-700 shadow-xl text-[10px] text-gray-200 pointer-events-none">
             <div className="font-semibold text-white mb-1">
-              {t(`coin_row.rec_${coin.recommendation}`)}
+              {t(`coin_row.rec_${coin.opportunity.recommendation}`)}
             </div>
-            <p>{t(`coin_row.rec_tooltip_${coin.recommendationReasonCode}`)}</p>
+            <p>{t(`coin_row.rec_tooltip_${coin.opportunity.reasonCode}`)}</p>
           </div>
         )}
       </div>
 
       {/* Signal */}
-      <span className={`text-[10px] font-bold text-center px-1 py-0.5 rounded ${signalBg[coin.signal]} ${signalColors[coin.signal]}`}>
-        {t(`coin_row.${coin.signal}`)}
+      <span className={`text-[10px] font-bold text-center px-1 py-0.5 rounded ${signalBg[signal]} ${signalColors[signal]}`}>
+        {t(`coin_row.${signal}`)}
       </span>
 
       {/* Confidence */}
-      <span className="text-[10px] font-mono text-gray-300 text-center">{coin.confidence}%</span>
+      <span className="text-[10px] font-mono text-gray-300 text-center">{coin.opportunity.confidence}%</span>
 
       {/* Trade Quality */}
-      <span className="text-[10px] font-mono text-gray-300 text-center">{coin.tradeQuality}</span>
+      <span className="text-[10px] font-mono text-gray-300 text-center">{coin.tradeSetup.quality ?? 0}</span>
 
       {/* Trend */}
-      <div className={`flex items-center gap-1 justify-start text-[11px] font-semibold ${trendColors[coin.trendLabel]}`}>
-        <span>{trendIcons[coin.trendLabel]}</span>
-        <span className="hidden xl:inline">{t(`coin_row.${coin.trendLabel}`)}</span>
+      <div className={`flex items-center gap-1 justify-start text-[11px] font-semibold ${trendColors[trend]}`}>
+        <span>{trendIcons[trend]}</span>
+        <span className="hidden xl:inline">{t(`coin_row.${trend}`)}</span>
       </div>
 
       {/* Price */}
       <div className="text-right font-mono text-sm text-white truncate">
-        ${coin.marketData.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+        ${coin.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
       </div>
 
       {/* 24h % */}
       <div className={`text-right font-mono text-sm ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
-        {isPositive ? "+" : ""}{coin.marketData.priceChangePercent24h.toFixed(2)}%
+        {isPositive ? "+" : ""}{change24h.toFixed(2)}%
       </div>
     </Link>
   );

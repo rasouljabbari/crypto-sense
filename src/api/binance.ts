@@ -69,6 +69,23 @@ export const KWN_NAMES: Record<string, string> = {
   HBAR: "Hedera", TON: "Toncoin", CAKE: "PancakeSwap", MEME: "Memecoin", POL: "Polygon",
 };
 
+/* ─── Coin Image URLs (cryptologos.cc) ──────────────────────────────── */
+/* Slug override for coins where KWN_NAMES→slug doesn't match cryptologos.cc naming. */
+
+const CRYPTOLOGOS_SLUG_OVERRIDES: Record<string, string> = {
+  DOT: "polkadot-new",
+  OP: "optimism-ethereum",
+  POL: "polygon-matic",
+};
+
+/** Build correct cryptologos.cc URL from coin base symbol. */
+export function getCryptoLogoUrl(base: string): string {
+  const sym = base.toLowerCase();
+  const override = CRYPTOLOGOS_SLUG_OVERRIDES[base];
+  const slug = override ?? KWN_NAMES[base]?.toLowerCase().replace(/\s+/g, "-") ?? sym;
+  return `https://cryptologos.cc/logos/${slug}-${sym}-logo.svg`;
+}
+
 export const STATIC_COIN_DATA: Record<string, Omit<MarketData, "currentPrice" | "marketCap" | "volume24h" | "priceChange24h" | "priceChangePercent24h" | "high24h" | "low24h">> = {
   bitcoin: { id: "bitcoin", rank: 1, symbol: "BTC", name: "Bitcoin", image: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg", circulatingSupply: 19700000, totalSupply: 21000000, ath: 73750, athDate: "2024-03-14", atl: 67.81, atlDate: "2013-07-06" },
   ethereum: { id: "ethereum", rank: 2, symbol: "ETH", name: "Ethereum", image: "https://cryptologos.cc/logos/ethereum-eth-logo.svg", circulatingSupply: 120200000, totalSupply: null, ath: 4878, athDate: "2021-11-10", atl: 0.433, atlDate: "2015-10-20" },
@@ -124,7 +141,7 @@ export function tickerToMarketData(ticker: BinanceTicker): MarketData | null {
     rank: 0,
     symbol: base,
     name: KWN_NAMES[base] ?? base,
-    image: `https://cryptologos.cc/logos/${base.toLowerCase()}-${base.toLowerCase()}-logo.svg`,
+    image: getCryptoLogoUrl(base),
     currentPrice: price,
     marketCap: quoteVolume * 10,
     volume24h: quoteVolume,
@@ -318,7 +335,7 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
 }
 
 /** Map from ticker base symbol (e.g. "ETH") to coin ID */
-const BASE_SYMBOL_TO_ID: Record<string, string> = {};
+export const BASE_SYMBOL_TO_ID: Record<string, string> = {};
 for (const [sym, id] of Object.entries(SYMBOL_TO_ID)) {
   const base = sym.replace("USDT", "");
   BASE_SYMBOL_TO_ID[base] = id;
