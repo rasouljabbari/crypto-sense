@@ -30,14 +30,14 @@ export function calculateEntry(
   if (direction === "long") {
     const support = nearestBelow(input.supportLevels, currentPrice);
     if (support !== null) {
-      return roundTo(Math.max(currentPrice, support + buffer), 2);
+      return roundTo(Math.min(currentPrice, support + buffer), 2);
     }
     return roundTo(currentPrice, 2);
   }
 
   const resistance = nearestAbove(input.resistanceLevels, currentPrice);
   if (resistance !== null) {
-    return roundTo(Math.min(currentPrice, resistance - buffer), 2);
+    return roundTo(Math.max(currentPrice, resistance - buffer), 2);
   }
   return roundTo(currentPrice, 2);
 }

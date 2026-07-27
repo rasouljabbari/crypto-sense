@@ -50,13 +50,18 @@ function TimeframeLoop({ tf }: { tf: TimeframeOption }) {
   const refreshKey = useSnapshotStore((s) => s.refreshKey);
   const publishTimeframe = useSnapshotStore((s) => s.publishTimeframe);
   const running = useRef(false);
+  const pending = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function run() {
-      if (running.current) return;
+      if (running.current) {
+        pending.current = true;
+        return;
+      }
       running.current = true;
+      pending.current = false;
       try {
         // Safety delay: ensure exchange has finalized the closed candle
         await delay(POST_CLOSE_DELAY_MS);
@@ -67,7 +72,7 @@ function TimeframeLoop({ tf }: { tf: TimeframeOption }) {
         if (cancelled) return;
 
         // Run Analysis Engine on closed candle data only
-        const legacyResults = analyzeAllCoins(marketDataList);
+        const legacyResults = analyzeAllCoins(marketDataList, tf, lastClosedAt);
 
         // Generate one immutable snapshot per coin for this timeframe
         const snapshots: Record<string, ReturnType<typeof buildSnapshotFromLegacy>> = {};
@@ -79,15 +84,20 @@ function TimeframeLoop({ tf }: { tf: TimeframeOption }) {
         if (!cancelled) {
           publishTimeframe(tf, snapshots);
         }
-      } catch {
-        // Silently fail — next candle close will retry.
+      } catch (err) {
+        if (!cancelled) {
+          console.error(`[AnalysisProvider] ${tf} loop failed:`, err);
+        }
       } finally {
         running.current = false;
+        if (pending.current && !cancelled) {
+          run();
+        }
       }
     }
 
     run();
-    return () => { cancelled = true; running.current = false; };
+    return () => { cancelled = true; running.current = false; pending.current = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tf, lastClosedAt, refreshKey, publishTimeframe]);
 
@@ -102,13 +112,18 @@ function IndicatorsLoop() {
   const refreshKey = useSnapshotStore((s) => s.refreshKey);
   const setIndicators = useSnapshotStore((s) => s.setIndicators);
   const running = useRef(false);
+  const pending = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function run() {
-      if (running.current) return;
+      if (running.current) {
+        pending.current = true;
+        return;
+      }
       running.current = true;
+      pending.current = false;
       try {
         // Safety delay: ensure exchange has finalized the closed candle
         await delay(POST_CLOSE_DELAY_MS);
@@ -127,15 +142,20 @@ function IndicatorsLoop() {
             othersDominance: indicators.othersDominance,
           });
         }
-      } catch {
-        // Silently fail.
+      } catch (err) {
+        if (!cancelled) {
+          console.error(`[AnalysisProvider] IndicatorsLoop failed:`, err);
+        }
       } finally {
         running.current = false;
+        if (pending.current && !cancelled) {
+          run();
+        }
       }
     }
 
     run();
-    return () => { cancelled = true; running.current = false; };
+    return () => { cancelled = true; running.current = false; pending.current = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [closed1h, refreshKey, setIndicators]);
 

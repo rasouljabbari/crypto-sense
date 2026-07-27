@@ -27,7 +27,5 @@ export { AnalysisExplanationService, OpenAIProvider, GeminiProvider, ClaudeProvi
 export type { AnalysisExplanation, AIProvider, AIProviderConfig } from "./ai-explanation-engine";
 export { analyzeSymbol, resolveSymbol, fetchKlines, fetch24hrTicker, parseMarketData } from "./complete-engine";
 export type { CompleteMarketData, CompleteIndicatorSnapshot, CompleteDetectionSnapshot, CompleteMarketAnalysisResult, AnalyzeSymbolInput } from "./complete-engine";
-export { computeScores, DEFAULT_WEIGHTS } from "./score-engine";
-export type { ScoreEngineOutput, ScoreEngineSignal, ScoreEngineWeights } from "./score-engine";
 export { generateTrade } from "./trade-setup-engine";
 export type { TradeSetupInput, TradeSetupOutput, TradeDirection, SignalAction, VolatilityLabel, TrendDirection, TakeProfitLevels } from "./trade-setup-engine";

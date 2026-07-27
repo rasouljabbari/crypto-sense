@@ -83,6 +83,21 @@ interface Ticker24hrData {
   quoteVolume: string;
 }
 
+function isValidTicker(raw: unknown): raw is Ticker24hrData {
+  if (typeof raw !== "object" || raw === null) return false;
+  const o = raw as Record<string, unknown>;
+  return (
+    typeof o.symbol === "string" &&
+    typeof o.lastPrice === "string" &&
+    typeof o.priceChange === "string" &&
+    typeof o.priceChangePercent === "string" &&
+    typeof o.highPrice === "string" &&
+    typeof o.lowPrice === "string" &&
+    typeof o.volume === "string" &&
+    typeof o.quoteVolume === "string"
+  );
+}
+
 export async function fetchKlines(
   binanceSymbol: string,
   interval: string = "1h",
@@ -111,7 +126,11 @@ export async function fetch24hrTicker(
   if (!res.ok) {
     throw new Error(`Binance 24hr ticker API error: ${res.status} ${res.statusText}`);
   }
-  return res.json() as Promise<Ticker24hrData>;
+  const raw: unknown = await res.json();
+  if (!isValidTicker(raw)) {
+    throw new Error(`Binance 24hr ticker response shape invalid for ${binanceSymbol}`);
+  }
+  return raw;
 }
 
 export function parseMarketData(ticker: Ticker24hrData): CompleteMarketData {

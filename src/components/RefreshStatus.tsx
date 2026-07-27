@@ -2,10 +2,10 @@
 
 import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
 import { useI18n } from "@/i18n/context";
-import { useState, useEffect } from "react";
+import { useCountdown } from "@/lib/countdown-context";
 
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
+function timeAgo(iso: string, now: number): string {
+  const diff = now - new Date(iso).getTime();
   const sec = Math.floor(diff / 1000);
   if (sec < 60) return `${sec}s`;
   const min = Math.floor(sec / 60);
@@ -13,25 +13,12 @@ function timeAgo(iso: string): string {
   return `${Math.floor(min / 60)}h ${min % 60}m`;
 }
 
-function timeUntil(iso: string): string {
-  const diff = new Date(iso).getTime() - Date.now();
-  if (diff <= 0) return "now";
-  const min = Math.ceil(diff / 60000);
-  const sec = Math.ceil((diff % 60000) / 1000);
-  return `${min}m ${sec}s`;
-}
-
 export function RefreshStatus() {
   const isLoading = useSnapshotStore((s) => s.isLoading);
   const lastUpdated = useSnapshotStore((s) => s.lastUpdated);
   const triggerRefresh = useSnapshotStore((s) => s.triggerRefresh);
   const { t } = useI18n();
-  const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const { now } = useCountdown();
 
   if (isLoading) return null;
 
@@ -39,7 +26,7 @@ export function RefreshStatus() {
     <div className="flex items-center gap-3 px-1 mb-3 text-[11px] flex-wrap">
       {lastUpdated && (
         <span className="text-gray-500">
-          {t("refresh_status.updated")} <span className="text-gray-400 font-mono">{timeAgo(lastUpdated)} {t("refresh_status.ago")}</span>
+          {t("refresh_status.updated")} <span className="text-gray-400 font-mono">{timeAgo(lastUpdated, now)} {t("refresh_status.ago")}</span>
         </span>
       )}
 

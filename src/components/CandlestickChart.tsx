@@ -29,8 +29,7 @@ function calcSMA(data: ChartDataPoint[], period: number) {
       for (let j = 0; j < period; j++) sum += data[i - j].close;
       return { time: fmtTime(data[i]), value: sum / period };
     })
-    .filter((v): v is { time: UTCTimestamp; value: number } => v !== null)
-    .slice(0, -1);
+    .filter((v): v is { time: UTCTimestamp; value: number } => v !== null);
 }
 
 // ─── Types ──────────────────────────────────────────────────────────────
@@ -542,9 +541,9 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       }
       smaSeriesArrRef.current = newSeries;
     } else if (smaArr.length > 0) {
-      if (sma7Data.length > 0) smaArr[0].setData(sma7Data);
-      if (smaArr.length > 1 && sma25Data.length > 0) smaArr[1].setData(sma25Data);
-      if (smaArr.length > 2 && sma99Data.length > 0) smaArr[2].setData(sma99Data);
+      smaArr[0].setData(sma7Data);
+      if (smaArr.length > 1) smaArr[1].setData(sma25Data.length > 0 ? sma25Data : []);
+      if (smaArr.length > 2) smaArr[2].setData(sma99Data.length > 0 ? sma99Data : []);
     }
 
     // Sync indicator panes

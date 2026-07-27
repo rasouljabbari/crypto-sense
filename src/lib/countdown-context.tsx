@@ -15,6 +15,8 @@ interface CountdownContextValue {
   readonly isUrgent: boolean;
   /** True when remaining ≤ 10s */
   readonly isCritical: boolean;
+  /** Current epoch ms, updated every 1s tick. Single shared clock. */
+  readonly now: number;
 }
 
 const CountdownContext = createContext<CountdownContextValue | null>(null);
@@ -35,15 +37,19 @@ export function CountdownProviderWithRefresh({
 }) {
   const { timeframe } = useTimeframe();
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [now, setNow] = useState<number>(Date.now());
   const prevRemainingRef = useRef<number | null>(null);
   const onCandleCloseRef = useRef(onCandleClose);
   onCandleCloseRef.current = onCandleClose;
 
   // Single 1Hz tick
   useEffect(() => {
+    prevRemainingRef.current = null; // reset on timeframe switch — prevent false close
+
     const tick = () => {
-      const now = Date.now();
-      const secs = secondsUntilNextClose(timeframe, now);
+      const ts = Date.now();
+      setNow(ts);
+      const secs = secondsUntilNextClose(timeframe, ts);
       setRemaining(secs);
 
       // Detect zero crossing (candle just closed)
@@ -52,6 +58,13 @@ export function CountdownProviderWithRefresh({
         secs === 0 &&
         prevRemainingRef.current !== null &&
         prevRemainingRef.current > 0
+      ) {
+        onCandleCloseRef.current?.();
+      } else if (
+        // Handle mount-at-boundary: if first tick is 0 but no prev, fire callback
+        secs !== null &&
+        secs === 0 &&
+        prevRemainingRef.current === null
       ) {
         onCandleCloseRef.current?.();
       }
@@ -68,7 +81,7 @@ export function CountdownProviderWithRefresh({
   const isUrgent = remaining !== null && remaining > 0 && remaining <= 60;
   const isCritical = remaining !== null && remaining > 0 && remaining <= 10;
 
-  const value: CountdownContextValue = { remaining, display, isUrgent, isCritical };
+  const value: CountdownContextValue = { remaining, display, isUrgent, isCritical, now };
 
   return (
     <CountdownContext.Provider value={value}>
@@ -88,6 +101,7 @@ export function useCountdown(): CountdownContextValue {
       display: "--",
       isUrgent: false,
       isCritical: false,
+      now: Date.now(),
     };
   }
 

@@ -59,23 +59,11 @@ export async function GET() {
         return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
       };
       const today = snapId();
-      const existing = await prisma.marketSnapshot.findUnique({ where: { id: today } }).catch(() => null);
-      if (!existing) {
-        await prisma.marketSnapshot.create({
-          data: {
-            id: today,
-            totalMarketCap,
-            totalVolume24h,
-            btcDominance,
-            ethDominance,
-            usdtDominance,
-            bnbDominance,
-            othersDominance,
-            totalExBtc,
-            totalExTop10,
-          },
-        }).catch(() => {});
-      }
+      await prisma.marketSnapshot.upsert({
+        where: { id: today },
+        create: { id: today, totalMarketCap, totalVolume24h, btcDominance, ethDominance, usdtDominance, bnbDominance, othersDominance, totalExBtc, totalExTop10 },
+        update: { totalMarketCap, totalVolume24h, btcDominance, ethDominance, usdtDominance, bnbDominance, othersDominance, totalExBtc, totalExTop10 },
+      }).catch((e) => { console.error("DB snapshot upsert failed:", e); });
 
       const yesterday = new Date();
       yesterday.setUTCDate(yesterday.getUTCDate() - 1);

@@ -74,7 +74,7 @@ export function useClosedCandleKey(timeframe: string): number {
 
       // Otherwise wait until close + settle
       const delay = nextCloseAt + CANDLE_SETTLE_MS - now;
-      timer = setTimeout(tick, Math.max(delay, 1000));
+      timer = setTimeout(scheduleTick, Math.max(delay, 1000));
     };
 
     scheduleTick();

@@ -47,7 +47,7 @@ export const MIN_RISK_REWARD = 2;
 
 export const MIN_OVERALL_SCORE = 60;
 export const MIN_ADX = 25;
-export const MIN_ATR = 0;
+export const MIN_ATR = 1e-10;
 export const MIN_SR_LEVELS = 1;
 
 // ─── Score Weights ────────────────────────────────────────────────────

@@ -552,7 +552,8 @@
       "neutral": "Neutral",
       "open_detail": "Open Position — favourable conditions across multiple dimensions",
       "wait_detail": "Wait — weak conditions; reconsider entry or tighten risk",
-      "neutral_detail": "Neutral — monitor for clearer signals before acting"
+      "neutral_detail": "Neutral — monitor for clearer signals before acting",
+      "summary": "{signal} — Score {score}/100"
     },
     "interpretations": {
       "rsi_bearish_reversal": "Bearish Reversal Possible",

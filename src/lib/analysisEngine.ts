@@ -19,6 +19,7 @@ function isBearTrend(tl: TrendLabel): boolean {
 // ── sub-scores ─────────────────────────────────────────────
 
 function calculateVolumeScore(volume24h: number, marketCap: number): number {
+  if (!marketCap || marketCap <= 0) return 25;
   const ratio = volume24h / marketCap;
   if (ratio > 0.5) return 95;
   if (ratio > 0.3) return 85;
@@ -121,10 +122,11 @@ function calculateMomentumScore(indicators: TechnicalIndicators): number {
 function determinePosition(
   trendScore: number,
   volumeScore: number,
-  technicalScore: number
+  technicalScore: number,
+  momentumScore: number,
 ): { position: PositionType; overallScore: number } {
   const overallScore = cap(
-    trendScore * 0.35 + volumeScore * 0.30 + technicalScore * 0.35
+    trendScore * 0.30 + volumeScore * 0.20 + technicalScore * 0.30 + momentumScore * 0.20
   );
 
   let position: PositionType;
@@ -296,12 +298,8 @@ function computeSignal(
   if (position === "short" && bullTrend) {
     return "neutral";
   }
-  // neutral position with neutral/sideways trend → neutral
-  if (position === "neutral") {
-    if (overallScore >= 60) return "buy";
-    if (overallScore <= 40) return "sell";
-    return "neutral";
-  }
+  // neutral position → always neutral signal (score drives confidence, not direction)
+  if (position === "neutral") return "neutral";
 
   // long + bullish/neutral trend
   if (position === "long") {
@@ -350,6 +348,11 @@ function computeConfidence(
 
 // ── risk ───────────────────────────────────────────────────
 
+/**
+ * Computes a safety score (0-100). Higher = safer / lower risk.
+ * Mapped to risk level labels via computeRiskLevel:
+ *   ≥70 → "low" risk,  ≥40 → "medium",  <40 → "high" risk.
+ */
 function computeRiskScore(coin: {
   position: PositionType;
   overallScore: number;
@@ -452,11 +455,7 @@ function computeRiskReward(
     const takeDist = atr * 3;
     // Ensure we don't go below 0
     if (stopDist < price && takeDist < price * 10) {
-      const ratio = takeDist / stopDist; // 2.0 by construction
-      if (ratio >= 3) return "1:3";
-      if (ratio >= 2.5) return "1:2.5";
-      if (ratio >= 2) return "1:2";
-      return `1:${ratio.toFixed(1)}`;
+      return "1:2";
     }
   }
 
@@ -530,14 +529,18 @@ function resolveContradiction(
   }
 
   // If position is long but signal is sell → force position neutral
-  // (already handled by signal fix above, but be safe)
   if (fixed.position === "long" && (fixed.signal === "sell" || fixed.signal === "strong_sell")) {
     fixed.position = "neutral";
-    fixed.overallScore = Math.max(40, Math.min(60, fixed.overallScore));
+    fixed.overallScore = Math.max(30, Math.min(70, fixed.overallScore));
   }
+  // If position is short but signal is buy → force position neutral
   if (fixed.position === "short" && (fixed.signal === "buy" || fixed.signal === "strong_buy")) {
     fixed.position = "neutral";
-    fixed.overallScore = Math.max(40, Math.min(60, fixed.overallScore));
+    fixed.overallScore = Math.max(30, Math.min(70, fixed.overallScore));
+  }
+  // If position is neutral but signal is directional → force signal neutral (defensive)
+  if (fixed.position === "neutral" && (buySig || sellSig)) {
+    fixed.signal = "neutral";
   }
 
   return fixed;
@@ -548,15 +551,16 @@ function resolveContradiction(
 export function analyzeCoin(
   marketData: MarketData,
   indicatorsOverride?: TechnicalIndicators,
+  seedStr?: string,
 ): CoinAnalysis {
-  const indicators = indicatorsOverride ?? generateTechnicalIndicators(marketData);
+  const indicators = indicatorsOverride ?? generateTechnicalIndicators(marketData, seedStr);
 
   const volumeScore = calculateVolumeScore(marketData.volume24h, marketData.marketCap);
   const trendScore = calculateTrendScore(marketData.priceChangePercent24h, indicators, marketData);
   const technicalScore = calculateTechnicalScore(indicators);
   const momentumScore = calculateMomentumScore(indicators);
 
-  const { position, overallScore } = determinePosition(trendScore, volumeScore, technicalScore);
+  const { position, overallScore } = determinePosition(trendScore, volumeScore, technicalScore, momentumScore);
   const trendLabel = computeTrendLabel(indicators);
   const trendAnalysis = generateTrendAnalysis(marketData.priceChangePercent24h, indicators);
 
@@ -568,13 +572,15 @@ export function analyzeCoin(
   const riskLevel = computeRiskLevel(riskScore);
 
   // ── Trade Setup (from indicator-engine) ──────────────────────────────
-  function mapEngineRiskLevel(r: RiskLevel): "very_low" | "low" | "medium" | "high" | "extreme" {
-    if (r === "low") return "low";
-    if (r === "high") return "high";
-    return "medium";
+  function mapEngineRiskLevel(rawScore: number): "very_low" | "low" | "medium" | "high" | "extreme" {
+    if (rawScore >= 80) return "very_low";
+    if (rawScore >= 60) return "low";
+    if (rawScore >= 40) return "medium";
+    if (rawScore >= 20) return "high";
+    return "extreme";
   }
 
-  const trendDir = position === "long" ? "bullish" as const : position === "short" ? "bearish" as const : "neutral" as const;
+  const trendDir = isBullTrend(trendLabel) ? "bullish" as const : isBearTrend(trendLabel) ? "bearish" as const : "neutral" as const;
   const rawTradeSetup = generateTradeSetup({
     currentPrice: marketData.currentPrice,
     trendDirection: trendDir,
@@ -583,11 +589,15 @@ export function analyzeCoin(
     resistanceLevels: indicators.resistanceLevels,
     atr: indicators.atr,
     adx: indicators.adx,
-    ema20: indicators.ema21,
+    ema20: indicators.ema20,
     ema50: indicators.ema50,
     ema200: indicators.ema200,
-    volatility: { value: 0, annualized: 0, label: "low" },
-    riskLevel: mapEngineRiskLevel(riskLevel),
+    volatility: (() => {
+      const atrPct = marketData.currentPrice > 0 ? (indicators.atr / marketData.currentPrice) * 100 : 0;
+      const volLabel = atrPct > 3 ? "high" as const : atrPct > 1 ? "medium" as const : "low" as const;
+      return { value: atrPct, annualized: 0, label: volLabel };
+    })(),
+    riskLevel: mapEngineRiskLevel(riskScore),
     overallScore,
     signal,
     accountBalance: 10_000,
@@ -595,8 +605,8 @@ export function analyzeCoin(
 
   const tradeSetup: TradeSetupData = {
     hasTrade: rawTradeSetup.hasTrade,
-    reason: rawTradeSetup.validation.reason,
-    direction: rawTradeSetup.direction,
+    reason: rawTradeSetup?.validation?.reason,
+    direction: rawTradeSetup.hasTrade ? rawTradeSetup.direction : null,
     entry: rawTradeSetup.entry,
     stopLoss: rawTradeSetup.stopLoss,
     risk: rawTradeSetup.risk,
@@ -668,7 +678,14 @@ export function analyzeCoin(
 
 export function analyzeAllCoins(
   marketDataList: MarketData[],
+  timeframe?: string,
+  candleKey?: number,
   indicatorsMap?: Record<string, TechnicalIndicators>,
 ): CoinAnalysis[] {
-  return marketDataList.map((md) => analyzeCoin(md, indicatorsMap?.[md.id]));
+  return marketDataList.map((md) => {
+    const seedStr = timeframe && candleKey != null
+      ? `${md.id}:${timeframe}:${candleKey}`
+      : undefined;
+    return analyzeCoin(md, indicatorsMap?.[md.id], seedStr);
+  });
 }

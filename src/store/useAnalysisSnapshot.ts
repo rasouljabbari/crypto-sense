@@ -1,5 +1,6 @@
 "use client";
 
+import type { TradeSetupData, TrendLabel } from "@/lib/types";
 import { create } from "zustand";
 import type { IndicatorItem, SrLevelDisplay, TimeframeTrendData } from "@/features/coin-analysis/types";
 import type { TradeExplanation } from "@/features/coin-analysis/types/scoring";
@@ -94,6 +95,8 @@ interface SnapshotStore {
   isLoading: boolean;
   lastUpdated: string | null;
   refreshKey: number;
+  /** Tracks which timeframes have loaded since last refresh. */
+  loadedTimeframes: Record<string, boolean>;
   indicators: {
     totalMarketCap: number;
     totalVolume24h: number;
@@ -118,6 +121,7 @@ export const useSnapshotStore = create<SnapshotStore>((set) => ({
   isLoading: true,
   lastUpdated: null,
   refreshKey: 0,
+  loadedTimeframes: {},
   indicators: {
     totalMarketCap: 0,
     totalVolume24h: 0,
@@ -128,27 +132,40 @@ export const useSnapshotStore = create<SnapshotStore>((set) => ({
   },
 
   publishTimeframe: (timeframe, newSnapshots, indicators) =>
-    set((s) => ({
-      version: s.version + 1,
-      collections: { ...s.collections, [timeframe]: newSnapshots },
-      indicators: indicators ?? s.indicators,
-      isLoading: false,
-      lastUpdated: new Date().toISOString(),
-    })),
+    set((s) => {
+      const loaded = { ...s.loadedTimeframes, [timeframe]: true };
+      const allLoaded = TIMEFRAMES.every((tf) => loaded[tf]);
+      return {
+        version: s.version + 1,
+        collections: { ...s.collections, [timeframe]: newSnapshots },
+        indicators: indicators ?? s.indicators,
+        isLoading: !allLoaded,
+        loadedTimeframes: loaded,
+        lastUpdated: new Date().toISOString(),
+      };
+    }),
 
   setSnapshot: (coinId, timeframe, snapshot) =>
     set((s) => ({
+      version: s.version + 1,
       collections: {
         ...s.collections,
         [timeframe]: { ...s.collections[timeframe], [coinId]: snapshot },
       },
+      lastUpdated: new Date().toISOString(),
     })),
 
   setLoading: (v) => set({ isLoading: v }),
-  setIndicators: (v) => set({ indicators: v, lastUpdated: new Date().toISOString() }),
+  setIndicators: (v) =>
+    set((s) => ({
+      indicators: v,
+      loadedTimeframes: { ...s.loadedTimeframes, "1h": true },
+      lastUpdated: new Date().toISOString(),
+    })),
   triggerRefresh: () =>
     set((s) => ({
       isLoading: true,
+      loadedTimeframes: {},
       refreshKey: s.refreshKey + 1,
     })),
 }));
@@ -174,10 +191,21 @@ export function buildSnapshotFromLegacy(
 ): AnalysisSnapshot {
   _globalVersion += 1;
   const md = c.marketData;
-  const sig = c.signal ?? "Neutral";
+  const sig = c.signal ?? "neutral";
   const priceStr = `$${md.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
   const change24hStr = `${md.priceChange24h >= 0 ? "+" : ""}$${md.priceChange24h.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const changePctStr = `${md.priceChangePercent24h >= 0 ? "+" : ""}${md.priceChangePercent24h.toFixed(2)}%`;
+
+  function fmtMarketCap(mc: number): string {
+    if (mc >= 1e12) return `$${(mc / 1e12).toFixed(2)}T`;
+    if (mc >= 1e9) return `$${(mc / 1e9).toFixed(2)}B`;
+    if (mc >= 1e6) return `$${(mc / 1e6).toFixed(2)}M`;
+    if (mc >= 1e3) return `$${(mc / 1e3).toFixed(2)}K`;
+    return `$${mc.toFixed(2)}`;
+  }
+
+  const ts: TradeSetupData = c.tradeSetup ?? {};
+  const hasTrade = ts.hasTrade === true;
 
   return {
     coin: c.coinId,
@@ -193,11 +221,23 @@ export function buildSnapshotFromLegacy(
       high24h: `$${md.high24h.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
       low24h: `$${md.low24h.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
       volume: `$${(md.volume24h / 1e6).toFixed(1)}M`,
-      marketCap: md.marketCap != null ? `$${(md.marketCap / 1e9).toFixed(2)}B` : "—",
-      trend: c.trendLabel ?? "Neutral",
-      trendStatus: "neutral",
-      volatility: "—",
-      volatilityStatus: "medium",
+      marketCap: md.marketCap != null ? fmtMarketCap(md.marketCap) : "—",
+      trend: c.trendLabel ?? "sideways",
+      trendStatus: c.trendLabel === "bullish" || c.trendLabel === "strong_bullish"
+        ? "bullish"
+        : c.trendLabel === "bearish" || c.trendLabel === "strong_bearish"
+          ? "bearish"
+          : "neutral",
+      volatility: c.technicalIndicators?.atr > 0
+        ? ((c.technicalIndicators.atr / md.currentPrice) * 100).toFixed(1) + "%"
+        : "—",
+      volatilityStatus: (c.technicalIndicators?.atr ?? 0) > 0
+        ? ((c.technicalIndicators.atr / md.currentPrice) * 100) > 3
+          ? "high"
+          : ((c.technicalIndicators.atr / md.currentPrice) * 100) > 1
+            ? "medium"
+            : "low"
+        : "medium",
     },
     opportunity: {
       signal: sig,
@@ -207,10 +247,12 @@ export function buildSnapshotFromLegacy(
       reasonCode: c.recommendationReasonCode ?? "",
     },
     strength: {
-      trend: c.overallScore ?? 50,
-      momentum: 50,
-      volume: 50,
-      volatility: 50,
+      trend: c.trendScore ?? c.overallScore ?? 50,
+      momentum: c.momentumScore ?? 50,
+      volume: c.volumeScore ?? 50,
+      volatility: c.technicalIndicators?.atr > 0
+        ? Math.min(100, Math.round(((c.technicalIndicators.atr / md.currentPrice) * 100) / 5 * 100))
+        : 50,
     },
     strengthReasons: {
       trend: [],
@@ -219,17 +261,81 @@ export function buildSnapshotFromLegacy(
       volatility: [],
     },
     risk: {
-      score: c.riskLevel === "low" ? 80 : c.riskLevel === "medium" ? 50 : 20,
+      score: c.riskScore ?? 50,
       level: c.riskLevel ?? "medium",
       reasons: [],
     },
     tradeSetup: {
-      hasTrade: false,
-      direction: c.position === "long" ? "long" : c.position === "short" ? "short" : undefined,
-      quality: c.tradeQuality ?? 0,
+      hasTrade,
+      direction: hasTrade ? ts.direction ?? undefined : undefined,
+      entry: hasTrade ? ts.entry : undefined,
+      stopLoss: hasTrade ? ts.stopLoss : undefined,
+      takeProfit: hasTrade ? ts.takeProfit : undefined,
+      riskReward: hasTrade && ts.riskReward ? { tp1: ts.riskReward.tp1, tp2: ts.riskReward.tp2, tp3: ts.riskReward.tp3 } : undefined,
+      quality: c.tradeQuality ?? (hasTrade ? ts.tradeQuality : 0) ?? 0,
+      reason: hasTrade ? (ts.reason ?? undefined) : undefined,
     },
-    indicators: [],
-    trends: [],
+    indicators: (() => {
+      const ti = c.technicalIndicators;
+      const items: IndicatorItem[] = [];
+
+      const rsiVal = ti?.rsi ?? 50;
+      const rsiStatus: IndicatorItem["status"] = rsiVal < 30 ? "bullish" : rsiVal > 70 ? "bearish" : "neutral";
+      const rsiLabel = rsiVal < 30 ? "Oversold" : rsiVal > 70 ? "Overbought" : rsiVal < 45 ? "Bullish" : rsiVal > 55 ? "Bearish" : "Neutral";
+      items.push({
+        key: "rsi", label: "RSI", value: rsiVal.toFixed(1),
+        status: rsiStatus, statusLabel: rsiLabel,
+        interpretation: rsiVal < 30 ? "Oversold — potential reversal up" : rsiVal > 70 ? "Overbought — potential reversal down" : "Neutral zone",
+      });
+
+      if (ti?.macd) {
+        const m = ti.macd;
+        const macdStatus: IndicatorItem["status"] = m.histogram > 0 ? "bullish" : "bearish";
+        const macdLabel = m.value > m.signal && m.histogram > 0 ? "Bullish Cross" : m.value < m.signal && m.histogram < 0 ? "Bearish Cross" : m.histogram > 0 ? "Bullish Momentum" : "Bearish Momentum";
+        items.push({
+          key: "macd", label: "MACD", value: m.histogram.toFixed(2),
+          status: macdStatus, statusLabel: macdLabel,
+          interpretation: macdLabel,
+        });
+      }
+
+      const adxVal = ti?.adx ?? 20;
+      const adxStatus: IndicatorItem["status"] = adxVal >= 25 ? (rsiVal > 50 ? "bullish" : rsiVal < 50 ? "bearish" : "neutral") : "neutral";
+      const adxLabel = adxVal >= 50 ? "Very Strong Trend" : adxVal >= 30 ? "Strong Trend" : adxVal >= 20 ? "Moderate Trend" : "Weak Trend";
+      const adxInterpretation = adxVal >= 30 ? "Buyers in Control" : adxVal >= 25 ? "Trending Market" : "Ranging Market";
+      items.push({
+        key: "adx", label: "ADX", value: adxVal.toFixed(1),
+        status: adxStatus, statusLabel: adxLabel,
+        interpretation: adxInterpretation,
+      });
+
+      if (ti) {
+        const ema9 = ti.ema9, ema21 = ti.ema21, ema50 = ti.ema50, ema200 = ti.ema200;
+        const bullAlign = ema9 > ema21 && ema21 > ema50;
+        const bearAlign = ema9 < ema21 && ema21 < ema50;
+        const emaStatus: IndicatorItem["status"] = bullAlign ? "bullish" : bearAlign ? "bearish" : "neutral";
+        const emaLabel = bullAlign && ema50 > ema200 ? "Bullish Alignment" : bullAlign ? "Short-term Bullish" : bearAlign && ema50 < ema200 ? "Bearish Alignment" : bearAlign ? "Short-term Bearish" : "Mixed";
+        items.push({
+          key: "ema", label: "EMA", value: `9:${ema9.toFixed(2)} / 21:${ema21.toFixed(2)}`,
+          status: emaStatus, statusLabel: emaLabel,
+          interpretation: emaLabel,
+        });
+      }
+
+      return items;
+    })(),
+    trends: (() => {
+      const ta = c.trendAnalysis;
+      if (!ta) return [];
+      const tfKeys: ["15m", "1h", "4h", "1d"] = ["15m", "1h", "4h", "1d"];
+      const activeTf = timeframe as string;
+      return tfKeys.map((tf) => ({
+        timeframe: tf,
+        trend: ta[tf].trend,
+        confidence: ta[tf].confidence,
+        isActive: tf === activeTf,
+      }));
+    })(),
     explanation: {
       summary: `${sig} — Score ${c.overallScore ?? 50}/100`,
       strengths: [],

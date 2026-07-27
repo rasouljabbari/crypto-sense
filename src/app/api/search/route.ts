@@ -122,7 +122,7 @@ export async function GET(request: Request) {
       if (!t || !t.symbol) return null;
       const pair = matched.find((p) => p.symbol === t.symbol);
       const baseAsset =
-        pair?.baseAsset ?? (t.symbol ? t.symbol.replace(/USDT|USDC|BUSD|FDUSD|BNB|BTC|ETH|TRY|DAI$/, "") : "?");
+        pair?.baseAsset ?? (t.symbol ? t.symbol.replace(/(?:USDT|USDC|BUSD|FDUSD|BNB|BTC|ETH|TRY|DAI)$/, "") : "?");
       return {
         symbol: baseAsset,
         name: baseAsset,

@@ -552,7 +552,8 @@
       "neutral": "Nötr",
       "open_detail": "Pozisyon Aç — birden çok boyutta uygun koşullar",
       "wait_detail": "Bekle — zayıf koşullar; girişi yeniden değerlendirin",
-      "neutral_detail": "Nötr — daha net sinyalleri bekleyin"
+      "neutral_detail": "Nötr — daha net sinyalleri bekleyin",
+      "summary": "{signal} — Puan {score}/100"
     },
     "interpretations": {
       "rsi_bearish_reversal": "Düşüş Trend Dönüşü Mümkün",

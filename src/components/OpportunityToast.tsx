@@ -22,6 +22,10 @@ function oppKey(s: AnalysisSnapshot): OppKey {
   if (s.opportunity.recommendation === "ready") {
     if (s.tradeSetup.direction === "long") return "ready_long";
     if (s.tradeSetup.direction === "short") return "ready_short";
+    // Fallback: infer direction from signal when tradeSetup.direction is missing
+    const sig = s.opportunity.signal;
+    if (sig === "sell" || sig === "strong_sell") return "ready_short";
+    if (sig === "buy" || sig === "strong_buy") return "ready_long";
     return "watch";
   }
   if (s.opportunity.recommendation === "wait") {

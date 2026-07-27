@@ -7,8 +7,10 @@ import {
 export function validatePreConditions(input: TradeSetupRawInput): ValidationResult {
   const reasons: string[] = [];
 
-  if (input.overallScore < MIN_OVERALL_SCORE) {
-    reasons.push(`Overall score (${input.overallScore}) is below minimum (${MIN_OVERALL_SCORE})`);
+  // Score must indicate clear direction: >= 60 (long) or <= 40 (short)
+  const inNeutralZone = input.overallScore > (100 - MIN_OVERALL_SCORE) && input.overallScore < MIN_OVERALL_SCORE;
+  if (inNeutralZone) {
+    reasons.push(`Overall score (${input.overallScore}) is in neutral zone — no clear directional signal`);
   }
 
   if (input.trendDirection === "neutral") {

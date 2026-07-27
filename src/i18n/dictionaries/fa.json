@@ -552,7 +552,8 @@
       "neutral": "خنثی",
       "open_detail": "باز کردن موقعیت — شرایط مطلوب در چندین بعد",
       "wait_detail": "صبر کنید — شرایط ضعیف؛ ورود را بررسی کنید",
-      "neutral_detail": "خنثی — منتظر سیگنال واضح‌تر بمانید"
+      "neutral_detail": "خنثی — منتظر سیگنال واضح‌تر بمانید",
+      "summary": "{signal} — امتیاز {score}/100"
     },
     "interpretations": {
       "rsi_bearish_reversal": "احتمال بازگشت نزولی",

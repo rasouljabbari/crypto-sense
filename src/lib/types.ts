@@ -95,7 +95,7 @@ export type Recommendation = "ready" | "wait" | "skip";
 export interface TradeSetupData {
   readonly hasTrade: boolean;
   readonly reason: string | null;
-  readonly direction: "long" | "short";
+  readonly direction: "long" | "short" | null;
   readonly entry: number;
   readonly stopLoss: number;
   readonly risk: number;

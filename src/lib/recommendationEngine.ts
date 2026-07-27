@@ -66,7 +66,7 @@ function formatRR(ratio: number): string {
 
 // Translate riskReward string ("1:2", "1:1.5", null) to numeric threshold check
 function rrAtLeast(minRR: number, rr: string | null): boolean {
-  if (!rr) return false;
+  if (!rr) return true; // unknown R:R — don't block, engine already validated
   const m = rr.match(/^1:(\d+(?:\.\d+)?)/);
   if (!m) return false;
   return parseFloat(m[1]) >= minRR;
@@ -90,9 +90,9 @@ export function generateRecommendation(coin: CoinAnalysis): RecommendationResult
   if (isSellSignal(signal)) {
     if (signal === "strong_sell") {
       const riskOk = riskLevel !== "high";
-      const qualityOk = tradeQuality >= 80;
-      const confOk = confidence >= 80;
-      const rrOk = rrAtLeast(2, riskReward);
+      const qualityOk = tradeQuality >= 70;
+      const confOk = confidence >= 70;
+      const rrOk = rrAtLeast(1.5, riskReward);
 
       if (riskOk && qualityOk && confOk && rrOk) {
         return {
@@ -152,9 +152,9 @@ export function generateRecommendation(coin: CoinAnalysis): RecommendationResult
 
     // Sell (not strong)
     const riskOk = riskLevel !== "high";
-    const qualityOk = tradeQuality >= 70;
-    const confOk = confidence >= 70;
-    const rrOk = rrAtLeast(1.5, riskReward);
+    const qualityOk = tradeQuality >= 60;
+    const confOk = confidence >= 60;
+    const rrOk = rrAtLeast(1.3, riskReward);
 
     if (riskOk && qualityOk && confOk && rrOk) {
       return {
@@ -236,9 +236,9 @@ export function generateRecommendation(coin: CoinAnalysis): RecommendationResult
   // Ready only if: trade validation passed, risk≠high, conf≥70, quality≥70, R:R≥1:1.5
   if (signal === "buy") {
     const riskOk = riskLevel !== "high";
-    const qualityOk = tradeQuality >= 70;
-    const confOk = confidence >= 70;
-    const rrOk = rrAtLeast(1.5, riskReward);
+    const qualityOk = tradeQuality >= 60;
+    const confOk = confidence >= 60;
+    const rrOk = rrAtLeast(1.3, riskReward);
 
     if (riskOk && qualityOk && confOk && rrOk) {
       return {
@@ -301,9 +301,9 @@ export function generateRecommendation(coin: CoinAnalysis): RecommendationResult
   // Ready only if: trade validation passed, conf≥80, quality≥80, risk low/med, R:R≥1:2
   if (signal === "strong_buy") {
     const riskOk = riskLevel !== "high";
-    const qualityOk = tradeQuality >= 80;
-    const confOk = confidence >= 80;
-    const rrOk = rrAtLeast(2, riskReward);
+    const qualityOk = tradeQuality >= 70;
+    const confOk = confidence >= 70;
+    const rrOk = rrAtLeast(1.5, riskReward);
 
     if (riskOk && qualityOk && confOk && rrOk) {
       return {

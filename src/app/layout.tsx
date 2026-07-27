@@ -1,5 +1,6 @@
 import { SessionProvider } from "@/components/SessionProvider";
 import { AnalysisProvider } from "@/components/AnalysisProvider";
+import { CountdownProviderWithRefresh } from "@/lib/countdown-context";
 import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/lib/theme";
 import { TimeframeProvider } from "@/lib/timeframe";
@@ -47,12 +48,14 @@ export default function RootLayout({
             <ThemeProvider>
               <TimeframeProvider>
                 <AnalysisProvider>
-                  <I18nProvider>
-                    <SessionProvider>
-                      {children}
-                      <ToastContainer />
-                    </SessionProvider>
-                  </I18nProvider>
+                  <CountdownProviderWithRefresh>
+                    <I18nProvider>
+                      <SessionProvider>
+                        {children}
+                        <ToastContainer />
+                      </SessionProvider>
+                    </I18nProvider>
+                  </CountdownProviderWithRefresh>
                 </AnalysisProvider>
               </TimeframeProvider>
             </ThemeProvider>

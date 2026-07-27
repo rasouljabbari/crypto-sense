@@ -53,7 +53,7 @@ export function CoinAnalysisResult({ coinId }: CoinAnalysisResultProps) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <SignalCardFromSnapshot snapshot={snapshot} />
         {snapshot.trends.length > 0 && (
           <Card title={t("coin_analysis.trend_analysis_title")}>
@@ -137,30 +137,26 @@ function ChartSection({ coinId, srLines }: { readonly coinId: string; readonly s
 
 function SignalCardFromSnapshot({ snapshot }: { readonly snapshot: AnalysisSnapshot }) {
   const { t } = useI18n();
-  const signal = snapshot.opportunity.signal;
-  const isAction = signal === "Strong Buy" || signal === "Buy";
-  const isWait = signal === "Strong Sell" || signal === "Sell";
+  const rectype = snapshot.opportunity.recommendation || "skip";
+  const isReady = rectype === "ready";
+  const isWait = rectype === "wait";
   const reasons = buildSignalReasonsFromSnapshot(snapshot, t);
 
-  const badgeColor = isAction
+  const badgeColor = isReady
     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
     : isWait
-      ? "bg-red-500/10 text-red-400 border-red-500/30"
-      : "bg-yellow-500/10 text-yellow-400 border-yellow-500/30";
+      ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
+      : "bg-red-500/10 text-red-400 border-red-500/30";
 
-  const actionLabel = isAction
-    ? t("coin_analysis.recommendation.open")
-    : isWait
-      ? t("coin_analysis.recommendation.wait")
-      : t("coin_analysis.recommendation.neutral");
+  const actionLabel = t(`coin_row.rec_${rectype}`);
 
-  const accentColor = isAction
+  const accentColor = isReady
     ? "text-emerald-400 border-emerald-500/20"
     : isWait
-      ? "text-red-400 border-red-500/20"
-      : "text-yellow-400 border-yellow-500/20";
+      ? "text-yellow-400 border-yellow-500/20"
+      : "text-red-400 border-red-500/20";
 
-  const bulletIcon = isAction ? "✓" : isWait ? "×" : "●";
+  const bulletIcon = isReady ? "✓" : isWait ? "●" : "×";
 
   return (
     <Card
@@ -173,7 +169,10 @@ function SignalCardFromSnapshot({ snapshot }: { readonly snapshot: AnalysisSnaps
         </div>
 
         <p className="text-xs text-gray-300 leading-relaxed">
-          {snapshot.explanation.summary}
+          {t("coin_analysis.recommendation.summary", {
+            signal: t("coin_row." + snapshot.opportunity.signal.toLowerCase().replace(" ", "_")),
+            score: snapshot.opportunity.score.toFixed(0),
+          })}
         </p>
 
         {snapshot.explanation.strengths.length > 0 && (
@@ -262,8 +261,8 @@ function translateIndicatorLabel(ind: AnalysisSnapshot["indicators"][number], t:
   return key ? t(key) : ind.statusLabel;
 }
 
-function translateIndicatorInterpretation(ind: AnalysisSnapshot["indicators"][number], t: (key: string) => string): string {
-  return t("coin_analysis.interpretations." + ind.key + "_" + ind.interpretation);
+function translateIndicatorInterpretation(ind: AnalysisSnapshot["indicators"][number], _t: (key: string) => string): string {
+  return ind.interpretation;
 }
 
 const REASON_STATIC_MAP: Record<string, string> = {
@@ -358,7 +357,7 @@ function TechIndicatorsCard({ indicators }: { readonly indicators: readonly Anal
       <h3 className="text-sm font-semibold text-gray-400 mb-4">
         {t("coin_analysis.indicators.title")}
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {indicators.map((ind) => {
           const s = statusStyles[ind.status] || statusStyles.neutral;
           const isNumeric = /^[0-9.\-]+$/.test(ind.value);
@@ -401,6 +400,7 @@ function TechIndicatorsCard({ indicators }: { readonly indicators: readonly Anal
 
 function buildSignalReasonsFromSnapshot(s: AnalysisSnapshot, t: (key: string, vars?: Record<string, string | number>) => string): string[] {
   const reasons: string[] = [];
+  const rec = s.opportunity.recommendation;
   const sig = s.opportunity.signal;
   const ind = s.indicators;
   const str = s.strength;
@@ -409,7 +409,7 @@ function buildSignalReasonsFromSnapshot(s: AnalysisSnapshot, t: (key: string, va
 
   const indByKey = (k: string) => ind.find((i) => i.key === k);
 
-  if (sig === "Strong Buy" || sig === "Buy") {
+  if (rec === "ready") {
     const ema = indByKey("ema");
     if (ema?.status === "bullish") reasons.push(t("coin_analysis.signal_reasons.ema_bullish"));
 
@@ -436,7 +436,7 @@ function buildSignalReasonsFromSnapshot(s: AnalysisSnapshot, t: (key: string, va
     if (str.momentum >= 60) reasons.push(t("coin_analysis.signal_reasons.momentum_positive"));
 
     if (reasons.length < 7 && s.opportunity.confidence >= 70) reasons.push(t("coin_analysis.signal_reasons.high_confidence"));
-  } else if (sig === "Strong Sell" || sig === "Sell") {
+  } else if (rec === "skip") {
     const ema = indByKey("ema");
     if (ema?.status === "bearish") reasons.push(t("coin_analysis.signal_reasons.ema_bearish"));
 
@@ -471,12 +471,9 @@ function buildSignalReasonsFromSnapshot(s: AnalysisSnapshot, t: (key: string, va
     if (!ts.hasTrade) {
       reasons.push(t("coin_analysis.signal_reasons.invalid_trade_setup"));
     } else {
-      if (ts.entry && s.marketState.price) {
-        const currentPrice = parseFloat(s.marketState.price.replace(/[$,]/g, ""));
-        if (!isNaN(currentPrice) && ts.entry) {
-          if (ts.direction === "long" && currentPrice > ts.entry) reasons.push(t("coin_analysis.signal_reasons.price_above_entry"));
-          if (ts.direction === "short" && currentPrice < ts.entry) reasons.push(t("coin_analysis.signal_reasons.price_below_entry"));
-        }
+      if (ts.entry && s.price > 0) {
+        if (ts.direction === "long" && s.price > ts.entry) reasons.push(t("coin_analysis.signal_reasons.price_above_entry"));
+        if (ts.direction === "short" && s.price < ts.entry) reasons.push(t("coin_analysis.signal_reasons.price_below_entry"));
       }
       if (reasons.length < 4 && str.volume >= 40 && str.volume < 60) reasons.push(t("coin_analysis.signal_reasons.volume_neutral"));
     }

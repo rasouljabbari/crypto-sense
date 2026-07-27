@@ -59,14 +59,14 @@ function calcEntry(
   if (direction === "long") {
     const support = nearestBelow(input.supportLevels, input.currentPrice);
     if (support !== null) {
-      return roundTo(Math.max(input.currentPrice, support + buffer), 2);
+      return roundTo(Math.min(input.currentPrice, support + buffer), 2);
     }
     return roundTo(input.currentPrice, 2);
   }
 
   const resistance = nearestAbove(input.resistanceLevels, input.currentPrice);
   if (resistance !== null) {
-    return roundTo(Math.min(input.currentPrice, resistance - buffer), 2);
+    return roundTo(Math.max(input.currentPrice, resistance - buffer), 2);
   }
   return roundTo(input.currentPrice, 2);
 }

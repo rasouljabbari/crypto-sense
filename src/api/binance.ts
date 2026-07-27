@@ -121,6 +121,10 @@ export function tickerToMarketData(ticker: BinanceTicker): MarketData | null {
   const quoteVolume = parseFloat(ticker.quoteVolume);
   const change = parseFloat(ticker.priceChange);
   const changePercent = parseFloat(ticker.priceChangePercent);
+  const high = parseFloat(ticker.highPrice);
+  const low = parseFloat(ticker.lowPrice);
+  if (isNaN(price) || isNaN(quoteVolume) || isNaN(change) || isNaN(changePercent) || isNaN(high) || isNaN(low)) return null;
+
   const staticData = STATIC_COIN_DATA[id];
 
   if (staticData) {
@@ -131,10 +135,18 @@ export function tickerToMarketData(ticker: BinanceTicker): MarketData | null {
       volume24h: quoteVolume,
       priceChange24h: change,
       priceChangePercent24h: changePercent,
-      high24h: parseFloat(ticker.highPrice),
-      low24h: parseFloat(ticker.lowPrice),
+      high24h: high,
+      low24h: low,
     };
   }
+
+  const estimateMarketCap = (vol: number) => {
+    if (vol > 1e9) return vol / 0.003;
+    if (vol > 1e8) return vol / 0.008;
+    if (vol > 1e7) return vol / 0.025;
+    if (vol > 1e6) return vol / 0.07;
+    return vol / 0.15;
+  };
 
   return {
     id,
@@ -143,12 +155,12 @@ export function tickerToMarketData(ticker: BinanceTicker): MarketData | null {
     name: KWN_NAMES[base] ?? base,
     image: getCryptoLogoUrl(base),
     currentPrice: price,
-    marketCap: quoteVolume * 10,
+    marketCap: estimateMarketCap(quoteVolume),
     volume24h: quoteVolume,
     priceChange24h: change,
     priceChangePercent24h: changePercent,
-    high24h: parseFloat(ticker.highPrice),
-    low24h: parseFloat(ticker.lowPrice),
+    high24h: high,
+    low24h: low,
     circulatingSupply: 0,
     totalSupply: null,
     ath: 0,
@@ -258,10 +270,11 @@ export async function fetchGlobalMarketData(tickers?: MarketData[]): Promise<Mar
     "USD1USDT", "USDEUSDT", "USDSUSDT", "XUSDUSDT", "RLUSDUSDT", "BFUSDUSDT",
   ]);
 
-  const isStableOrLeveraged = (s: string) =>
-    stablecoins.has(s) || s.includes("UP") || s.includes("DOWN") ||
-    s.includes("BULL") || s.includes("BEAR") || s.includes("BKRW") ||
-    s.includes("EUR") || s.includes("GBP") || s.includes("TRY") || s.includes("BIDR");
+  const isStableOrLeveraged = (s: string) => {
+    if (stablecoins.has(s)) return true;
+    const base = s.replace(/USDT$/, "");
+    return /(UP|DOWN|BULL|BEAR)$/i.test(base);
+  };
 
   // Known coins with exact market cap from Binance price * circulating supply
   for (const t of allUsdtTickers) {
@@ -419,21 +432,42 @@ export async function fetchCoinVolumeScreen(): Promise<CoinVolumeData[]> {
 export function createBinanceWebSocket(
   onTicker: (data: { s: string; c: string; v: string; h: string; l: string; P?: string }) => void
 ): WebSocket {
-  const streams = ALL_BINANCE_SYMBOLS.map((s) => `${s.toLowerCase()}@ticker`).join("/");
-  const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+  let ws: WebSocket;
+  let closed = false;
+  let retryDelay = 1_000;
+  let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  const MAX_RETRY = 30_000;
 
-  ws.onopen = () => {};
-  ws.onmessage = (event) => {
-    try {
-      const msg = JSON.parse(event.data);
-      const ticker = msg.stream && msg.data ? msg.data : msg;
-      if (ticker.e === "24hrTicker" || ticker.s) {
-        onTicker(ticker);
-      }
-    } catch { }
-  };
-  ws.onerror = () => {};
-  ws.onclose = () => {};
+  function connect() {
+    if (closed) return;
+    const streams = ALL_BINANCE_SYMBOLS.map((s) => `${s.toLowerCase()}@ticker`).join("/");
+    ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
 
-  return ws;
+    ws.onopen = () => { retryDelay = 1_000; };
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        const ticker = msg.stream && msg.data ? msg.data : msg;
+        if (ticker.e === "24hrTicker" || ticker.s) onTicker(ticker);
+      } catch { /* malformed message */ }
+    };
+    ws.onerror = () => console.error("[BinanceWS] connection error — will reconnect");
+    ws.onclose = () => {
+      if (closed) return;
+      console.warn(`[BinanceWS] disconnected, reconnecting in ${retryDelay}ms`);
+      reconnectTimer = setTimeout(connect, retryDelay);
+      retryDelay = Math.min(retryDelay * 2, MAX_RETRY);
+    };
+  }
+
+  connect();
+
+  const origClose = ws.close.bind(ws);
+  return Object.assign(ws, {
+    close: () => {
+      closed = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      origClose();
+    },
+  });
 }

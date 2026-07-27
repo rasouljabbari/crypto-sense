@@ -3,8 +3,6 @@
 import { CoinTable } from "@/components/CoinTable";
 import { MarketOpportunities } from "@/components/MarketOpportunities";
 import { MarketSummary } from "@/components/MarketSummary";
-import { RefreshStatus } from "@/components/RefreshStatus";
-import { AnalysisStatus } from "@/components/AnalysisStatus";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
 
@@ -23,13 +21,9 @@ export default function CoinsPage() {
           </div>
         </div>
 
-        <AnalysisStatus />
-
         <MarketOpportunities />
 
         <MarketSummary />
-
-        <RefreshStatus />
 
         <CoinTable />
     </DashboardLayout>

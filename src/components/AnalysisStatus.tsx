@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
 import { useI18n } from "@/i18n/context";
 import { useTimeframe } from "@/lib/timeframe";
+import { useCountdown } from "@/lib/countdown-context";
 import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
 import { getCandleCloseInfo } from "@/lib/candleTime";
 
@@ -51,33 +51,19 @@ export function AnalysisStatus() {
   const version = useSnapshotStore((s) => s.version);
   const lastUpdated = useSnapshotStore((s) => s.lastUpdated);
 
-  const [now, setNow] = useState<number | null>(null);
+  const { now } = useCountdown();
 
-  // Tick every second for countdown — client only
-  useEffect(() => {
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const { lastClosedAt, nextCloseAt } = useMemo(
-    () => getCandleCloseInfo(timeframe),
-    [timeframe],
-  );
+  const { lastClosedAt, nextCloseAt } = getCandleCloseInfo(timeframe);
 
   // Countdown targets actual snapshot arrival: candle close + settle + post-close delay
   const nextSnapshotAt = nextCloseAt + SNAPSHOT_DELAY_MS;
-  const countdownStr = now === null
-    ? "--:--"
-    : (() => {
-        const sec = Math.max(0, Math.floor((nextSnapshotAt - now) / 1000));
-        const h = Math.floor(sec / 3600);
-        const m = Math.floor((sec % 3600) / 60);
-        const s = sec % 60;
-        return h > 0
-          ? `${pad(h)}:${pad(m)}:${pad(s)}`
-          : `${pad(m)}:${pad(s)}`;
-      })();
+  const sec = Math.max(0, Math.floor((nextSnapshotAt - now) / 1000));
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  const countdownStr = h > 0
+    ? `${pad(h)}:${pad(m)}:${pad(s)}`
+    : `${pad(m)}:${pad(s)}`;
 
   const versionStr = lastUpdated
     ? formatDate(new Date(lastUpdated).getTime(), locale)

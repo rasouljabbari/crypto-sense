@@ -1,5 +1,25 @@
 import { MarketData, TechnicalIndicators } from "./types";
 
+/* ─── seeded PRNG (mulberry32) ────────────────────────── */
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h = h & h;
+  }
+  return Math.abs(h);
+}
+
+function mulberry32(seed: number): () => number {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), s | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 function calculateSupportResistance(
   currentPrice: number,
   high24h: number,
@@ -219,21 +239,28 @@ function calculateSupportResistance(
   return { supportLevels: supportPrices, resistanceLevels: resistancePrices };
 }
 
-export function generateTechnicalIndicators(marketData: MarketData): TechnicalIndicators {
+export function generateTechnicalIndicators(
+  marketData: MarketData,
+  seedStr?: string,
+): TechnicalIndicators {
   const { currentPrice, high24h, low24h, volume24h, marketCap, priceChangePercent24h } = marketData;
 
-  const rsi = 40 + Math.random() * 40;
-  const macdValue = Math.random() * 20 - 10;
-  const macdSignal = macdValue + (Math.random() - 0.5) * 4;
-  const ema9 = currentPrice * (1 + (Math.random() - 0.5) * 0.008);
-  const ema20 = currentPrice * (1 + (Math.random() - 0.5) * 0.012);
-  const ema21 = currentPrice * (1 + (Math.random() - 0.5) * 0.015);
-  const ema50 = currentPrice * (1 + (Math.random() - 0.5) * 0.025);
-  const ema200 = currentPrice * (1 + (Math.random() - 0.5) * 0.06);
-  const bbUpper = currentPrice * (1 + 0.015 + Math.random() * 0.01);
-  const bbLower = currentPrice * (1 - 0.015 - Math.random() * 0.01);
-  const adx = 15 + Math.random() * 30;
-  const atr = currentPrice * (0.01 + Math.random() * 0.03);
+  const rng = seedStr ? mulberry32(hashStr(seedStr)) : () => Math.random();
+
+  const rsi = 10 + rng() * 80;
+  const macdValue = rng() * 20 - 10;
+  const macdSignal = macdValue + (rng() - 0.5) * 4;
+
+  const emaBias = (rng() - 0.5) * 0.03;
+  const ema9 = currentPrice * (1 + emaBias + (rng() - 0.5) * 0.004);
+  const ema20 = currentPrice * (1 + emaBias + (rng() - 0.5) * 0.006);
+  const ema21 = currentPrice * (1 + emaBias + (rng() - 0.5) * 0.008);
+  const ema50 = currentPrice * (1 + emaBias + (rng() - 0.5) * 0.012);
+  const ema200 = currentPrice * (1 + emaBias + (rng() - 0.5) * 0.030);
+  const bbUpper = currentPrice * (1 + 0.015 + rng() * 0.01);
+  const bbLower = currentPrice * (1 - 0.015 - rng() * 0.01);
+  const adx = 10 + rng() * 45;
+  const atr = currentPrice * (0.01 + rng() * 0.03);
 
   const { supportLevels, resistanceLevels } = calculateSupportResistance(
     currentPrice,
