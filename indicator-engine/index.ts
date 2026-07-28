@@ -29,3 +29,5 @@ export { analyzeSymbol, resolveSymbol, fetchKlines, fetch24hrTicker, parseMarket
 export type { CompleteMarketData, CompleteIndicatorSnapshot, CompleteDetectionSnapshot, CompleteMarketAnalysisResult, AnalyzeSymbolInput } from "./complete-engine";
 export { generateTrade } from "./trade-setup-engine";
 export type { TradeSetupInput, TradeSetupOutput, TradeDirection, SignalAction, VolatilityLabel, TrendDirection, TakeProfitLevels } from "./trade-setup-engine";
+export { evaluateSetup } from "./setup-engine";
+export type { SetupInput, SetupResult, Position, Signal as SetupSignal, TrendLabel as SetupTrendLabel, RiskLevel as SetupRiskLevel, Recommendation, ReasonCode, TradeSetupData as SetupTradeSetupData } from "./setup-engine";

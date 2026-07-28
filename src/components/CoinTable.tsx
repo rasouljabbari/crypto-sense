@@ -40,15 +40,10 @@ export function CoinTable() {
     // sort
     const order = filters.sortOrder === "asc" ? 1 : -1;
     list.sort((a, b) => {
-      const sa = ss(a.opportunity.signal);
-      const sb = ss(b.opportunity.signal);
       switch (filters.sortBy) {
         case "name": return a.symbol.localeCompare(b.symbol) * order;
         case "recommendation": return (a.opportunity.recommendation < b.opportunity.recommendation ? -1 : 1) * order;
-        case "signal": return (sa < sb ? -1 : 1) * order;
-        case "confidence":
-        case "score": return (a.opportunity.confidence - b.opportunity.confidence) * order;
-        case "tradeQuality": return ((a.tradeSetup.quality ?? 0) - (b.tradeSetup.quality ?? 0)) * order;
+        case "confidence": return (a.opportunity.confidence - b.opportunity.confidence) * order;
         case "trend": return (ss(a.marketState.trend) < ss(b.marketState.trend) ? -1 : 1) * order;
         case "volume": {
           const va = parseFloat(a.marketState.volume.replace(/[^0-9.]/g, "")) || 0;
@@ -119,7 +114,7 @@ export function CoinTable() {
         <div className="overflow-x-auto">
           <div>
             {/* Header */}
-            <div className="grid grid-cols-[2fr_repeat(7,1fr)] gap-1 items-center px-3 py-3 border-b border-gray-800 sticky top-0 z-10 bg-gray-900/80 backdrop-blur-sm">
+            <div className="grid grid-cols-[2fr_repeat(5,1fr)] gap-1 items-center px-3 py-3 border-b border-gray-800 sticky top-0 z-10 bg-gray-900/80 backdrop-blur-sm">
               <span className={headerText}>{t("table.columns.name")}</span>
 
               <button onClick={() => toggleSort("recommendation")} className={`${headerClass} justify-center`}>
@@ -127,19 +122,9 @@ export function CoinTable() {
                 <SortIcon active={filters.sortBy === "recommendation"} dir={filters.sortOrder} />
               </button>
 
-              <button onClick={() => toggleSort("signal")} className={`${headerClass} justify-center`}>
-                <span className={headerText}>{t("table.columns.signal")}</span>
-                <SortIcon active={filters.sortBy === "signal"} dir={filters.sortOrder} />
-              </button>
-
               <button onClick={() => toggleSort("confidence")} className={`${headerClass} justify-center`}>
                 <span className={headerText}>{t("table.columns.confidence")}</span>
                 <SortIcon active={filters.sortBy === "confidence"} dir={filters.sortOrder} />
-              </button>
-
-              <button onClick={() => toggleSort("tradeQuality")} className={`${headerClass} justify-center`}>
-                <span className={headerText}>{t("table.columns.trade_quality")}</span>
-                <SortIcon active={filters.sortBy === "tradeQuality"} dir={filters.sortOrder} />
               </button>
 
               <button onClick={() => toggleSort("trend")} className={`${headerClass} justify-start`}>

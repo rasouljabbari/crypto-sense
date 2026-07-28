@@ -10,26 +10,10 @@ interface Props {
   coin: AnalysisSnapshot;
 }
 
-/** Normalize signal/trend to underscore format. */
+/** Normalize trend to underscore format. */
 function ss(s: string): string {
   return s.toLowerCase().replace(/\s+/g, "_");
 }
-
-const signalColors: Record<string, string> = {
-  strong_buy: "text-emerald-300",
-  buy: "text-emerald-400",
-  neutral: "text-yellow-400",
-  sell: "text-red-400",
-  strong_sell: "text-red-300",
-};
-
-const signalBg: Record<string, string> = {
-  strong_buy: "bg-emerald-900/30",
-  buy: "bg-emerald-900/20",
-  neutral: "bg-yellow-900/20",
-  sell: "bg-red-900/20",
-  strong_sell: "bg-red-900/30",
-};
 
 const riskColors: Record<string, string> = {
   low: "text-emerald-400 bg-emerald-900/20",
@@ -76,7 +60,7 @@ export const CoinRow = memo(function CoinRow({ coin }: Props) {
   return (
     <Link
       href={`/analysis?coin=${coin.coin}`}
-      className="grid grid-cols-[2fr_repeat(7,1fr)] gap-1 items-center px-3 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
+      className="grid grid-cols-[2fr_repeat(5,1fr)] gap-1 items-center px-3 py-3 hover:bg-gray-800/50 transition-colors border-b border-gray-800/50 last:border-0 text-sm"
     >
       {/* Coin */}
       <div className="flex items-center gap-2 min-w-0">
@@ -110,16 +94,8 @@ export const CoinRow = memo(function CoinRow({ coin }: Props) {
         )}
       </div>
 
-      {/* Signal */}
-      <span className={`text-[10px] font-bold text-center px-1 py-0.5 rounded ${signalBg[signal]} ${signalColors[signal]}`}>
-        {t(`coin_row.${signal}`)}
-      </span>
-
       {/* Confidence */}
       <span className="text-[10px] font-mono text-gray-300 text-center">{coin.opportunity.confidence}%</span>
-
-      {/* Trade Quality */}
-      <span className="text-[10px] font-mono text-gray-300 text-center">{coin.tradeSetup.quality ?? 0}</span>
 
       {/* Trend */}
       <div className={`flex items-center gap-1 justify-start text-[11px] font-semibold ${trendColors[trend]}`}>

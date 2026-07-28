@@ -113,7 +113,8 @@ export type ReasonCode =
   | "SKIP_HIGH_RISK"
   | "SKIP_WEAK_TREND"
   | "SKIP_LOW_RR"
-  | "SKIP_INVALID_SETUP";
+  | "SKIP_INVALID_SETUP"
+  | "UNAVAILABLE";
 
 export type Timeframe = "15m" | "1h" | "4h" | "1d";
 
@@ -121,7 +122,7 @@ export interface FilterOptions {
   positionType: PositionType | "all";
   minVolume: number;
   minScore: number;
-  sortBy: "score" | "volume" | "priceChange" | "name" | "position" | "risk" | "signal" | "confidence" | "tradeQuality" | "trend" | "status" | "recommendation";
+  sortBy: "volume" | "priceChange" | "name" | "position" | "risk" | "confidence" | "trend" | "status" | "recommendation";
   sortOrder: "asc" | "desc";
 }
 
