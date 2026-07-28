@@ -430,7 +430,7 @@ export async function fetchCoinVolumeScreen(): Promise<CoinVolumeData[]> {
 export function createBinanceWebSocket(
   onTicker: (data: { s: string; c: string; v: string; h: string; l: string; P?: string }) => void
 ): WebSocket {
-  let ws: WebSocket;
+  let ws!: WebSocket;
   let closed = false;
   let retryDelay = 1_000;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
