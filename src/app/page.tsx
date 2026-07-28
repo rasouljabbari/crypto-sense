@@ -272,7 +272,7 @@ function SiteNav() {
               className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
             >
               {t("landing.nav.launch")}
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4 rtl:-scale-x-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
@@ -350,7 +350,7 @@ function SiteNav() {
               className="flex items-center justify-center gap-2 w-full px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all"
             >
               {t("landing.nav.launch")}
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4 rtl:-scale-x-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
@@ -870,7 +870,7 @@ function HeroSection() {
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
               >
                 {t("landing.hero.cta_start")}
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-5 h-5 rtl:-scale-x-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </Link>
@@ -1066,106 +1066,112 @@ function LivePreviewSection() {
   const { t } = useI18n();
   const [data] = useState(SCAN_DATA);
 
-  const signalClass = (signal: string) => {
+  const signalStyle = (signal: string) => {
     switch (signal) {
-      case "LONG": return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
-      case "SHORT": return "text-red-400 bg-red-500/10 border-red-500/20";
-      default: return "text-gray-400 bg-gray-500/10 border-gray-500/20";
+      case "LONG": return "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20";
+      case "SHORT": return "text-red-400 bg-red-500/10 border border-red-500/20";
+      default: return "text-gray-400 bg-gray-500/10 border border-gray-500/20";
     }
   };
 
+  const signalIcon = (dir: string) => {
+    if (dir === "up") return (
+      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 17l9.2-9.2M17 17V7H7" />
+      </svg>
+    );
+    return (
+      <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 7l-9.2 9.2M7 7v10h10" />
+      </svg>
+    );
+  };
+
   return (
-    <SectionShell id="features" className="py-20 sm:py-28">
-      <div className="max-w-6xl mx-auto">
-        <SectionHeader
-          title={t("landing.preview.title")}
-          subtitle={t("landing.preview.subtitle")}
-        />
+        <SectionShell className="py-20 sm:py-28">
+          <div className="max-w-6xl mx-auto">
+            <SectionHeader
+              title={t("landing.preview.title")}
+              subtitle={t("landing.preview.subtitle")}
+            />
 
+        {/* Card grid */}
         <motion.div
-          className="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
         >
-          {/* Table header */}
-          <div className="hidden sm:grid grid-cols-5 gap-4 px-6 py-4 border-b border-gray-800/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            <span>{t("landing.preview.headers.num")}</span>
-            <span>{t("landing.preview.headers.coin")}</span>
-            <span>{t("landing.preview.headers.price")}</span>
-            <span>{t("landing.preview.headers.signal")}</span>
-            <span>{t("landing.preview.headers.confidence")}</span>
-          </div>
-
-          {/* Mobile header */}
-          <div className="sm:hidden px-4 py-3 border-b border-gray-800/50 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-            {t("landing.preview.headers.mobile_title")}
-          </div>
-
-          {/* Rows */}
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-          >
-            {data.map((row) => (
-              <motion.div
-                key={row.id}
-                variants={fadeUp}
-                className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-gray-800/30 last:border-0 hover:bg-gray-800/30 transition-all"
-              >
-                {/* Rank */}
-                <span className="hidden sm:flex text-sm text-gray-500 font-mono">{String(row.id).padStart(2, "0")}</span>
-
-                {/* Coin + price (mobile: coin takes full width) */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-white">{row.coin}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-400 font-mono">{row.price}</span>
-                </div>
-
-                {/* Signal */}
-                <div className="flex items-center">
-                  <span className={`text-[11px] font-bold px-2 py-1 rounded-md border ${signalClass(row.signal)}`}>
-                    {row.signal}
-                  </span>
-                </div>
-
-                {/* Score */}
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1.5 rounded-full bg-gray-800 overflow-hidden max-w-[80px]">
-                    <motion.div
-                      className={`h-full rounded-full ${row.score >= 70 ? "bg-emerald-500" : row.score >= 50 ? "bg-yellow-500" : "bg-gray-500"}`}
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${row.score}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.2 }}
-                    />
-                  </div>
-                  <span className="text-xs font-bold text-white w-7 text-right">{row.score}</span>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Footer */}
-          <div className="px-4 sm:px-6 py-3 border-t border-gray-800/50 flex items-center justify-between">
-            <span className="text-xs text-gray-500">
-              {t("landing.preview.scanning", { count: "47" })}
-            </span>
-            <motion.span
-              className="text-[10px] font-medium text-emerald-400 flex items-center gap-1.5"
-              animate={{ opacity: [1, 0.5, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
+          {data.map((row) => (
+            <motion.div
+              key={row.id}
+              variants={fadeUp}
+              className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 transition-all duration-300 hover:border-gray-700 hover:shadow-lg hover:shadow-black/20 hover:scale-[1.02]"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              {t("landing.preview.live")}
-            </motion.span>
-          </div>
+              {/* Top: coin + signal */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center shrink-0">
+                    <span className="text-xs font-bold text-gray-300">{row.coin.split("/")[0].slice(0, 3)}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">{row.coin.split("/")[0]}</div>
+                    <div className="text-[11px] text-gray-500 truncate">{row.coin.split("/")[1]}</div>
+                  </div>
+                </div>
+                <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-md shrink-0 ${signalStyle(row.signal)}`}>
+                  {signalIcon(row.dir)}
+                  {row.signal}
+                </span>
+              </div>
+
+              {/* Price */}
+              <div className="text-lg font-bold font-mono text-white mb-3">
+                {row.price}
+              </div>
+
+              {/* Stats */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-gray-500">{t("landing.preview.headers.confidence")}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                      <motion.div
+                        className={`h-full rounded-full ${row.score >= 70 ? "bg-emerald-500" : row.score >= 50 ? "bg-yellow-500" : "bg-gray-500"}`}
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${row.score}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-mono text-gray-300 min-w-[1.8rem] text-end">{row.score}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-gray-500">Volume</span>
+                  <span className="text-[10px] font-mono text-gray-300">{row.vol}</span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
+
+        {/* Footer */}
+        <div className="mt-6 px-2 py-3 flex items-center justify-between">
+          <span className="text-xs text-gray-500">
+            {t("landing.preview.scanning", { count: "47" })}
+          </span>
+          <motion.span
+            className="text-[10px] font-medium text-emerald-400 flex items-center gap-1.5"
+            animate={{ opacity: [1, 0.5, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            {t("landing.preview.live")}
+          </motion.span>
+        </div>
       </div>
     </SectionShell>
   );
@@ -1175,6 +1181,8 @@ function LivePreviewSection() {
 
 function FeaturesSection() {
   const { t } = useI18n();
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
   const features = [
     { icon: "M13 10V3L4 14h7v7l9-11h-7z", title: t("landing.features.realtime_title"), desc: t("landing.features.realtime_desc") },
     { icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", title: t("landing.features.momentum_title"), desc: t("landing.features.momentum_desc") },
@@ -1185,7 +1193,14 @@ function FeaturesSection() {
   ];
 
   return (
-    <SectionShell className="py-20 sm:py-28">
+    <motion.section
+      ref={ref}
+      id="features"
+      initial="hidden"
+      animate={inView ? "visible" : "hidden"}
+      variants={fadeIn}
+      className="relative px-4 sm:px-6 lg:px-8 py-20 sm:py-28"
+    >
       <div className="max-w-6xl mx-auto">
         <SectionHeader
           title={t("landing.features.title")}
@@ -1196,8 +1211,7 @@ function FeaturesSection() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
           variants={staggerContainer}
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
+          animate={inView ? "visible" : "hidden"}
         >
           {features.map((feature) => (
             <motion.div
@@ -1224,7 +1238,7 @@ function FeaturesSection() {
           ))}
         </motion.div>
       </div>
-    </SectionShell>
+    </motion.section>
   );
 }
 

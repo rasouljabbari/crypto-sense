@@ -132,7 +132,7 @@ export function ContactForm() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              {t("contact.form.success_title")}
+              {t("landing.contact.form.success_title")}
             </motion.h3>
             <motion.p
               className="text-sm text-gray-400 mb-8 max-w-sm mx-auto"
@@ -140,7 +140,7 @@ export function ContactForm() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              {t("contact.form.success_message")}
+              {t("landing.contact.form.success_message")}
             </motion.p>
             <motion.button
               onClick={reset}
@@ -151,7 +151,7 @@ export function ContactForm() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              {t("contact.form.send_another")}
+              {t("landing.contact.form.send_another")}
             </motion.button>
           </motion.div>
         ) : (
@@ -165,7 +165,7 @@ export function ContactForm() {
             animate="visible"
             exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
             className="space-y-5"
-            aria-label={t("contact.form.aria_label")}
+            aria-label={t("landing.contact.form.aria_label")}
           >
             {/* Name fields — side by side on sm+ */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -179,10 +179,10 @@ export function ContactForm() {
             <motion.div variants={fieldVariant}>
               <label
                 htmlFor="contact-message"
-                className="block text-sm font-medium text-gray-300 mb-1.5"
+                className="block text-sm font-medium text-gray-300 mb-1.5 text-start"
               >
-                {t(`contact.form.${FIELDS[3].labelKey}`)}
-                <span className="text-red-400 ml-0.5" aria-hidden="true">*</span>
+                {t(`landing.contact.form.${FIELDS[3].labelKey}`)}
+                <span className="text-red-400 ms-0.5" aria-hidden="true">*</span>
               </label>
               <div className="relative">
                 <textarea
@@ -194,16 +194,16 @@ export function ContactForm() {
                   disabled={sending}
                   value={values.message}
                   onChange={(e) => handleChange("message", e.target.value)}
-                  placeholder={t(`contact.form.${FIELDS[3].placeholderKey}`)}
+                  placeholder={t(`landing.contact.form.${FIELDS[3].placeholderKey}`)}
                   aria-invalid={!!errors.message}
                   aria-describedby={errors.message ? "contact-message-error" : "contact-message-count"}
-                  className={`w-full px-4 py-3 text-sm text-white bg-gray-900/50 border rounded-xl resize-none transition-all duration-200 outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 placeholder:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`w-full px-4 py-3 text-sm text-white text-start bg-gray-900/50 border rounded-xl resize-none transition-all duration-200 outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 placeholder:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed ${
                     errors.message ? "border-red-500/50" : "border-gray-800"
                   }`}
                 />
                 <span
                   id="contact-message-count"
-                  className="absolute bottom-2 right-3 text-[10px] text-gray-600 font-mono"
+                  className="absolute bottom-2 end-3 text-[10px] text-gray-600 font-mono"
                   aria-live="polite"
                 >
                   {charCount}/2000
@@ -265,7 +265,7 @@ export function ContactForm() {
                       className="flex items-center gap-2"
                     >
                       <Spinner />
-                      {t("contact.form.sending")}
+                      {t("landing.contact.form.sending")}
                     </motion.span>
                   ) : (
                     <motion.span
@@ -275,8 +275,8 @@ export function ContactForm() {
                       exit={{ opacity: 0 }}
                       className="flex items-center gap-2"
                     >
-                      {t("contact.form.submit")}
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      {t("landing.contact.form.submit")}
+                      <svg className="w-4 h-4 rtl:-scale-x-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                       </svg>
                     </motion.span>
@@ -315,10 +315,10 @@ function FormField({
     <motion.div variants={fieldVariant}>
       <label
         htmlFor={inputId}
-        className="block text-sm font-medium text-gray-300 mb-1.5"
+        className="block text-sm font-medium text-gray-300 mb-1.5 text-start"
       >
-        {t(`contact.form.${config.labelKey}`)}
-        <span className="text-red-400 ml-0.5" aria-hidden="true">*</span>
+        {t(`landing.contact.form.${config.labelKey}`)}
+        <span className="text-red-400 ms-0.5" aria-hidden="true">*</span>
       </label>
       <input
         id={inputId}
@@ -328,10 +328,10 @@ function FormField({
         disabled={disabled}
         value={value}
         onChange={(e) => onChange(config.key, e.target.value)}
-        placeholder={t(`contact.form.${config.placeholderKey}`)}
+        placeholder={t(`landing.contact.form.${config.placeholderKey}`)}
         aria-invalid={!!error}
         aria-describedby={error ? errorId : undefined}
-        className={`w-full px-4 py-2.5 text-sm text-white bg-gray-900/50 border rounded-xl transition-all duration-200 outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 placeholder:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full px-4 py-2.5 text-sm text-white text-start bg-gray-900/50 border rounded-xl transition-all duration-200 outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 placeholder:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed ${
           error ? "border-red-500/50" : "border-gray-800"
         }`}
       />
