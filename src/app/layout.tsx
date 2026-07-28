@@ -42,8 +42,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${vazirmatn.variable}`}>
-      <body className="min-h-screen bg-theme-bg text-theme-text antialiased">
+    <html className={`${geistSans.variable} ${geistMono.variable} ${vazirmatn.variable}`}>
+      <body className="min-h-screen bg-theme-bg text-theme-text antialiased font-sans">
         <QueryProvider>
             <ThemeProvider>
               <TimeframeProvider>

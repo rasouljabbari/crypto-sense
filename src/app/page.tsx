@@ -37,14 +37,6 @@ interface MarketCandle {
   timestamp: number;
 }
 
-interface Opportunity {
-  id: number;
-  type: "READY LONG" | "READY SHORT" | "WATCH";
-  side: "long" | "short" | "watch";
-  x: number;
-  y: number;
-}
-
 // ─── Data ───
 
 // ─── Constants ───
@@ -425,8 +417,6 @@ function LiveMarketCanvas() {
     const rng = mulberry32(42);
     return Array.from({ length: 50 }, (_, i) => seedCandle(rng, i));
   });
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const oppSeq = useRef(0);
   const [coinIndex, setCoinIndex] = useState(0);
   const [scanX, setScanX] = useState(0);
   const scanStart = useRef(Date.now());
@@ -453,53 +443,6 @@ function LiveMarketCanvas() {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []);
-
-  // opportunity detection
-  useEffect(() => {
-    if (candles.length < 6) return;
-    const last5 = candles.slice(-5);
-    const bullRun = last5.every((c) => c.close > c.open);
-    const bearRun = last5.every((c) => c.close < c.open);
-    const tight = last5.every((c) => Math.abs(c.close - c.open) / c.open < 0.003);
-
-    if (opportunities.length >= 2) return;
-
-    const shouldTrigger = Math.random() > 0.45;
-    if (!shouldTrigger) return;
-
-    const lx = 480 + Math.random() * 60;
-    const ly = 100 + Math.random() * 160;
-
-    if (bullRun) {
-      oppSeq.current += 1;
-      setOpportunities((prev) => [
-        ...prev,
-        { id: oppSeq.current, type: "READY LONG", side: "long", x: lx, y: ly },
-      ]);
-    } else if (bearRun) {
-      oppSeq.current += 1;
-      setOpportunities((prev) => [
-        ...prev,
-        { id: oppSeq.current, type: "READY SHORT", side: "short", x: lx, y: ly },
-      ]);
-    } else if (tight) {
-      oppSeq.current += 1;
-      setOpportunities((prev) => [
-        ...prev,
-        { id: oppSeq.current, type: "WATCH", side: "watch", x: lx, y: ly },
-      ]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [candles.length]);
-
-  // remove expired opportunities
-  useEffect(() => {
-    if (opportunities.length === 0) return;
-    const id = setTimeout(() => {
-      setOpportunities((prev) => prev.slice(1));
-    }, 4500);
-    return () => clearTimeout(id);
-  }, [opportunities]);
 
   // coin rotation
   useEffect(() => {
@@ -734,66 +677,7 @@ function LiveMarketCanvas() {
             Vol: {latestVol.toFixed(0)}
           </text>
 
-          {/* opportunity cards rendered via regular div overlay but positioned via SVG coords */}
-          {opportunities.map((opp) => {
-            const isLong = opp.side === "long";
-            const isShort = opp.side === "short";
-            const bg = isLong
-              ? "rgba(16,185,129,0.12)"
-              : isShort
-                ? "rgba(239,68,68,0.12)"
-                : "rgba(234,179,8,0.12)";
-            const border = isLong
-              ? "rgba(16,185,129,0.3)"
-              : isShort
-                ? "rgba(239,68,68,0.3)"
-                : "rgba(234,179,8,0.3)";
-            const txt = isLong
-              ? "#22c55e"
-              : isShort
-                ? "#ef4444"
-                : "#eab308";
-            // compute pixel position from SVG coords
-            const pctX = opp.x / vbW;
-            const pctY = opp.y / vbH;
-            const cardW = 90;
-            const cardH = 28;
-            return (
-              <foreignObject
-                key={opp.id}
-                x={Math.min(opp.x, vbW - cardW - 8)}
-                y={Math.max(opp.y - cardH - 6, cTop + 4)}
-                width={cardW}
-                height={cardH}
-              >
-                <motion.div
-                  initial={{ opacity: 0, x: 20, scale: 0.8 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -10, scale: 0.9 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                  style={{
-                    background: bg,
-                    border: `1px solid ${border}`,
-                    color: txt,
-                    borderRadius: 6,
-                    padding: "4px 10px",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.5px",
-                    backdropFilter: "blur(4px)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "100%",
-                    height: "100%",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {opp.type}
-                </motion.div>
-              </foreignObject>
-            );
-          })}
+
         </svg>
 
         {/* summary bar below chart */}
@@ -1064,7 +948,41 @@ function HowItWorksSection() {
 
 function LivePreviewSection() {
   const { t } = useI18n();
-  const [data] = useState(SCAN_DATA);
+  const [data, setData] = useState(SCAN_DATA);
+  const [liveScanned, setLiveScanned] = useState("47");
+  const [lastUpdate, setLastUpdate] = useState("0.4s ago");
+  const lastFetchRef = useRef(Date.now());
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/scanner");
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!mounted) return;
+        if (json.results && json.results.length > 0) {
+          setData(json.results);
+          setLiveScanned(String(json.scanned));
+          lastFetchRef.current = Date.now();
+          setLastUpdate("0s ago");
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+    fetchData();
+    const id = setInterval(fetchData, 5000);
+    return () => { mounted = false; clearInterval(id); };
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const secs = Math.floor((Date.now() - lastFetchRef.current) / 1000);
+      setLastUpdate(secs === 0 ? "0s ago" : `${secs}s ago`);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const signalStyle = (signal: string) => {
     switch (signal) {
@@ -1161,7 +1079,7 @@ function LivePreviewSection() {
         {/* Footer */}
         <div className="mt-6 px-2 py-3 flex items-center justify-between">
           <span className="text-xs text-gray-500">
-            {t("landing.preview.scanning", { count: "47" })}
+            {t("landing.preview.scanning", { count: liveScanned })} · <span className="text-gray-600">{lastUpdate}</span>
           </span>
           <motion.span
             className="text-[10px] font-medium text-emerald-400 flex items-center gap-1.5"
