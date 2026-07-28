@@ -17,6 +17,43 @@ function isBuySignal(s: SignalType): boolean {
   return s === "buy" || s === "strong_buy";
 }
 
+/** Check whether setup has proper continuation or breakout structure. */
+function isQualifiedSetup(coin: CoinAnalysis): boolean {
+  const ti = coin.technicalIndicators;
+  if (!ti) return true;
+  const price = coin.marketData.currentPrice;
+  const isLong = isBuySignal(coin.signal);
+  const isShort = isSellSignal(coin.signal);
+  if (!isLong && !isShort) return false;
+
+  let continuation = false;
+  let breakout = false;
+
+  if (isLong) {
+    // Continuation: uptrend leg → pullback → resuming
+    continuation = ti.macd.histogram > 0 && ti.rsi < 65 && price > ti.ema20 && ti.adx >= 20;
+    // Breakout: price near resistance, ready to break up
+    const above = ti.resistanceLevels.filter((r) => r > price);
+    if (above.length > 0) {
+      const nearest = Math.min(...above);
+      const distPct = ((nearest - price) / price) * 100;
+      breakout = distPct <= 2 && ti.adx >= 20;
+    }
+  } else if (isShort) {
+    // Continuation: downtrend leg → correction → resuming
+    continuation = ti.macd.histogram < 0 && ti.rsi > 35 && price < ti.ema20 && ti.adx >= 20;
+    // Breakout: price near support, ready to break down
+    const below = ti.supportLevels.filter((s) => s < price);
+    if (below.length > 0) {
+      const nearest = Math.max(...below);
+      const distPct = ((price - nearest) / price) * 100;
+      breakout = distPct <= 2 && ti.adx >= 20;
+    }
+  }
+
+  return continuation || breakout;
+}
+
 function getNearestBelow(levels: number[], price: number): number | null {
   const below = levels.filter((l) => l < price);
   if (below.length === 0) return null;
@@ -88,19 +125,31 @@ export function generateRecommendation(coin: CoinAnalysis): RecommendationResult
 
   // ── SELL / STRONG SELL → Ready if criteria met ────────────
   if (isSellSignal(signal)) {
+    const setupOk = isQualifiedSetup(coin);
+
     if (signal === "strong_sell") {
       const riskOk = riskLevel !== "high";
       const qualityOk = tradeQuality >= 70;
       const confOk = confidence >= 70;
       const rrOk = rrAtLeast(1.5, riskReward);
 
-      if (riskOk && qualityOk && confOk && rrOk) {
+      if (riskOk && qualityOk && confOk && rrOk && setupOk) {
         return {
           recommendation: "ready",
           reasonCode: "READY",
           reason: `Strong sell signal confirmed. Score ${overallScore} | Confidence ${confidence}% | Quality ${tradeQuality} | R:R ${riskReward ?? "?"}`,
           color: "#ef4444",
           priority: 100,
+        };
+      }
+
+      if (!setupOk) {
+        return {
+          recommendation: "wait",
+          reasonCode: "WAIT_CONFIRMATION",
+          reason: "No clear continuation or breakdown pattern. Waiting for better setup.",
+          color: "#eab308",
+          priority: 30,
         };
       }
 
@@ -156,13 +205,23 @@ export function generateRecommendation(coin: CoinAnalysis): RecommendationResult
     const confOk = confidence >= 60;
     const rrOk = rrAtLeast(1.3, riskReward);
 
-    if (riskOk && qualityOk && confOk && rrOk) {
+    if (riskOk && qualityOk && confOk && rrOk && setupOk) {
       return {
         recommendation: "ready",
         reasonCode: "READY",
         reason: `Sell signal confirmed. Score ${overallScore} | Confidence ${confidence}% | Quality ${tradeQuality} | R:R ${riskReward ?? "?"}`,
         color: "#ef4444",
         priority: 100,
+      };
+    }
+
+    if (!setupOk) {
+      return {
+        recommendation: "wait",
+        reasonCode: "WAIT_CONFIRMATION",
+        reason: "No clear continuation or breakdown pattern. Waiting for better setup.",
+        color: "#eab308",
+        priority: 30,
       };
     }
 
@@ -239,14 +298,25 @@ export function generateRecommendation(coin: CoinAnalysis): RecommendationResult
     const qualityOk = tradeQuality >= 60;
     const confOk = confidence >= 60;
     const rrOk = rrAtLeast(1.3, riskReward);
+    const setupOk = isQualifiedSetup(coin);
 
-    if (riskOk && qualityOk && confOk && rrOk) {
+    if (riskOk && qualityOk && confOk && rrOk && setupOk) {
       return {
         recommendation: "ready",
         reasonCode: "READY",
         reason: `Buy signal confirmed. Score ${overallScore} | Confidence ${confidence}% | Quality ${tradeQuality} | R:R ${riskReward ?? "?"}`,
         color: "#22c55e",
         priority: 100,
+      };
+    }
+
+    if (!setupOk) {
+      return {
+        recommendation: "wait",
+        reasonCode: "WAIT_CONFIRMATION",
+        reason: "No clear continuation or breakout pattern. Waiting for better setup.",
+        color: "#eab308",
+        priority: 30,
       };
     }
 
@@ -304,14 +374,25 @@ export function generateRecommendation(coin: CoinAnalysis): RecommendationResult
     const qualityOk = tradeQuality >= 70;
     const confOk = confidence >= 70;
     const rrOk = rrAtLeast(1.5, riskReward);
+    const setupOk = isQualifiedSetup(coin);
 
-    if (riskOk && qualityOk && confOk && rrOk) {
+    if (riskOk && qualityOk && confOk && rrOk && setupOk) {
       return {
         recommendation: "ready",
         reasonCode: "READY",
         reason: `Strong buy signal confirmed. Score ${overallScore} | Confidence ${confidence}% | Quality ${tradeQuality} | R:R ${riskReward ?? "?"}`,
         color: "#22c55e",
         priority: 100,
+      };
+    }
+
+    if (!setupOk) {
+      return {
+        recommendation: "wait",
+        reasonCode: "WAIT_CONFIRMATION",
+        reason: "No clear continuation or breakout pattern. Waiting for better setup.",
+        color: "#eab308",
+        priority: 30,
       };
     }
 

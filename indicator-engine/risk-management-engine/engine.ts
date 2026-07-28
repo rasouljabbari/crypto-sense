@@ -14,10 +14,10 @@ function determineDirection(input: TradeSetupRawInput): TradeDirection | null {
   return null;
 }
 
-function noTrade(reason: string, accountBalance?: number, riskPercent?: number): TradeSetupResult {
+function noTrade(reason: string, accountBalance?: number, riskPercent?: number, direction?: TradeDirection): TradeSetupResult {
   return {
     hasTrade: false,
-    direction: "long",
+    direction: direction ?? "long",
     entry: 0,
     stopLoss: 0,
     risk: 0,
@@ -39,7 +39,7 @@ export function generateTradeSetup(input: TradeSetupRawInput): TradeSetupResult 
 
   const preCheck = validatePreConditions(input);
   if (!preCheck.isValid) {
-    return noTrade(preCheck.reason!, input.accountBalance, input.riskPercent);
+    return noTrade(preCheck.reason!, input.accountBalance, input.riskPercent, direction);
   }
 
   const entry = calculateEntry(direction, input);
@@ -53,7 +53,7 @@ export function generateTradeSetup(input: TradeSetupRawInput): TradeSetupResult 
 
   const postCheck = validateSetup(direction, entry, stopLoss, risk, takeProfit.tp1, tradeQuality, input);
   if (!postCheck.isValid) {
-    return noTrade(postCheck.reason!, input.accountBalance, input.riskPercent);
+    return noTrade(postCheck.reason!, input.accountBalance, input.riskPercent, direction);
   }
 
   return {

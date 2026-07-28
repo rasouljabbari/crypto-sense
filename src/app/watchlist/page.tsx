@@ -52,6 +52,10 @@ function getOpportunityKey(c: AnalysisSnapshot): OpportunityKey {
   if (c.opportunity.recommendation === "ready") {
     if (c.tradeSetup.direction === "long") return "ready_long";
     if (c.tradeSetup.direction === "short") return "ready_short";
+    // Fallback: infer direction from signal when tradeSetup.direction is missing
+    const sig = c.opportunity.signal;
+    if (sig === "sell" || sig === "strong_sell") return "ready_short";
+    if (sig === "buy" || sig === "strong_buy") return "ready_long";
     return "watch";
   }
   if (c.opportunity.recommendation === "wait") {

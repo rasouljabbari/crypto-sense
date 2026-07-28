@@ -43,16 +43,19 @@ function calculateTrendScore(priceChange: number, indicators: TechnicalIndicator
   if (macd.histogram > 0) score += 10;
   else score -= 10;
 
-  if (indicators.ema9 > indicators.ema21) score += 10;
+  if (indicators.ema9 > indicators.ema21) score += 15;
+  else score -= 15;
+
+  if (indicators.ema21 > indicators.ema50) score += 10;
   else score -= 10;
 
-  if (indicators.ema21 > indicators.ema50) score += 5;
-  else score -= 5;
+  if (indicators.ema50 > indicators.ema200) score += 8;
+  else if (indicators.ema50 < indicators.ema200) score -= 8;
 
   const bullishAlign = indicators.ema9 > indicators.ema21 && indicators.ema21 > indicators.ema50;
   const bearishAlign = indicators.ema9 < indicators.ema21 && indicators.ema21 < indicators.ema50;
-  if (bullishAlign) score += 8;
-  if (bearishAlign) score -= 8;
+  if (bullishAlign) score += 12;
+  if (bearishAlign) score -= 12;
 
   const volMcapRatio = marketData.marketCap > 0 ? marketData.volume24h / marketData.marketCap : 0;
   if (priceChange > 0 && volMcapRatio > 0.1) score += 5;
@@ -80,8 +83,8 @@ function calculateTechnicalScore(indicators: TechnicalIndicators): number {
 
   const bullishAlign = indicators.ema9 > indicators.ema21 && indicators.ema21 > indicators.ema50;
   const bearishAlign = indicators.ema9 < indicators.ema21 && indicators.ema21 < indicators.ema50;
-  if (bullishAlign) score += 10;
-  if (bearishAlign) score -= 10;
+  if (bullishAlign) score += 15;
+  if (bearishAlign) score -= 15;
 
   return cap(score);
 }
@@ -229,12 +232,12 @@ function generateTrendAnalysis(
 
   // ── composite score ──────────────────────────────────────────────────
   let score = 50;
-  if (ema9Above21 && ema21Above50 && ema50Above200) score += 25;
-  else if (ema9Above21 && ema21Above50) score += 15;
-  else if (ema50Above200) score += 8;
-  if (ema9Below21 && ema21Below50 && ema50Below200) score -= 25;
-  else if (ema9Below21 && ema21Below50) score -= 15;
-  else if (ema50Below200) score -= 8;
+  if (ema9Above21 && ema21Above50 && ema50Above200) score += 30;
+  else if (ema9Above21 && ema21Above50) score += 20;
+  else if (ema50Above200) score += 10;
+  if (ema9Below21 && ema21Below50 && ema50Below200) score -= 30;
+  else if (ema9Below21 && ema21Below50) score -= 20;
+  else if (ema50Below200) score -= 10;
   if (strongTrend && macdBullish) score += 10;
   if (strongTrend && macdBearish) score -= 10;
   if (rsi > 70) score -= 5;
@@ -270,8 +273,8 @@ function computeTrendLabel(ti: TechnicalIndicators): TrendLabel {
   if (emaBearish && adx >= 25 && macdHist < 0) return "strong_bearish";
   if (emaBullish && adx >= 20) return "bullish";
   if (emaBearish && adx >= 20) return "bearish";
-  if (emaMixed && trendUp) return "bullish";
-  if (emaMixed && trendDown) return "bearish";
+  if (emaMixed && trendUp && adx >= 30) return "bullish";
+  if (emaMixed && trendDown && adx >= 30) return "bearish";
   if (emaBullish && adx < 20) return "sideways";
   if (emaBearish && adx < 20) return "sideways";
 
@@ -286,9 +289,21 @@ function computeSignal(
   trendLabel: TrendLabel,
   macdHistogram: number,
   adx: number,
+  indicators?: { ema9: number; ema21: number; ema50: number; ema200: number },
 ): SignalType {
   const bullTrend = isBullTrend(trendLabel);
   const bearTrend = isBearTrend(trendLabel);
+
+  // EMA alignment check — mixed EMA forces neutral regardless of other factors
+  if (indicators) {
+    const emaBull = indicators.ema9 > indicators.ema21 && indicators.ema21 > indicators.ema50;
+    const emaBear = indicators.ema9 < indicators.ema21 && indicators.ema21 < indicators.ema50;
+    const emaAligned = (position === "long" && emaBull) || (position === "short" && emaBear);
+    if (!emaAligned && position !== "neutral") {
+      // Strong trend (ADX >= 30) can override mixed EMA
+      if (adx < 30) return "neutral";
+    }
+  }
 
   // position=long but trend is bearish → neutral (contradiction guard)
   if (position === "long" && bearTrend) {
@@ -436,16 +451,21 @@ function computeRiskReward(
   const nearestSupport = supportLevels.length > 0 ? Math.max(...supportLevels.filter(s => s < price)) : null;
   const nearestResistance = resistanceLevels.length > 0 ? Math.min(...resistanceLevels.filter(r => r > price)) : null;
   if (nearestSupport && nearestResistance) {
-    let ratio: number;
-    if (position === "long") {
-      ratio = (nearestResistance - price) / (price - nearestSupport);
-    } else {
-      ratio = (price - nearestSupport) / (nearestResistance - price);
-    }
+    // Use ATR as floor for stop/target distances → prevents
+    // pathologically asymmetric R:R when price hugs one level
+    const minStop = atr > 0 ? atr * 1.5 : 0;
+    const minTarget = atr > 0 ? atr * 3 : 0;
+    const risk = position === "long"
+      ? Math.max(price - nearestSupport, minStop)
+      : Math.max(nearestResistance - price, minStop);
+    const reward = position === "long"
+      ? Math.max(nearestResistance - price, minTarget)
+      : Math.max(price - nearestSupport, minTarget);
+    if (risk <= 0) return null;
+    const ratio = reward / risk;
     if (ratio >= 3) return "1:3";
     if (ratio >= 2.5) return "1:2.5";
     if (ratio >= 2) return "1:2";
-    // If ratio < 2 but we have valid levels, still return the ratio
     return `1:${ratio.toFixed(1)}`;
   }
 
@@ -453,7 +473,6 @@ function computeRiskReward(
   if (atr > 0 && price > 0) {
     const stopDist = atr * 1.5;
     const takeDist = atr * 3;
-    // Ensure we don't go below 0
     if (stopDist < price && takeDist < price * 10) {
       return "1:2";
     }
@@ -566,7 +585,7 @@ export function analyzeCoin(
 
   const riskScore = computeRiskScore({ position, overallScore, trendLabel, technicalIndicators: indicators });
   const riskReward = computeRiskReward(marketData.currentPrice, indicators.supportLevels, indicators.resistanceLevels, position, indicators.atr);
-  const signal = computeSignal(position, overallScore, trendLabel, indicators.macd.histogram, indicators.adx);
+  const signal = computeSignal(position, overallScore, trendLabel, indicators.macd.histogram, indicators.adx, indicators);
   const confidence = computeConfidence(volumeScore, trendScore, technicalScore, overallScore, position);
   const tradeQuality = computeTradeQuality(position, trendLabel, technicalScore, volumeScore, overallScore, indicators.adx);
   const riskLevel = computeRiskLevel(riskScore);

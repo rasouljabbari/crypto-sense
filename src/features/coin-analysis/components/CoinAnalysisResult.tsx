@@ -250,10 +250,10 @@ function SignalCardFromSnapshot({ snapshot }: { readonly snapshot: AnalysisSnaps
 
 function translateIndicatorLabel(ind: AnalysisSnapshot["indicators"][number], t: (key: string) => string): string {
   const map: Record<string, Record<string, string>> = {
-    rsi: { "Overbought": "coin_analysis.tech_interpret.rsi.overbought", "Oversold": "coin_analysis.tech_interpret.rsi.oversold", "Neutral": "coin_analysis.tech_interpret.rsi.neutral" },
-    macd: { "Bullish Cross": "coin_analysis.tech_interpret.macd.bullish_cross", "Bearish Cross": "coin_analysis.tech_interpret.macd.bearish_cross", "Converging": "coin_analysis.tech_interpret.macd.converging" },
+    rsi: { "Overbought": "coin_analysis.tech_interpret.rsi.overbought", "Oversold": "coin_analysis.tech_interpret.rsi.oversold", "Neutral": "coin_analysis.tech_interpret.rsi.neutral", "Bullish": "coin_analysis.interpretations.rsi_bullish_recovery", "Bearish": "coin_analysis.interpretations.rsi_bearish_reversal" },
+    macd: { "Bullish Cross": "coin_analysis.tech_interpret.macd.bullish_cross", "Bearish Cross": "coin_analysis.tech_interpret.macd.bearish_cross", "Converging": "coin_analysis.tech_interpret.macd.converging", "Bullish Momentum": "coin_analysis.interpretations.macd_momentum_increasing", "Bearish Momentum": "coin_analysis.interpretations.macd_momentum_decreasing" },
     adx: { "Very Strong Trend": "coin_analysis.tech_interpret.adx.very_strong", "Strong Trend": "coin_analysis.tech_interpret.adx.strong", "Moderate Trend": "coin_analysis.tech_interpret.adx.moderate", "Weak Trend": "coin_analysis.tech_interpret.adx.weak" },
-    ema: { "Bullish Alignment": "coin_analysis.tech_interpret.ema.bullish", "Bearish Alignment": "coin_analysis.tech_interpret.ema.bearish", "Mixed": "coin_analysis.tech_interpret.ema.mixed" },
+    ema: { "Bullish Alignment": "coin_analysis.tech_interpret.ema.bullish", "Bearish Alignment": "coin_analysis.tech_interpret.ema.bearish", "Mixed": "coin_analysis.tech_interpret.ema.mixed", "Short-term Bullish": "coin_analysis.tech_interpret.ema.bullish", "Short-term Bearish": "coin_analysis.tech_interpret.ema.bearish" },
     atr: { "High Volatility": "coin_analysis.tech_interpret.atr.high", "Medium Volatility": "coin_analysis.tech_interpret.atr.medium", "Low Volatility": "coin_analysis.tech_interpret.atr.low" },
     bb: { "Above Upper Band": "coin_analysis.tech_interpret.bb.above", "Below Lower Band": "coin_analysis.tech_interpret.bb.below", "Inside Bands": "coin_analysis.tech_interpret.bb.inside" },
   };
@@ -261,8 +261,34 @@ function translateIndicatorLabel(ind: AnalysisSnapshot["indicators"][number], t:
   return key ? t(key) : ind.statusLabel;
 }
 
-function translateIndicatorInterpretation(ind: AnalysisSnapshot["indicators"][number], _t: (key: string) => string): string {
-  return ind.interpretation;
+function translateIndicatorInterpretation(ind: AnalysisSnapshot["indicators"][number], t: (key: string) => string): string {
+  const map: Record<string, Record<string, string>> = {
+    rsi: {
+      "Oversold — potential reversal up": "coin_analysis.interpretations.rsi_bullish_recovery",
+      "Overbought — potential reversal down": "coin_analysis.interpretations.rsi_bearish_reversal",
+      "Neutral zone": "coin_analysis.interpretations.rsi_normal_trading",
+    },
+    macd: {
+      "Bullish Cross": "coin_analysis.tech_interpret.macd.bullish_cross",
+      "Bearish Cross": "coin_analysis.tech_interpret.macd.bearish_cross",
+      "Bullish Momentum": "coin_analysis.interpretations.macd_momentum_increasing",
+      "Bearish Momentum": "coin_analysis.interpretations.macd_momentum_decreasing",
+    },
+    adx: {
+      "Buyers in Control": "coin_analysis.interpretations.adx_buyers_in_control",
+      "Trending Market": "coin_analysis.interpretations.adx_trend_developing",
+      "Ranging Market": "coin_analysis.interpretations.adx_market_ranging",
+    },
+    ema: {
+      "Bullish Alignment": "coin_analysis.interpretations.ema_uptrend",
+      "Short-term Bullish": "coin_analysis.interpretations.ema_uptrend",
+      "Bearish Alignment": "coin_analysis.interpretations.ema_downtrend",
+      "Short-term Bearish": "coin_analysis.interpretations.ema_downtrend",
+      "Mixed": "coin_analysis.interpretations.ema_no_clear_trend",
+    },
+  };
+  const key = map[ind.key]?.[ind.interpretation];
+  return key ? t(key) : ind.interpretation;
 }
 
 const REASON_STATIC_MAP: Record<string, string> = {
