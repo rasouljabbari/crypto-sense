@@ -15,6 +15,7 @@ function timeAgo(iso: string, now: number): string {
 
 export function RefreshStatus() {
   const isLoading = useSnapshotStore((s) => s.isLoading);
+  const error = useSnapshotStore((s) => s.error);
   const lastUpdated = useSnapshotStore((s) => s.lastUpdated);
   const triggerRefresh = useSnapshotStore((s) => s.triggerRefresh);
   const { t } = useI18n();
@@ -24,6 +25,11 @@ export function RefreshStatus() {
 
   return (
     <div className="flex items-center gap-3 px-1 mb-3 text-[11px] flex-wrap">
+      {error && (
+        <span className="text-red-400 bg-red-500/10 border border-red-500/20 px-2.5 py-1 rounded-lg font-medium">
+          ⚠ {error}
+        </span>
+      )}
       {lastUpdated && (
         <span className="text-gray-500">
           {t("refresh_status.updated")} <span className="text-gray-400 font-mono">{timeAgo(lastUpdated, now)} {t("refresh_status.ago")}</span>

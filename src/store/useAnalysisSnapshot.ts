@@ -93,6 +93,7 @@ interface SnapshotStore {
   collections: Record<TimeframeOption, SnapshotCollection>;
   version: number;
   isLoading: boolean;
+  error: string | null;
   lastUpdated: string | null;
   refreshKey: number;
   /** Tracks which timeframes have loaded since last refresh. */
@@ -111,6 +112,7 @@ interface SnapshotStore {
   /** Replace a single snapshot inside a timeframe collection. */
   setSnapshot: (coinId: string, timeframe: TimeframeOption, snapshot: AnalysisSnapshot) => void;
   setLoading: (v: boolean) => void;
+  setError: (v: string | null) => void;
   setIndicators: (v: SnapshotStore["indicators"]) => void;
   triggerRefresh: () => void;
 }
@@ -119,6 +121,7 @@ export const useSnapshotStore = create<SnapshotStore>((set) => ({
   collections: emptyCollections(),
   version: 0,
   isLoading: true,
+  error: null,
   lastUpdated: null,
   refreshKey: 0,
   loadedTimeframes: {},
@@ -156,6 +159,7 @@ export const useSnapshotStore = create<SnapshotStore>((set) => ({
     })),
 
   setLoading: (v) => set({ isLoading: v }),
+  setError: (v) => set({ error: v }),
   setIndicators: (v) =>
     set((s) => ({
       indicators: v,

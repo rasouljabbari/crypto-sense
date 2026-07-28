@@ -300,11 +300,22 @@
     "sr_star": "{count}"
   },
   "footer": {
-    "copyright": "© {year} CryptoSense. All rights reserved.",
-    "support": "Support:",
+    "copyright": "© {year} Crypto Sense. All rights reserved.",
+    "description": "Professional momentum setup scanner for cryptocurrency markets. Real-time signals, no noise.",
+    "product": "Product",
+    "how": "How it Works",
+    "features": "Features",
+    "launch": "Launch App",
+    "contact_label": "Contact",
+    "email": "Email",
+    "support_link": "Support",
+    "support_title": "Support Crypto Sense",
+    "support_desc": "If Crypto Sense helps you discover better trading opportunities and you'd like to support its continued development, you can support the project using the wallet address below.",
+    "copy": "Copy",
     "copied": "Copied!",
     "contact": "Bugs & suggestions:",
-    "author": "Rasoul Jabbari"
+    "author": "Rasoul Jabbari",
+    "tagline": "Built for traders who demand precision."
   },
   "dashboard": {
     "title": "Analysis Dashboard",
@@ -792,5 +803,99 @@
     "ready_long": "Ready for LONG",
     "ready_short": "Ready for SHORT",
     "close": "Close"
+  },
+  "landing": {
+    "nav": {
+      "launch": "Launch App",
+      "how": "How it Works",
+      "features": "Features",
+      "contact": "Contact"
+    },
+    "badge": "Momentum Setup Scanner",
+    "hero": {
+      "headline1": "Stop looking for trades.",
+      "headline2": "Let Crypto Sense find them for you.",
+      "subtitle": "Real-time market scanning that identifies high-probability momentum setups across 45+ cryptocurrencies. No noise, just validated opportunities.",
+      "cta_start": "Start Scanning",
+      "cta_how": "How It Works",
+      "trust": "Trusted by traders scanning {count} markets in real time"
+    },
+    "scanner": {
+      "title": "See the Scan in Action",
+      "subtitle": "Watch how Crypto Sense sweeps across the market, analyzing every candle for momentum setups.",
+      "markets_scanned": "Markets Scanned",
+      "setups_found": "Setups Found",
+      "avg_confidence": "Avg Confidence",
+      "last_update": "Last Update",
+      "scanning": "Scanning",
+      "live": "Live"
+    },
+    "how": {
+      "title": "How Crypto Sense Works",
+      "subtitle": "Three simple steps from raw market data to validated trading opportunities.",
+      "step1_title": "Scan the Markets",
+      "step1_desc": "Crypto Sense continuously monitors 45+ cryptocurrency pairs across all major timeframes, analyzing price action, volume, and market structure in real time.",
+      "step2_title": "Analyze with Precision",
+      "step2_desc": "Our multi-factor engine evaluates momentum indicators, trend strength, volume profile, and support/resistance levels to qualify every setup.",
+      "step3_title": "Get Clear Signals",
+      "step3_desc": "Receive validated long/short signals with confidence scores, key levels, and trade context. No noise, no guesswork — just actionable setups."
+    },
+    "preview": {
+      "title": "Live Scanner Preview",
+      "subtitle": "See the type of clear, actionable signals Crypto Sense delivers every day.",
+      "scanning": "Scanning {count} markets in real time",
+      "live": "Live",
+      "headers": {
+        "num": "#",
+        "coin": "Coin",
+        "price": "Price",
+        "signal": "Signal",
+        "confidence": "Confidence",
+        "mobile_title": "Live Scanning Results"
+      }
+    },
+    "features": {
+      "title": "Everything You Need to Trade Smarter",
+      "subtitle": "A complete scanning toolkit designed for serious traders who demand precision.",
+      "realtime_title": "Real-time Scanning",
+      "realtime_desc": "Continuous 24/7 market monitoring across 45+ cryptocurrency pairs. Never miss a move.",
+      "momentum_title": "Momentum Detection",
+      "momentum_desc": "Advanced indicator engine combining volume, trend strength, and pattern recognition.",
+      "multitf_title": "Multi-timeframe",
+      "multitf_desc": "From 1-minute to weekly charts. Catch scalping opportunities and swing trades alike.",
+      "scores_title": "Confidence Scores",
+      "scores_desc": "Every signal ranked with a clear 0-100 score. Know which setups deserve your attention.",
+      "directions_title": "Long & Short Signals",
+      "directions_desc": "Both directions covered. Identify momentum on the long and short side with equal precision.",
+      "alerts_title": "Instant Alerts",
+      "alerts_desc": "Real-time notifications when new setups are detected. Never miss a validated opportunity."
+    },
+    "theme": {
+      "title": "Beautiful in Any Theme",
+      "subtitle": "Crypto Sense adapts perfectly to your preference. Light or dark, every detail is crafted for clarity.",
+      "switch": "Switch to {mode} Mode",
+      "hint": "The entire interface adapts instantly. Your charts, signals, and data — all perfectly readable."
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "subtitle": "Have a question or want to suggest a feature? We would love to hear from you.",
+      "send": "Send Email",
+      "form": {
+        "aria_label": "Contact form",
+        "label_first": "First Name",
+        "label_last": "Last Name",
+        "label_email": "Email Address",
+        "label_message": "Message",
+        "placeholder_first": "John",
+        "placeholder_last": "Doe",
+        "placeholder_email": "you@example.com",
+        "placeholder_message": "Tell us what's on your mind...",
+        "submit": "Send Message",
+        "sending": "Sending...",
+        "success_title": "Message Sent!",
+        "success_message": "Thank you for reaching out. We'll get back to you as soon as possible.",
+        "send_another": "Send Another Message"
+      }
+    }
   }
 }

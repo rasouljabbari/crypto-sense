@@ -105,8 +105,8 @@ export const STATIC_COIN_DATA: Record<string, Omit<MarketData, "currentPrice" | 
   toncoin: { id: "toncoin", rank: 9, symbol: "TON", name: "Toncoin", image: "https://cryptologos.cc/logos/toncoin-ton-logo.svg", circulatingSupply: 5100000000, totalSupply: null, ath: 8.24, athDate: "2024-06-15", atl: 0.39, atlDate: "2021-09-20" },
 };
 
-export async function fetchAllTickers(): Promise<BinanceTicker[]> {
-  const res = await fetch(`${BINANCE_REST}/ticker/24hr?symbols=${JSON.stringify(ALL_BINANCE_SYMBOLS)}`);
+export async function fetchAllTickers(signal?: AbortSignal): Promise<BinanceTicker[]> {
+  const res = await fetch(`${BINANCE_REST}/ticker/24hr?symbols=${JSON.stringify(ALL_BINANCE_SYMBOLS)}`, { signal });
   if (!res.ok) throw new Error(`Binance API error: ${res.status}`);
   return res.json();
 }
@@ -169,11 +169,17 @@ export function tickerToMarketData(ticker: BinanceTicker): MarketData | null {
 }
 
 export async function fetchMarketDataList(): Promise<MarketData[]> {
-  const tickers = await fetchAllTickers();
-  return tickers
-    .map(tickerToMarketData)
-    .filter((d): d is MarketData => d !== null)
-    .sort((a, b) => b.volume24h - a.volume24h);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15_000);
+  try {
+    const tickers = await fetchAllTickers(controller.signal);
+    return tickers
+      .map(tickerToMarketData)
+      .filter((d): d is MarketData => d !== null)
+      .sort((a, b) => b.volume24h - a.volume24h);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function fetchKlines(

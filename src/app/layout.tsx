@@ -27,9 +27,9 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "CryptoSense — Smart Crypto Market Analysis",
+  title: "Crypto Sense — Momentum Setup Scanner",
   description:
-    "Professional cryptocurrency momentum analysis platform. Real-time Long/Short signals powered by volume, trend & technical analysis.",
+    "Stop looking for trades. Let Crypto Sense find them for you. Real-time market scanning that identifies high-probability momentum setups.",
   icons: {
     icon: "/logo.svg",
     apple: "/logo.svg",

@@ -300,11 +300,22 @@
     "sr_star": "{count}"
   },
   "footer": {
-    "copyright": "© {year} CryptoSense. Tüm hakları saklıdır.",
-    "support": "Destek:",
+    "copyright": "© {year} Crypto Sense. Tüm hakları saklıdır.",
+    "description": "Kripto para piyasaları için profesyonel momentum kurulum tarayıcısı. Gerçek zamanlı sinyaller, gürültü yok.",
+    "product": "Ürün",
+    "how": "Nasıl Çalışır",
+    "features": "Özellikler",
+    "launch": "Uygulamayı Aç",
+    "contact_label": "İletişim",
+    "email": "E-posta",
+    "support_link": "Destek",
+    "support_title": "Crypto Sense'i Destekleyin",
+    "support_desc": "Crypto Sense daha iyi ticaret fırsatları keşfetmenize yardımcı oluyorsa ve geliştirilmesine destek olmak istiyorsanız, aşağıdaki cüzdan adresini kullanarak projeyi destekleyebilirsiniz.",
+    "copy": "Kopyala",
     "copied": "Kopyalandı!",
     "contact": "Hata ve öneriler:",
-    "author": "Rasoul Jabbari"
+    "author": "Rasoul Jabbari",
+    "tagline": "Hassasiyet isteyen yatırımcılar için üretildi."
   },
   "dashboard": {
     "title": "Analiz Paneli",
@@ -792,5 +803,99 @@
     "ready_long": "LONG için Hazır",
     "ready_short": "SHORT için Hazır",
     "close": "Kapat"
+  },
+  "landing": {
+    "nav": {
+      "launch": "Uygulamayı Aç",
+      "how": "Nasıl Çalışır",
+      "features": "Özellikler",
+      "contact": "İletişim"
+    },
+    "badge": "Momentum Tarama Motoru",
+    "hero": {
+      "headline1": "İşlem aramayı bırakın.",
+      "headline2": "Crypto Sense sizin için bulsun.",
+      "subtitle": "45+ kripto para biriminde yüksek olasılıklı momentum kurulumlarını tespit eden gerçek zamanlı piyasa taraması. Gürültü yok, yalnızca doğrulanmış fırsatlar.",
+      "cta_start": "Taramaya Başla",
+      "cta_how": "Nasıl Çalışır",
+      "trust": "{count} piyasayı gerçek zamanlı tarayan yatırımcılar tarafından güveniliyor"
+    },
+    "scanner": {
+      "title": "Taramayı İzleyin",
+      "subtitle": "Crypto Sense'in piyasayı tarayarak her mumu momentum kurulumları için nasıl analiz ettiğini görün.",
+      "markets_scanned": "Taranan Piyasalar",
+      "setups_found": "Bulunan Kurulumlar",
+      "avg_confidence": "Ort. Güven",
+      "last_update": "Son Güncelleme",
+      "scanning": "Taranıyor",
+      "live": "Canlı"
+    },
+    "how": {
+      "title": "Crypto Sense Nasıl Çalışır",
+      "subtitle": "Ham piyasa verisinden doğrulanmış işlem fırsatlarına üç basit adım.",
+      "step1_title": "Piyasaları Tara",
+      "step1_desc": "Crypto Sense, 45'ten fazla kripto para çiftini tüm büyük zaman dilimlerinde sürekli izler, fiyat hareketini, hacmi ve piyasa yapısını gerçek zamanlı analiz eder.",
+      "step2_title": "Hassas Analiz",
+      "step2_desc": "Çok faktörlü motorumuz, momentum göstergelerini, trend gücünü, hacim profilini ve destek/direnç seviyelerini değerlendirerek her kurulumu nitelendirir.",
+      "step3_title": "Net Sinyaller Alın",
+      "step3_desc": "Güven puanları, ana seviyeler ve işlem bağlamıyla doğrulanmış long/short sinyalleri alın. Gürültü yok, tahmin yok — yalnızca uygulanabilir kurulumlar."
+    },
+    "preview": {
+      "title": "Canlı Tarama Önizlemesi",
+      "subtitle": "Crypto Sense'in her gün sunduğu net ve uygulanabilir sinyalleri görün.",
+      "scanning": "{count} piyasa gerçek zamanlı taranıyor",
+      "live": "Canlı",
+      "headers": {
+        "num": "#",
+        "coin": "Coin",
+        "price": "Fiyat",
+        "signal": "Sinyal",
+        "confidence": "Güven",
+        "mobile_title": "Canlı Tarama Sonuçları"
+      }
+    },
+    "features": {
+      "title": "Daha Akıllı İşlem İçin İhtiyacınız Olan Her Şey",
+      "subtitle": "Hassasiyet isteyen ciddi yatırımcılar için tasarlanmış eksiksiz bir tarama araç seti.",
+      "realtime_title": "Gerçek Zamanlı Tarama",
+      "realtime_desc": "45'ten fazla kripto para çiftinde 7/24 sürekli piyasa izleme. Hiçbir hareketi kaçırmayın.",
+      "momentum_title": "Momentum Tespiti",
+      "momentum_desc": "Hacim, trend gücü ve desen tanımayı birleştiren gelişmiş gösterge motoru.",
+      "multitf_title": "Çoklu Zaman Dilimi",
+      "multitf_desc": "1 dakikadan haftalık grafiklere. Scalping fırsatlarını ve swing işlemlerini yakalayın.",
+      "scores_title": "Güven Puanları",
+      "scores_desc": "Her sinyal net bir 0-100 puanıyla sıralanır. Hangi kurulumların ilginizi hak ettiğini bilin.",
+      "directions_title": "Long ve Short Sinyalleri",
+      "directions_desc": "Her iki yön de kapsanmıştır. Long ve short tarafta momentumu eşit hassasiyetle belirleyin.",
+      "alerts_title": "Anlık Bildirimler",
+      "alerts_desc": "Yeni kurulumlar tespit edildiğinde gerçek zamanlı bildirimler. Hiçbir fırsatı kaçırmayın."
+    },
+    "theme": {
+      "title": "Her Temada Güzel",
+      "subtitle": "Crypto Sense tercihinize mükemmel uyum sağlar. Açık veya koyu, her detay netlik için tasarlanmıştır.",
+      "switch": "{mode} Moduna Geç",
+      "hint": "Tüm arayüz anında uyum sağlar. Grafikleriniz, sinyalleriniz ve verileriniz — hepsi mükemmel okunabilir."
+    },
+    "contact": {
+      "title": "İletişime Geçin",
+      "subtitle": "Bir sorunuz mu var veya bir özellik önermek mi istiyorsunuz? Sizden duymak isteriz.",
+      "send": "E-posta Gönder",
+      "form": {
+        "aria_label": "İletişim formu",
+        "label_first": "Ad",
+        "label_last": "Soyad",
+        "label_email": "E-posta Adresi",
+        "label_message": "Mesaj",
+        "placeholder_first": "Ali",
+        "placeholder_last": "Yılmaz",
+        "placeholder_email": "you@example.com",
+        "placeholder_message": "Aklınızda ne varsa yazın...",
+        "submit": "Mesaj Gönder",
+        "sending": "Gönderiliyor...",
+        "success_title": "Mesajınız Gönderildi!",
+        "success_message": "Bizimle iletişime geçtiğiniz için teşekkür ederiz. En kısa sürede size geri döneceğiz.",
+        "send_another": "Başka Mesaj Gönder"
+      }
+    }
   }
 }

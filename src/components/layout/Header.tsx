@@ -3,18 +3,12 @@
 import { useI18n } from "@/i18n/context";
 import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
 import { useTimeframe, TIMEFRAME_OPTIONS } from "@/lib/timeframe";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import { useSidebar } from "./SidebarContext";
-
-function Flag({ locale }: { locale: string }) {
-  if (locale === "en") return <span className="text-sm leading-none">🇬🇧</span>;
-  if (locale === "tr") return <span className="text-sm leading-none">🇹🇷</span>;
-  return <span className="text-sm leading-none">🇮🇷</span>;
-}
 
 const breadcrumbMap: Record<string, string> = {
   "/": "nav.overview",
@@ -30,28 +24,10 @@ export function Header() {
   const triggerRefresh = useSnapshotStore((s) => s.triggerRefresh);
   const isLoading = useSnapshotStore((s) => s.isLoading);
   const pathname = usePathname();
-  const { t, locale, setLocale } = useI18n();
+  const { t } = useI18n();
   const { timeframe, setTimeframe } = useTimeframe();
   const { data: session, status } = useSession();
   const { toggleMobile } = useSidebar();
-  const [langOpen, setLangOpen] = useState(false);
-  const langRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (langRef.current && !langRef.current.contains(e.target as Node)) {
-        setLangOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  const locales: { value: string; label: string }[] = [
-    { value: "en", label: t("locale.en") },
-    { value: "tr", label: t("locale.tr") },
-    { value: "fa", label: t("locale.fa") },
-  ];
 
   const breadcrumbKey = breadcrumbMap[pathname] ?? "nav.overview";
   const pageTitle = t(breadcrumbKey);
@@ -122,37 +98,7 @@ export function Header() {
             ))}
           </div>
 
-          <div className="relative" ref={langRef}>
-            <button
-              onClick={() => setLangOpen(!langOpen)}
-              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-theme-card border border-theme text-xs text-theme-text hover:bg-theme-hover transition-colors"
-            >
-              <Flag locale={locale} />
-              <svg className={`w-3 h-3 text-theme-secondary transition-transform ${langOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {langOpen && (
-              <div className="absolute right-0 mt-1.5 w-36 bg-theme-secondary border border-theme rounded-lg shadow-xl py-1 z-50">
-                {locales.map((l) => (
-                  <button
-                    key={l.value}
-                    onClick={() => {
-                      setLocale(l.value as "en" | "tr" | "fa");
-                      setLangOpen(false);
-                    }}
-                    className={`flex items-center gap-2 w-full px-3 py-2 text-xs transition-colors ${locale === l.value
-                      ? "text-emerald-400 bg-emerald-500/10"
-                      : "text-theme-text hover:bg-theme-hover"
-                      }`}
-                  >
-                    <Flag locale={l.value} />
-                    {l.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <LanguageSwitcher mode="header" />
 
           {status === "authenticated" && (
             <div className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold">

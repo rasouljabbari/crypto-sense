@@ -1,7 +1,8 @@
 "use client";
 
 import { ConfirmModal } from "@/components/ConfirmModal";
-import { Locale, useI18n } from "@/i18n/context";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useI18n } from "@/i18n/context";
 import { useTheme } from "@/lib/theme";
 import { useTimeframe, TIMEFRAME_OPTIONS, type TimeframeOption } from "@/lib/timeframe";
 import type { Session } from "next-auth";
@@ -9,7 +10,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSidebar } from "./SidebarContext";
 
 /* ── Navigation Config ────────────────────────────────────────────────── */
@@ -55,11 +56,6 @@ function useNavItems(): NavItem[] {
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
 
-function Flag({ locale }: { locale: Locale }) {
-  const flags: Record<Locale, string> = { en: "🇬🇧", tr: "🇹🇷", fa: "🇮🇷" };
-  return <span className="text-sm leading-none">{flags[locale]}</span>;
-}
-
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
 }
@@ -69,33 +65,15 @@ function isActive(pathname: string, href: string) {
 export function Sidebar() {
   const { mobileOpen, setMobileOpen } = useSidebar();
   const pathname = usePathname();
-  const { t, locale, setLocale, dir } = useI18n();
+  const { t, dir } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const { timeframe, setTimeframe } = useTimeframe();
   const { data: session, status } = useSession();
-  const [langOpen, setLangOpen] = useState(false);
-  const langRef = useRef<HTMLDivElement>(null);
   const navItems = useNavItems();
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (langRef.current && !langRef.current.contains(e.target as Node)) {
-        setLangOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname, setMobileOpen]);
-
-  const locales: { value: Locale; label: string }[] = [
-    { value: "en", label: t("locale.en") },
-    { value: "tr", label: t("locale.tr") },
-    { value: "fa", label: t("locale.fa") },
-  ];
 
   /* Group nav items by `group` field */
   const groups = navItems.reduce<{ key: string; items: NavItem[] }[]>((acc, item) => {
@@ -258,46 +236,7 @@ export function Sidebar() {
         {/* ── Bottom Controls ────────────────────────────────────── */}
         <div className="shrink-0 border-t border-theme p-3 space-y-1">
           {/* Language */}
-          <div className="relative" ref={langRef}>
-            <button
-              onClick={() => setLangOpen(!langOpen)}
-              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs text-theme-secondary hover:text-theme-text hover:bg-theme-hover transition-all duration-200"
-            >
-              <span className="w-5 h-5 shrink-0 flex items-center justify-center">
-                <Flag locale={locale} />
-              </span>
-              <span className="truncate">{locales.find((l) => l.value === locale)?.label}</span>
-              <svg
-                className={`w-3 h-3 ml-auto transition-transform duration-200 ${langOpen ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {langOpen && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-theme-secondary border border-theme rounded-xl shadow-xl py-1 z-50">
-                {locales.map((l) => (
-                  <button
-                    key={l.value}
-                    onClick={() => {
-                      setLocale(l.value);
-                      setLangOpen(false);
-                    }}
-                    className={`flex items-center gap-2 w-full px-3 py-2 text-xs transition-colors duration-150 ${locale === l.value
-                      ? "text-emerald-400 bg-emerald-500/10"
-                      : "text-theme-text hover:bg-theme-hover"
-                      }`}
-                  >
-                    <Flag locale={l.value} />
-                    {l.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <LanguageSwitcher mode="sidebar" />
 
           {/* Theme toggle */}
           <button

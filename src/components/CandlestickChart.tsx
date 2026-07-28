@@ -210,6 +210,8 @@ export function CandlestickChart({ coinId, srLines }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const smaSeriesArrRef = useRef<ISeriesApi<"Line">[]>([]);
   const [crosshairValues, setCrosshairValues] = useState<{ vol?: string; rsi?: string; adx?: string } | null>(null);
+  const setCrosshairValuesRef = useRef(setCrosshairValues);
+  setCrosshairValuesRef.current = setCrosshairValues;
   const paneManagerRef = useRef<ChartPaneManager | null>(null);
 
   // ── Line overlay state ──────────────────────────────────────────────
@@ -218,6 +220,10 @@ export function CandlestickChart({ coinId, srLines }: Props) {
   const currentPriceRef = useRef<number>(0);
   const dataRef = useRef<ChartDataPoint[]>([]);
   const rafRef = useRef<number>(0);
+  const timeIndexMapRef = useRef<Map<number, number>>(new Map());
+  const lastLineUpdateRef = useRef(0);
+  const scheduleLineUpdateRef = useRef<() => void>(() => {});
+  
 
   const hasSrSupport = useMemo(() => srLines?.some(sl => sl.type === "support") ?? false, [srLines]);
   const hasSrResistance = useMemo(() => srLines?.some(sl => sl.type === "resistance") ?? false, [srLines]);
@@ -254,11 +260,29 @@ export function CandlestickChart({ coinId, srLines }: Props) {
     setLineMarkers(markers);
   }, [srLines]);
 
-  // Throttled update via rAF
+  // Throttled update via rAF (max ~20fps to avoid React render pressure)
   const scheduleLineUpdate = useCallback(() => {
+    const now = Date.now();
+    if (now - lastLineUpdateRef.current < 50) {
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(() => {
+          lastLineUpdateRef.current = Date.now();
+          updateLinePositions();
+          rafRef.current = 0;
+        });
+      }
+      return;
+    }
+    lastLineUpdateRef.current = now;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(updateLinePositions);
+    rafRef.current = requestAnimationFrame(() => {
+      updateLinePositions();
+      rafRef.current = 0;
+    });
   }, [updateLinePositions]);
+
+  // Keep ref in sync for subscription callbacks
+  scheduleLineUpdateRef.current = scheduleLineUpdate;
 
   const hasSr = useMemo(() => (srLines?.length ?? 0) > 0, [srLines]);
 
@@ -295,12 +319,28 @@ export function CandlestickChart({ coinId, srLines }: Props) {
     [status]
   );
 
-  // Track current price and keep dataRef in sync
+  // Track current price, dataRef, and time-index Map in sync
   useEffect(() => {
     dataRef.current = data;
     if (data.length > 0) {
       currentPriceRef.current = data[data.length - 1].close;
+      // Build O(1) lookup Map for crosshair
+      const map = new Map<number, number>();
+      for (let i = 0; i < data.length; i++) {
+        map.set(Number(fmtTime(data[i])), i);
+      }
+      timeIndexMapRef.current = map;
     }
+  }, [data]);
+
+  // ── Memoized SMA computations ──────────────────────────────────────
+  const smaMemo = useMemo(() => {
+    if (data.length < 7) return { sma7: [], sma25: [], sma99: [] };
+    return {
+      sma7: calcSMA(data, 7),
+      sma25: data.length >= 25 ? calcSMA(data, 25) : [],
+      sma99: data.length >= 99 ? calcSMA(data, 99) : [],
+    };
   }, [data]);
 
   function toggleFullscreen() {
@@ -319,54 +359,38 @@ export function CandlestickChart({ coinId, srLines }: Props) {
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
-  // ── Chart creation (only on mount / timeframe / theme change) ──────
+  // ── Chart creation (mount only — never recreate) ──────────────────
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
-    // Destroy previous chart
-    if (chartRef.current) {
-      chartRef.current.remove();
-      chartRef.current = null;
-    }
-    while (container.firstChild) container.removeChild(container.firstChild);
 
     const rect = container.getBoundingClientRect();
     const width = rect.width || 800;
     const height = rect.height || 480;
 
-    const bgColor = isDark ? "#0d1117" : "#ffffff";
-    const textColor = isDark ? "#9ca3af" : "#6b7280";
-    const gridColor = isDark ? "rgba(55, 65, 81, 0.4)" : "rgba(209, 213, 219, 0.5)";
-    const borderColor = isDark ? "#374151" : "#d1d5db";
-    const crosshairLabelBg = isDark ? "#1f2937" : "#f3f4f6";
-    const crosshairLine = isDark ? "#6b7280" : "#9ca3af";
-
     const chart = createChart(container, {
       width,
       height,
       layout: {
-        background: { type: ColorType.Solid, color: bgColor },
-        textColor,
+        background: { type: ColorType.Solid, color: "#0d1117" },
+        textColor: "#9ca3af",
         fontSize: 11,
       },
       grid: {
-        vertLines: { color: gridColor },
-        horzLines: { color: gridColor },
+        vertLines: { color: "rgba(55, 65, 81, 0.4)" },
+        horzLines: { color: "rgba(55, 65, 81, 0.4)" },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
-        vertLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
-        horzLine: { color: crosshairLine, width: 1, style: 2, labelBackgroundColor: crosshairLabelBg },
+        vertLine: { color: "#6b7280", width: 1, style: 2, labelBackgroundColor: "#1f2937" },
+        horzLine: { color: "#6b7280", width: 1, style: 2, labelBackgroundColor: "#1f2937" },
       },
       timeScale: {
-        borderColor,
+        borderColor: "#374151",
         timeVisible: globalTf === "15m" || globalTf === "1h" || globalTf === "4h",
         secondsVisible: false,
       },
-      rightPriceScale: {
-        borderColor,
-      },
+      rightPriceScale: { borderColor: "#374151" },
     });
 
     chartRef.current = chart;
@@ -380,110 +404,65 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       wickDownColor: "#ef4444",
       priceFormat: { type: "price", precision: 4, minMove: 0.0001 },
     });
-
     candleSeriesRef.current = candleSeries;
-
-    // Set data if already available (skip during reload to avoid stale flash)
-    if (!reloadingRef.current && dataRef.current.length > 0) {
-      const currentData = dataRef.current;
-      candleSeries.setData(
-        currentData.map((k) => ({
-          time: fmtTime(k),
-          open: k.open,
-          high: k.high,
-          low: k.low,
-          close: k.close,
-        }))
-      );
-
-      const from = Math.max(0, currentData.length - 96);
-      chart.timeScale().setVisibleRange({
-        from: fmtTime(currentData[from]),
-        to: fmtTime(currentData[currentData.length - 1]),
-      });
-    } else {
-      chart.timeScale().fitContent();
-    }
 
     // ── Indicator Panes ──
     const paneManager = new ChartPaneManager(chart);
     paneManagerRef.current = paneManager;
-    if (!reloadingRef.current && dataRef.current.length > 0) {
-      paneManager.sync(indicator.getVisibleIds(), dataRef.current);
-    }
-
-    // ── SMAs ──
-    const newSmaSeries: ISeriesApi<"Line">[] = [];
-    if (!reloadingRef.current && dataRef.current.length > 0) {
-      const currentData = dataRef.current;
-      const sma7Data = calcSMA(currentData, 7);
-      const sma25Data = calcSMA(currentData, 25);
-      const sma99Data = calcSMA(currentData, 99);
-      const smaVisible = indicator.isEnabled("sma");
-      if (sma7Data.length > 0) {
-        const s = chart.addSeries(LineSeries, { color: "#f59e0b", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: smaVisible });
-        s.setData(sma7Data);
-        newSmaSeries.push(s);
-      }
-      if (sma25Data.length > 0) {
-        const s = chart.addSeries(LineSeries, { color: "#ec4899", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: smaVisible });
-        s.setData(sma25Data);
-        newSmaSeries.push(s);
-      }
-      if (sma99Data.length > 0) {
-        const s = chart.addSeries(LineSeries, { color: "#8b5cf6", lineWidth: 1, lastValueVisible: false, priceLineVisible: false, visible: smaVisible });
-        s.setData(sma99Data);
-        newSmaSeries.push(s);
-      }
-    }
-    smaSeriesArrRef.current = newSmaSeries;
 
     // ── Subscribe scroll → update zone positions ──
     chart.timeScale().subscribeVisibleTimeRangeChange(() => {
-      scheduleLineUpdate();
+      scheduleLineUpdateRef.current();
     });
 
-      // ── Crosshair → update current price for highlight detection ──
-      chart.subscribeCrosshairMove((param) => {
-        if (!param.time || !param.point) {
-          setCrosshairValues(null);
-          return;
-        }
-        if (!candleSeriesRef.current) return;
-        const candleData = param.seriesData.get(candleSeriesRef.current) as { time: UTCTimestamp; open: number; high: number; low: number; close: number } | undefined;
-        if (!candleData) return;
-        const latestData = dataRef.current;
-        const time = Number(candleData.time);
-        const idx = latestData.findIndex((d) => Number(fmtTime(d)) === time);
-        if (idx === -1) return;
-        const vals: { rsi?: string; adx?: string; vol?: string } = {};
-        const candle = latestData[idx];
-        if (candle) {
-          const v = candle.volume;
-          if (v >= 1e9) vals.vol = (v / 1e9).toFixed(2) + "B";
-          else if (v >= 1e6) vals.vol = (v / 1e6).toFixed(2) + "M";
-          else if (v >= 1e3) vals.vol = (v / 1e3).toFixed(2) + "K";
-          else vals.vol = v.toFixed(0);
-          if (candle.rsi !== undefined) vals.rsi = candle.rsi.toFixed(1);
-          if (candle.adx !== undefined) vals.adx = candle.adx.toFixed(1);
-        }
-        setCrosshairValues(Object.keys(vals).length > 0 ? vals : null);
+    // ── Crosshair ──
+    chart.subscribeCrosshairMove((param) => {
+      if (!param.time || !param.point) {
+        setCrosshairValuesRef.current(null);
+        return;
+      }
+      if (!candleSeriesRef.current) return;
+      const candleData = param.seriesData.get(candleSeriesRef.current) as
+        | { time: UTCTimestamp; open: number; high: number; low: number; close: number }
+        | undefined;
+      if (!candleData) return;
 
+      const map = timeIndexMapRef.current;
+      const time = Number(candleData.time);
+      const idx = map.get(time);
+      if (idx === undefined || idx < 0 || idx >= dataRef.current.length) {
         currentPriceRef.current = candleData.close;
-        scheduleLineUpdate();
-      });
+        scheduleLineUpdateRef.current();
+        return;
+      }
+      const candle = dataRef.current[idx];
+      const vals: { rsi?: string; adx?: string; vol?: string } = {};
+      if (candle) {
+        const v = candle.volume;
+        if (v >= 1e9) vals.vol = (v / 1e9).toFixed(2) + "B";
+        else if (v >= 1e6) vals.vol = (v / 1e6).toFixed(2) + "M";
+        else if (v >= 1e3) vals.vol = (v / 1e3).toFixed(2) + "K";
+        else vals.vol = v.toFixed(0);
+        if (candle.rsi !== undefined) vals.rsi = candle.rsi.toFixed(1);
+        if (candle.adx !== undefined) vals.adx = candle.adx.toFixed(1);
+      }
+      setCrosshairValuesRef.current(Object.keys(vals).length > 0 ? vals : null);
 
-    // ── Resize → update zone positions ──
+      currentPriceRef.current = candleData.close;
+      scheduleLineUpdateRef.current();
+    });
+
+    // ── Resize ──
     const ro = new ResizeObserver(() => {
       if (chartRef.current && container) {
         const r = container.getBoundingClientRect();
         chartRef.current.applyOptions({ width: r.width, height: r.height });
-        scheduleLineUpdate();
+        scheduleLineUpdateRef.current();
       }
     });
     ro.observe(container);
 
-    requestAnimationFrame(() => scheduleLineUpdate());
+    requestAnimationFrame(() => scheduleLineUpdateRef.current());
 
     return () => {
       ro.disconnect();
@@ -497,7 +476,51 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       smaSeriesArrRef.current = [];
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [globalTf, isDark]);
+    // Only run once — never recreate chart
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Theme sync (applyOptions only — no recreation) ────────────────
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    chart.applyOptions({
+      layout: {
+        background: { type: ColorType.Solid, color: isDark ? "#0d1117" : "#ffffff" },
+        textColor: isDark ? "#9ca3af" : "#6b7280",
+      },
+      grid: {
+        vertLines: { color: isDark ? "rgba(55, 65, 81, 0.4)" : "rgba(209, 213, 219, 0.5)" },
+        horzLines: { color: isDark ? "rgba(55, 65, 81, 0.4)" : "rgba(209, 213, 219, 0.5)" },
+      },
+      crosshair: {
+        vertLine: { color: isDark ? "#6b7280" : "#9ca3af", labelBackgroundColor: isDark ? "#1f2937" : "#f3f4f6" },
+        horzLine: { color: isDark ? "#6b7280" : "#9ca3af", labelBackgroundColor: isDark ? "#1f2937" : "#f3f4f6" },
+      },
+      timeScale: { borderColor: isDark ? "#374151" : "#d1d5db" },
+      rightPriceScale: { borderColor: isDark ? "#374151" : "#d1d5db" },
+    });
+
+    candleSeriesRef.current?.applyOptions({
+      upColor: "#34d399",
+      downColor: "#ef4444",
+      borderUpColor: "#34d399",
+      borderDownColor: "#ef4444",
+      wickUpColor: "#34d399",
+      wickDownColor: "#ef4444",
+    });
+  }, [isDark]);
+
+  // ── Time scale options sync (timeframe change) ────────────────────
+  useEffect(() => {
+    chartRef.current?.applyOptions({
+      timeScale: {
+        timeVisible: globalTf === "15m" || globalTf === "1h" || globalTf === "4h",
+        secondsVisible: false,
+      },
+    });
+  }, [globalTf]);
 
   // ── Data update in-place (preserves scroll position) ───────────────
   useEffect(() => {
@@ -505,6 +528,7 @@ export function CandlestickChart({ coinId, srLines }: Props) {
     const candleSeries = candleSeriesRef.current;
     if (!chart || !candleSeries || data.length === 0) return;
 
+    // Batch: set candle data once
     candleSeries.setData(
       data.map((k) => ({
         time: fmtTime(k),
@@ -515,13 +539,10 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       }))
     );
 
-    // Create or update SMA series
-    const sma7Data = calcSMA(data, 7);
-    const sma25Data = calcSMA(data, 25);
-    const sma99Data = calcSMA(data, 99);
+    // Update SMA series (use memoized values)
+    const { sma7: sma7Data, sma25: sma25Data, sma99: sma99Data } = smaMemo;
     const smaArr = smaSeriesArrRef.current;
     if (smaArr.length === 0 && data.length > 7) {
-      // First load — create SMA series
       const smaVisible = indicator.isEnabled("sma");
       const newSeries: ISeriesApi<"Line">[] = [];
       if (sma7Data.length > 0) {
@@ -546,13 +567,14 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       if (smaArr.length > 2) smaArr[2].setData(sma99Data.length > 0 ? sma99Data : []);
     }
 
-    // Sync indicator panes
-    paneManagerRef.current?.sync(indicator.getVisibleIds(), data);
+    // Sync indicator panes (deferred to avoid layout thrashing)
+    requestAnimationFrame(() => {
+      paneManagerRef.current?.sync(indicator.getVisibleIds(), dataRef.current);
+    });
 
-    // Update price ref for SR highlight
-    currentPriceRef.current = data[data.length - 1].close;
+    // Schedule SR line update
     scheduleLineUpdate();
-  }, [data]);
+  }, [data, smaMemo]);
 
   // ── Dynamic Indicator Sync (panes + SMA visibility) ──
   useEffect(() => {

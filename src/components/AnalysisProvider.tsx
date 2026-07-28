@@ -49,6 +49,7 @@ function TimeframeLoop({ tf }: { tf: TimeframeOption }) {
   const lastClosedAt = useClosedCandleKey(tf);
   const refreshKey = useSnapshotStore((s) => s.refreshKey);
   const publishTimeframe = useSnapshotStore((s) => s.publishTimeframe);
+  const setError = useSnapshotStore((s) => s.setError);
   const running = useRef(false);
   const pending = useRef(false);
 
@@ -83,10 +84,13 @@ function TimeframeLoop({ tf }: { tf: TimeframeOption }) {
         // Publish (replaces old snapshots for this timeframe — never mutates)
         if (!cancelled) {
           publishTimeframe(tf, snapshots);
+          setError(null); // clear on success
         }
       } catch (err) {
         if (!cancelled) {
+          const msg = err instanceof Error ? err.message : String(err);
           console.error(`[AnalysisProvider] ${tf} loop failed:`, err);
+          setError(msg);
         }
       } finally {
         running.current = false;
@@ -111,6 +115,7 @@ function IndicatorsLoop() {
   const closed1h = useClosedCandleKey("1h");
   const refreshKey = useSnapshotStore((s) => s.refreshKey);
   const setIndicators = useSnapshotStore((s) => s.setIndicators);
+  const setError = useSnapshotStore((s) => s.setError);
   const running = useRef(false);
   const pending = useRef(false);
 
@@ -141,10 +146,13 @@ function IndicatorsLoop() {
             bnbDominance: indicators.bnbDominance,
             othersDominance: indicators.othersDominance,
           });
+          setError(null); // clear on success
         }
       } catch (err) {
         if (!cancelled) {
+          const msg = err instanceof Error ? err.message : String(err);
           console.error(`[AnalysisProvider] IndicatorsLoop failed:`, err);
+          setError(msg);
         }
       } finally {
         running.current = false;
