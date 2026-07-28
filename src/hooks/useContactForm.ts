@@ -13,6 +13,8 @@ export interface UseContactFormReturn {
   handleChange: (field: keyof ContactFormData, value: string) => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   reset: () => void;
+  setTurnstileToken: (token: string) => void;
+  turnstileToken: string;
 }
 
 const INITIAL_VALUES: ContactFormData = {
@@ -20,6 +22,8 @@ const INITIAL_VALUES: ContactFormData = {
   lastName: "",
   email: "",
   message: "",
+  website: "",
+  turnstileToken: "",
 };
 
 export function useContactForm(): UseContactFormReturn {
@@ -27,6 +31,11 @@ export function useContactForm(): UseContactFormReturn {
   const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({});
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [turnstileToken, setTurnstileTokenState] = useState("");
+
+  const setTurnstileToken = useCallback((token: string) => {
+    setTurnstileTokenState(token);
+  }, []);
 
   const handleChange = useCallback((field: keyof ContactFormData, value: string) => {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -44,6 +53,7 @@ export function useContactForm(): UseContactFormReturn {
     setErrors({});
     setStatus("idle");
     setErrorMessage("");
+    setTurnstileTokenState("");
   }, []);
 
   const handleSubmit = useCallback(
@@ -53,7 +63,7 @@ export function useContactForm(): UseContactFormReturn {
       setErrorMessage("");
 
       // Client-side validation
-      const parsed = contactSchema.safeParse(values);
+      const parsed = contactSchema.safeParse({ ...values, turnstileToken });
       if (!parsed.success) {
         const fieldErrors: Partial<Record<keyof ContactFormData, string>> = {};
         for (const issue of parsed.error.issues) {
@@ -85,13 +95,14 @@ export function useContactForm(): UseContactFormReturn {
         setStatus("success");
         setValues(INITIAL_VALUES);
         setErrors({});
+        setTurnstileTokenState("");
       } catch {
         setStatus("error");
         setErrorMessage("Network error. Please check your connection and try again.");
       }
     },
-    [values]
+    [values, turnstileToken]
   );
 
-  return { values, errors, status, errorMessage, handleChange, handleSubmit, reset };
+  return { values, errors, status, errorMessage, handleChange, handleSubmit, reset, setTurnstileToken, turnstileToken };
 }

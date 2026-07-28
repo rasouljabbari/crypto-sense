@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/i18n/context";
 import { useContactForm, type FormStatus } from "@/hooks/useContactForm";
 import type { ContactFormData } from "@/schemas/contact";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 /* ─── Animation Variants ─── */
 
@@ -92,7 +93,7 @@ const FIELDS: FieldConfig[] = [
 
 export function ContactForm() {
   const { t } = useI18n();
-  const { values, errors, status, errorMessage, handleChange, handleSubmit, reset } = useContactForm();
+  const { values, errors, status, errorMessage, handleChange, handleSubmit, reset, setTurnstileToken } = useContactForm();
   const sending = status === "sending";
 
   const charCount = values.message.length;
@@ -167,6 +168,20 @@ export function ContactForm() {
             className="space-y-5"
             aria-label={t("landing.contact.form.aria_label")}
           >
+            {/* Honeypot — hidden from real users */}
+            <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden" aria-hidden="true">
+              <label htmlFor="contact-website">Leave this empty</label>
+              <input
+                id="contact-website"
+                name="website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={values.website}
+                onChange={(e) => handleChange("website", e.target.value)}
+              />
+            </div>
+
             {/* Name fields — side by side on sm+ */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <FormField config={FIELDS[0]} value={values.firstName} error={errors.firstName} t={t} onChange={handleChange} disabled={sending} />
@@ -221,6 +236,26 @@ export function ContactForm() {
                 </motion.p>
               )}
             </motion.div>
+
+            {/* Cloudflare Turnstile */}
+            <motion.div variants={fieldVariant} className="flex justify-center">
+              <Turnstile
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""}
+                onSuccess={(token) => setTurnstileToken(token)}
+                onError={() => setTurnstileToken("")}
+                onExpire={() => setTurnstileToken("")}
+              />
+            </motion.div>
+            {errors.turnstileToken && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-red-400 text-center"
+                role="alert"
+              >
+                {errors.turnstileToken}
+              </motion.p>
+            )}
 
             {/* Error banner */}
             <AnimatePresence>

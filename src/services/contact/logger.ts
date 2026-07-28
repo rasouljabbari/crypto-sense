@@ -1,4 +1,4 @@
-type LogLevel = "info" | "success" | "error";
+type LogLevel = "info" | "success" | "warn" | "error";
 
 interface LogEntry {
   timestamp: string;
@@ -49,4 +49,12 @@ export function logContactAttempt(data: {
 
 export function logRateLimited(ip: string) {
   log("info", "Rate limited", { ip });
+}
+
+export function logRejected(data: { ip: string; reason: string; detail?: string }) {
+  log("warn", "Request rejected", {
+    ip: data.ip,
+    reason: data.reason,
+    ...(data.detail ? { detail: data.detail } : {}),
+  });
 }

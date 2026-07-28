@@ -2,23 +2,34 @@
 
 import Link from "next/link";
 import { useI18n } from "@/i18n/context";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const WALLET = process.env.NEXT_PUBLIC_SUPPORT_WALLET ?? "";
 const LINKEDIN = "https://www.linkedin.com/in/rasoul-jabbari/";
 
+function maskWallet(addr: string): string {
+  if (addr.length < 12) return addr;
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
+}
+
 export function Footer() {
   const { t, dir } = useI18n();
   const [copied, setCopied] = useState(false);
+  const [revealed, setRevealed] = useState(false);
 
-  const copy = async () => {
+  const copy = useCallback(async () => {
     if (!WALLET) return;
     try {
       await navigator.clipboard.writeText(WALLET);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setTimeout(() => setCopied(false), 2000);
     } catch {}
-  };
+  }, []);
+
+  const toggleReveal = useCallback(() => {
+    setRevealed((prev) => !prev);
+  }, []);
 
   return (
     <footer className="border-t border-theme" dir={dir}>
@@ -80,37 +91,60 @@ export function Footer() {
             </p>
             {WALLET && (
               <div className="bg-theme-card border border-theme rounded-xl p-3 sm:p-4 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-[11px] sm:text-xs text-theme-text break-all select-all leading-relaxed">
-                    {WALLET}
-                  </span>
-                </div>
+                {/* Wallet address — masked by default */}
                 <button
-                  onClick={copy}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); copy(); } }}
-                  aria-label={copied ? t("footer.copied") : t("footer.copy")}
-                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer ${
-                    copied
-                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                      : "bg-theme-bg text-theme-text border-theme hover:border-emerald-500/50 hover:text-emerald-400"
-                  }`}
+                  onClick={toggleReveal}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleReveal(); } }}
+                  aria-label={revealed ? "Hide wallet address" : "Show wallet address"}
+                  className="w-full font-mono text-[11px] sm:text-xs text-theme-text break-all leading-relaxed text-start cursor-pointer hover:text-emerald-400 transition-colors"
                 >
-                  {copied ? (
-                    <>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                      {t("footer.copied")}
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      {t("footer.copy")}
-                    </>
-                  )}
+                  {revealed ? WALLET : maskWallet(WALLET)}
                 </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={copy}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); copy(); } }}
+                    aria-label={copied ? t("footer.copied") : t("footer.copy")}
+                    className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer ${
+                      copied
+                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                        : "bg-theme-bg text-theme-text border-theme hover:border-emerald-500/50 hover:text-emerald-400"
+                    }`}
+                  >
+                    {copied ? (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {t("footer.copied")}
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        {t("footer.copy")}
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Success toast — inline */}
+                <AnimatePresence>
+                  {copied && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="text-[11px] text-emerald-400 font-medium"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      ✓ {t("footer.copied")}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
             )}
             <div className="pt-2 space-y-2">
@@ -153,13 +187,6 @@ export function Footer() {
             {t("footer.copyright", { year: new Date().getFullYear() })}
           </p>
         </div>
-
-        {/* Copied toast */}
-        {copied && (
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-lg text-xs font-semibold animate-pulse pointer-events-none z-50 whitespace-nowrap">
-            {t("footer.copied")}
-          </div>
-        )}
       </div>
     </footer>
   );
