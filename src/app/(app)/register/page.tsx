@@ -149,7 +149,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-medium rounded-xl px-4 py-2.5 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-emerald-500/20"
+            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-[#ffffff] font-medium rounded-xl px-4 py-2.5 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-emerald-500/20"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">

@@ -150,7 +150,7 @@
   "table": {
     "columns": {
       "name": "Coin",
-      "price": "Fiyat",
+      "price": "Price",
       "24h_pct": "24s %",
       "vol_mcap": "Hac/Piy.D.",
       "rsi": "RSI",

@@ -30,6 +30,10 @@ export interface AnalysisSnapshot {
     readonly volatilityStatus: "low" | "medium" | "high";
     readonly nearestSupport?: string;
     readonly nearestResistance?: string;
+    /** Price change % over the selected timeframe (from klines). */
+    readonly timeframeChangePercent: string;
+    /** Raw numeric value for sorting. */
+    readonly timeframeChangePercentRaw: number;
   };
   readonly opportunity: {
     readonly signal: string;
@@ -242,6 +246,10 @@ export function buildSnapshotFromLegacy(
             ? "medium"
             : "low"
         : "medium",
+      timeframeChangePercent: c.technicalIndicators?.priceChangePercent != null
+        ? `${c.technicalIndicators.priceChangePercent >= 0 ? "+" : ""}${c.technicalIndicators.priceChangePercent.toFixed(2)}%`
+        : changePctStr,
+      timeframeChangePercentRaw: c.technicalIndicators?.priceChangePercent ?? md.priceChangePercent24h,
     },
     opportunity: {
       signal: sig,

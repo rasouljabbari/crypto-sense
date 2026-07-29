@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { useSnapshotStore, buildSnapshotFromLegacy } from "@/store/useAnalysisSnapshot";
 import { useClosedCandleKey, CANDLE_SETTLE_MS } from "@/lib/candleTime";
 import { TIMEFRAME_OPTIONS, type TimeframeOption } from "@/lib/timeframe";
-import { fetchMarketDataList, fetchGlobalMarketData } from "@/api/binance";
+import { fetchMarketDataList, fetchGlobalMarketData, fetchKlines, COIN_SYMBOL_MAP } from "@/api/binance";
 import { analyzeAllCoins } from "@/lib/analysisEngine";
+import { computeTechnicalIndicators } from "@/lib/indicators";
 
 /* ─── Market Data Cache ─────────────────────────────────────────────── */
 /* Avoids redundant fetches when multiple timeframe loops trigger at once. */
@@ -45,6 +46,39 @@ function delay(ms: number): Promise<void> {
 /*   5. Generate Snapshot                                                */
 /*   6. Publish Snapshot (immutable — replace, never mutate)             */
 
+/** Map app timeframe to Binance kline interval. */
+const TF_TO_KLINES_INTERVAL: Record<TimeframeOption, string> = {
+  "15m": "15m",
+  "1h": "1h",
+  "4h": "4h",
+  "1d": "1d",
+};
+
+/** Fetch klines for all coins in parallel, return per-coin indicators map. */
+async function fetchAllIndicators(
+  tf: TimeframeOption,
+): Promise<Record<string, import("@/lib/types").TechnicalIndicators>> {
+  const interval = TF_TO_KLINES_INTERVAL[tf];
+  const entries = Object.entries(COIN_SYMBOL_MAP); // [coinId, symbol][]
+  const limit = 250; // enough for EMA200
+
+  const results = await Promise.allSettled(
+    entries.map(async ([coinId, symbol]) => {
+      const klines = await fetchKlines(symbol, interval, limit);
+      if (klines.length < 15) return null; // not enough data for RSI
+      return { coinId, indicators: computeTechnicalIndicators(klines) };
+    }),
+  );
+
+  const map: Record<string, import("@/lib/types").TechnicalIndicators> = {};
+  for (const r of results) {
+    if (r.status === "fulfilled" && r.value) {
+      map[r.value.coinId] = r.value.indicators;
+    }
+  }
+  return map;
+}
+
 function TimeframeLoop({ tf }: { tf: TimeframeOption }) {
   const lastClosedAt = useClosedCandleKey(tf);
   const refreshKey = useSnapshotStore((s) => s.refreshKey);
@@ -68,12 +102,15 @@ function TimeframeLoop({ tf }: { tf: TimeframeOption }) {
         await delay(POST_CLOSE_DELAY_MS);
         if (cancelled) return;
 
-        // Fetch market data for the now-closed candle
-        const marketDataList = await fetchMarketDataCached();
+        // Fetch market data + klines in parallel
+        const [marketDataList, indicatorsMap] = await Promise.all([
+          fetchMarketDataCached(),
+          fetchAllIndicators(tf),
+        ]);
         if (cancelled) return;
 
-        // Run Analysis Engine on closed candle data only
-        const legacyResults = analyzeAllCoins(marketDataList, tf, lastClosedAt);
+        // Run Analysis Engine with real technical indicators
+        const legacyResults = analyzeAllCoins(marketDataList, indicatorsMap, tf, lastClosedAt);
 
         // Generate one immutable snapshot per coin for this timeframe
         const snapshots: Record<string, ReturnType<typeof buildSnapshotFromLegacy>> = {};

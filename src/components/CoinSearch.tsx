@@ -326,7 +326,7 @@ export function CoinSearch({
         <button
           onClick={submitFreeText}
           disabled={!query.trim()}
-          className="px-6 py-3.5 text-sm font-medium rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          className="px-6 py-3.5 text-sm font-medium rounded-xl bg-emerald-600 hover:bg-emerald-500 text-[#ffffff] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
           {_searchBtn}
         </button>

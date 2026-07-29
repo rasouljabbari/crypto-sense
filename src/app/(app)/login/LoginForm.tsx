@@ -111,7 +111,7 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-medium rounded-xl px-4 py-2.5 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-emerald-500/20 relative overflow-hidden group"
+            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-[#ffffff] font-medium rounded-xl px-4 py-2.5 transition-all duration-200 disabled:opacity-50 shadow-lg shadow-emerald-500/20 relative overflow-hidden group"
           >
             <span className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/10 to-emerald-400/0 group-hover:via-emerald-400/20 transition-all duration-500" />
             {loading ? (

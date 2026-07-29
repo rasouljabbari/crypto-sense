@@ -1,20 +1,18 @@
 import { MarketData, TechnicalIndicators, CoinAnalysis, SignalType, RiskLevel, TrendLabel, TradeStatus, TradeSetupData, ReasonCode } from "./types";
-import { generateTechnicalIndicators } from "./mockData";
 import { evaluateSetup } from "indicator-engine/setup-engine";
 import type { SetupResult, TpLevels } from "indicator-engine/setup-engine";
 
 // ── Main entry: thin wrapper around Crypto Sense Setup Engine ─────────
 // Only this module consumes the engine. No other module makes decisions.
+// Requires pre-computed technical indicators — no random/mock fallback.
 
 export function analyzeCoin(
   marketData: MarketData,
-  indicatorsOverride?: TechnicalIndicators,
+  indicators: TechnicalIndicators,
   timeframe?: string,
   candleTimestamp?: number,
   dataTimestamp?: number,
 ): CoinAnalysis {
-  const indicators = indicatorsOverride ?? generateTechnicalIndicators(marketData);
-
   // Build engine input from market data + technical indicators
   const input = {
     // Stage 0 fields
@@ -46,6 +44,9 @@ export function analyzeCoin(
     ema200: indicators.ema200,
     adx: indicators.adx,
     atr: indicators.atr,
+    plusDI: indicators.plusDI,
+    minusDI: indicators.minusDI,
+    volumeChangePercent: indicators.volumeChangePercent,
     supportLevels: indicators.supportLevels,
     resistanceLevels: indicators.resistanceLevels,
   };
@@ -105,18 +106,14 @@ export function analyzeCoin(
 
 export function analyzeAllCoins(
   marketDataList: MarketData[],
+  indicatorsMap: Record<string, TechnicalIndicators>,
   timeframe?: string,
   candleKey?: number,
-  indicatorsMap?: Record<string, TechnicalIndicators>,
 ): CoinAnalysis[] {
   const dataTimestamp = Date.now();
   return marketDataList.map((md) => {
-    return analyzeCoin(
-      md,
-      indicatorsMap?.[md.id],
-      timeframe,
-      candleKey,
-      dataTimestamp,
-    );
-  });
+    const ind = indicatorsMap[md.id];
+    if (!ind) return null;
+    return analyzeCoin(md, ind, timeframe, candleKey, dataTimestamp);
+  }).filter((c): c is CoinAnalysis => c !== null);
 }

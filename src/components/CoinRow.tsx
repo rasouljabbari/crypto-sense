@@ -47,11 +47,7 @@ export const CoinRow = memo(function CoinRow({ coin }: Props) {
   const { t } = useI18n();
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
-  function priceChange(s: AnalysisSnapshot): number {
-    return parseFloat(s.marketState.changePercent24h.replace(/[^0-9.\-]/g, "")) || 0;
-  }
-
-  const change24h = priceChange(coin);
+  const change24h = coin.marketState.timeframeChangePercentRaw;
   const isPositive = change24h >= 0;
   const signal = ss(coin.opportunity.signal);
   const trend = ss(coin.marketState.trend);
@@ -108,9 +104,9 @@ export const CoinRow = memo(function CoinRow({ coin }: Props) {
         ${coin.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
       </div>
 
-      {/* 24h % */}
+      {/* Timeframe change % */}
       <div className={`text-right font-mono text-sm ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
-        {isPositive ? "+" : ""}{change24h.toFixed(2)}%
+        {coin.marketState.timeframeChangePercent}
       </div>
     </Link>
   );

@@ -41,7 +41,13 @@ export interface TechnicalIndicators {
   supportLevels: number[];
   resistanceLevels: number[];
   adx: number;
+  plusDI?: number;
+  minusDI?: number;
   atr: number;
+  /** Volume change % vs recent average (positive = rising). */
+  volumeChangePercent?: number;
+  /** Price change % over the last kline period (matches timeframe). */
+  priceChangePercent: number;
 }
 
 export interface TimeframeTrend {

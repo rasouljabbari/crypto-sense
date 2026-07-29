@@ -101,19 +101,19 @@ function SiteNav() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
-          <Link href="/" className="flex items-center gap-2 group" aria-label="Crypto Sense home">
+          <Link href="/" className="flex items-center gap-2 group cursor-pointer" aria-label="Crypto Sense home">
             <Logo size="md" />
           </Link>
 
           <div className="hidden lg:flex items-center gap-8">
-            <Link href="#how-it-works" className="text-sm text-gray-400 hover:text-white transition-colors">{t("landing.nav.how")}</Link>
-            <Link href="#features" className="text-sm text-gray-400 hover:text-white transition-colors">{t("landing.nav.features")}</Link>
-            <Link href="#contact" className="text-sm text-gray-400 hover:text-white transition-colors">{t("landing.nav.contact")}</Link>
+            <Link href="#how-it-works" className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">{t("landing.nav.how")}</Link>
+            <Link href="#features" className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">{t("landing.nav.features")}</Link>
+            <Link href="#contact" className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">{t("landing.nav.contact")}</Link>
             <LanguageSwitcher mode="header" />
             <ThemeToggle className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all" />
             <Link
               href="/overview"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#ffffff] bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
             >
               {t("landing.nav.launch")}
               <svg className="w-4 h-4 rtl:-scale-x-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -125,7 +125,7 @@ function SiteNav() {
           <div className="flex lg:hidden items-center gap-1">
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-lg text-gray-400 hover:text-white transition-all"
+              className="p-2 rounded-lg text-gray-400 hover:text-[#ffffff] transition-all cursor-pointer"
               aria-label="Toggle menu"
               aria-expanded={mobileOpen}
             >
@@ -149,17 +149,17 @@ function SiteNav() {
           className="lg:hidden bg-theme-bg/95 backdrop-blur-lg border-b border-gray-800/50"
         >
           <div className="px-4 py-4 space-y-3">
-            <Link href="#how-it-works" onClick={() => setMobileOpen(false)} className="block text-sm text-gray-400 hover:text-white transition-colors py-2">{t("landing.nav.how")}</Link>
-            <Link href="#features" onClick={() => setMobileOpen(false)} className="block text-sm text-gray-400 hover:text-white transition-colors py-2">{t("landing.nav.features")}</Link>
-            <Link href="#contact" onClick={() => setMobileOpen(false)} className="block text-sm text-gray-400 hover:text-white transition-colors py-2">{t("landing.nav.contact")}</Link>
+            <Link href="#how-it-works" onClick={() => setMobileOpen(false)} className="block text-sm text-gray-400 hover:text-[#ffffff] transition-colors py-2 cursor-pointer">{t("landing.nav.how")}</Link>
+            <Link href="#features" onClick={() => setMobileOpen(false)} className="block text-sm text-gray-400 hover:text-[#ffffff] transition-colors py-2 cursor-pointer">{t("landing.nav.features")}</Link>
+            <Link href="#contact" onClick={() => setMobileOpen(false)} className="block text-sm text-gray-400 hover:text-[#ffffff] transition-colors py-2 cursor-pointer">{t("landing.nav.contact")}</Link>
             <div className="flex items-center gap-2 pt-1">
               <LanguageSwitcher mode="header" />
-              <ThemeToggle className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all" />
+              <ThemeToggle className="p-2 rounded-lg text-gray-400 hover:text-[#ffffff] hover:bg-gray-800/50 transition-all" />
             </div>
             <Link
               href="/overview"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center gap-2 w-full px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all"
+              className="flex items-center justify-center gap-2 w-full px-5 py-2.5 text-sm font-semibold text-[#ffffff] bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all cursor-pointer"
             >
               {t("landing.nav.launch")}
               <svg className="w-4 h-4 rtl:-scale-x-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -541,7 +541,7 @@ function HeroSection() {
             >
               <Link
                 href="/overview"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold text-[#ffffff] bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 cursor-pointer"
               >
                 {t("landing.hero.cta_start")}
                 <svg className="w-5 h-5 rtl:-scale-x-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -550,7 +550,7 @@ function HeroSection() {
               </Link>
               <Link
                 href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold text-gray-300 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 hover:border-gray-600 rounded-xl transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold text-gray-300 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 hover:border-gray-600 rounded-xl transition-all cursor-pointer"
               >
                 {t("landing.hero.cta_how")}
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -672,7 +672,7 @@ function ScannerChart() {
   const { getTicker } = useBinanceMarket();
 
   useEffect(() => {
-    const sym = FEATURED_SYMBOLS[Math.floor(Math.random() * FEATURED_SYMBOLS.length)];
+    const sym = FEATURED_SYMBOLS[0]; // BTC — deterministic
     binanceService.fetchKlines(sym, "1m", 40).then((data) => {
       if (data.length > 0) setCandles(data);
     });

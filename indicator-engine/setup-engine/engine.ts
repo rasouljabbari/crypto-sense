@@ -144,6 +144,9 @@ export interface SetupInput {
   atr: number;
   supportLevels: readonly number[];
   resistanceLevels: readonly number[];
+  // ─── Volume trend ────────────────────────────────────────────────────
+  /** Volume change % vs recent average (positive = volume rising). */
+  volumeChangePercent?: number;
   // ─── Stage 2: Direction data ──────────────────────────────────────────
   /** Positive Directional Indicator (DMI+). */
   plusDI?: number;
@@ -355,16 +358,34 @@ function isSellSignal(s: Signal): boolean {
 
 // ─── Scoring functions (all deterministic) ────────────────────────────────
 
-function calcVolumeScore(volume24h: number, marketCap: number): number {
+function calcVolumeScore(
+  volume24h: number,
+  marketCap: number,
+  volumeChangePercent?: number,
+): number {
   if (!marketCap || marketCap <= 0) return 25;
   const ratio = volume24h / marketCap;
-  if (ratio > 0.5) return 95;
-  if (ratio > 0.3) return 85;
-  if (ratio > 0.2) return 75;
-  if (ratio > 0.1) return 60;
-  if (ratio > 0.05) return 45;
-  if (ratio > 0.02) return 35;
-  return 25;
+  let score: number;
+  if (ratio > 0.5) score = 95;
+  else if (ratio > 0.3) score = 85;
+  else if (ratio > 0.2) score = 75;
+  else if (ratio > 0.1) score = 60;
+  else if (ratio > 0.05) score = 45;
+  else if (ratio > 0.02) score = 35;
+  else score = 25;
+
+  // Volume trend bonus: rising volume confirms participation
+  if (volumeChangePercent !== undefined) {
+    if (volumeChangePercent > 100) score += 20;
+    else if (volumeChangePercent > 50) score += 15;
+    else if (volumeChangePercent > 20) score += 10;
+    else if (volumeChangePercent > 10) score += 5;
+    else if (volumeChangePercent < -50) score -= 15;
+    else if (volumeChangePercent < -20) score -= 10;
+    else if (volumeChangePercent < -10) score -= 5;
+  }
+
+  return cap(score);
 }
 
 function calcTrendScore(
@@ -1235,6 +1256,16 @@ export function determineSetupQuality(input: SetupInput, direction: MarketDirect
   else if (volRatio > 0) { total += 1; details.push("Volume low"); }
   else { total += 0; details.push("Volume zero"); }
 
+  // Volume trend bonus — rising volume = stronger conviction
+  const vcp = input.volumeChangePercent;
+  if (vcp !== undefined) {
+    if (vcp > 100) { total += 3; details.push("Volume surging"); }
+    else if (vcp > 50) { total += 2; details.push("Volume rising"); }
+    else if (vcp > 20) { total += 1; details.push("Volume increased"); }
+    else if (vcp < -50) { total += -2; details.push("Volume collapsing"); }
+    else if (vcp < -20) { total += -1; details.push("Volume declining"); }
+  }
+
   // 2. ADX strength ────────────────────────────────────────────────
   if (input.adx >= QUAL_ADX_STRONG) { total += 3; details.push("ADX strong"); }
   else if (input.adx >= QUAL_ADX_MODERATE) { total += 2; details.push("ADX moderate"); }
@@ -1615,7 +1646,7 @@ export function evaluateSetup(input: SetupInput): SetupResult {
 
   // ═══ Stage 4+: Analysis Pipeline ═════════════════════════════════════
   // 1. Scores
-  const volumeScore = calcVolumeScore(input.volume24h, input.marketCap);
+  const volumeScore = calcVolumeScore(input.volume24h, input.marketCap, input.volumeChangePercent);
   const trendScore = calcTrendScore(
     input.priceChangePercent24h,
     input.rsi, input.macdHistogram,

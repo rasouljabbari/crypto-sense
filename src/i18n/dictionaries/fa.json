@@ -149,8 +149,8 @@
   },
   "table": {
     "columns": {
-      "name": "ارز",
-      "price": "قیمت",
+      "name": "Coin",
+      "price": "Price",
       "24h_pct": "۲۴ ساعت %",
       "vol_mcap": "حجم/ارزش بازار",
       "rsi": "RSI",

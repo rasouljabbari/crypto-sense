@@ -284,8 +284,8 @@ export function ContactForm() {
                 whileTap={!sending ? { scale: 0.98 } : undefined}
                 className={`relative w-full flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold rounded-xl transition-all duration-200 cursor-pointer ${
                   sending
-                    ? "bg-emerald-600/70 text-white/80 cursor-not-allowed"
-                    : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
+                    ? "bg-emerald-600/70 text-[#ffffff]/80 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-500 text-[#ffffff] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
                 }`}
                 aria-busy={sending}
                 aria-live="polite"

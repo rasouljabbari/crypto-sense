@@ -213,10 +213,9 @@ export function ToastContainer() {
               : "translate-y-3 opacity-0 scale-95 pointer-events-none"
             }
             ${isLong
-              ? "bg-emerald-950/95 border-emerald-700/50"
-              : "bg-red-950/95 border-red-700/50"
+              ? "bg-emerald-600 border-emerald-500/30"
+              : "bg-red-600 border-red-500/30"
             }
-            backdrop-blur-md
           `}
           onClick={handleClick}
           role="alert"
@@ -226,12 +225,12 @@ export function ToastContainer() {
           <div className="flex items-center gap-3 px-4 py-3 min-w-[260px]">
             <span className="text-lg">{emoji}</span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white truncate">{active.symbol}</p>
-              <p className="text-xs text-gray-300/90">{t(titleKey)}</p>
+              <p className="text-sm font-bold text-[#ffffff] truncate">{active.symbol}</p>
+              <p className="text-xs text-[#ffffff]/80">{t(titleKey)}</p>
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); dismiss(); }}
-              className="text-gray-500 hover:text-white transition-colors text-lg leading-none self-start mt-0.5"
+              className="text-[#ffffff]/60 hover:text-[#ffffff] transition-colors text-lg leading-none self-start mt-0.5"
               aria-label={t("notification.close")}
             >
               ×
@@ -239,8 +238,8 @@ export function ToastContainer() {
           </div>
 
           {/* Progress bar */}
-          <div className="h-0.5 bg-gray-800/60">
-            <div className={`h-full ${isLong ? "bg-emerald-400" : "bg-red-400"} opp-progress`} />
+          <div className="h-0.5 bg-[#000000]/20">
+            <div className={`h-full ${isLong ? "bg-emerald-300" : "bg-red-300"} opp-progress`} />
           </div>
         </div>
       </div>

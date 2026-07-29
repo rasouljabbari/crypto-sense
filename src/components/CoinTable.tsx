@@ -51,9 +51,7 @@ export function CoinTable() {
           return (va - vb) * order;
         }
         case "priceChange": {
-          const pa = parseFloat(a.marketState.changePercent24h.replace(/[^0-9.\-]/g, "")) || 0;
-          const pb = parseFloat(b.marketState.changePercent24h.replace(/[^0-9.\-]/g, "")) || 0;
-          return (pa - pb) * order;
+          return (a.marketState.timeframeChangePercentRaw - b.marketState.timeframeChangePercentRaw) * order;
         }
         default: return 0;
       }
@@ -134,8 +132,8 @@ export function CoinTable() {
 
               <span className={`${headerText} text-right`}>{t("table.columns.price")}</span>
 
-              <button onClick={() => toggleSort("priceChange")} className={`${headerClass} justify-start`}>
-                <span className={headerText}>{t("table.columns.24h_pct")}</span>
+              <button onClick={() => toggleSort("priceChange")} className={`${headerClass} justify-end`}>
+                <span className={headerText}>{timeframe} %</span>
                 <SortIcon active={filters.sortBy === "priceChange"} dir={filters.sortOrder} />
               </button>
             </div>
