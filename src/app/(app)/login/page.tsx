@@ -6,5 +6,5 @@ export default async function LoginPage({
   searchParams: Promise<{ callbackUrl?: string }>;
 }) {
   const params = await searchParams;
-  return <LoginForm callbackUrl={params.callbackUrl ?? "/"} />;
+  return <LoginForm callbackUrl={params.callbackUrl ?? "/overview"} />;
 }

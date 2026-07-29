@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import { useI18n } from "@/i18n/context";
-import { Footer } from "@/components/Footer";
+import { DashboardFooter } from "./DashboardFooter";
 
 export function MainContent({ children }: { children: ReactNode }) {
   const { dir } = useI18n();
@@ -11,7 +11,7 @@ export function MainContent({ children }: { children: ReactNode }) {
       <div className="p-4 sm:p-6 lg:p-8 max-w-[1460px] mx-auto w-full flex-1">
         {children}
       </div>
-      <Footer />
+      <DashboardFooter />
     </main>
   );
 }

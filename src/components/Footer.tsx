@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useI18n } from "@/i18n/context";
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Logo } from "@/components/Logo";
 
 const WALLET = process.env.NEXT_PUBLIC_SUPPORT_WALLET ?? "";
 const LINKEDIN = "https://www.linkedin.com/in/rasoul-jabbari/";
@@ -38,13 +39,8 @@ export function Footer() {
         <div className={`grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 mb-8 ${dir === "rtl" ? "text-right" : ""}`}>
           {/* Brand */}
           <div className="space-y-3">
-            <Link href="/" className="inline-flex items-center gap-2 group" aria-label="Crypto Sense home">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-              <span className="text-lg font-bold text-white">Crypto Sense</span>
+            <Link href="/" aria-label="Crypto Sense home">
+              <Logo size="md" />
             </Link>
             <p className="text-xs text-theme-secondary leading-relaxed max-w-xs">
               {t("footer.description")}
@@ -71,7 +67,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/analysis" className="text-xs text-theme-secondary hover:text-emerald-400 transition-colors">
+                <Link href="/overview" className="text-xs text-theme-secondary hover:text-emerald-400 transition-colors">
                   {t("footer.launch")}
                 </Link>
               </li>

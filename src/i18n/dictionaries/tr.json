@@ -815,7 +815,7 @@
     "hero": {
       "headline1": "İşlem aramayı bırakın.",
       "headline2": "Crypto Sense sizin için bulsun.",
-      "subtitle": "45+ kripto para biriminde yüksek olasılıklı momentum kurulumlarını tespit eden gerçek zamanlı piyasa taraması. Gürültü yok, yalnızca doğrulanmış fırsatlar.",
+      "subtitle": "80+ kripto para biriminde yüksek olasılıklı momentum kurulumlarını tespit eden gerçek zamanlı piyasa taraması. Gürültü yok, yalnızca doğrulanmış fırsatlar.",
       "cta_start": "Taramaya Başla",
       "cta_how": "Nasıl Çalışır",
       "trust": "{count} piyasayı gerçek zamanlı tarayan yatırımcılar tarafından güveniliyor"
@@ -896,6 +896,9 @@
         "success_message": "Bizimle iletişime geçtiğiniz için teşekkür ederiz. En kısa sürede size geri döneceğiz.",
         "send_another": "Başka Mesaj Gönder"
       }
+    },
+    "ticker": {
+      "loading": "Bağlanıyor..."
     }
   }
 }

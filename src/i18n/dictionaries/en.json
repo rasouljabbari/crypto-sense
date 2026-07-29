@@ -815,7 +815,7 @@
     "hero": {
       "headline1": "Stop looking for trades.",
       "headline2": "Let Crypto Sense find them for you.",
-      "subtitle": "Real-time market scanning that identifies high-probability momentum setups across 45+ cryptocurrencies. No noise, just validated opportunities.",
+      "subtitle": "Real-time market scanning that identifies high-probability momentum setups across 80+ cryptocurrencies. No noise, just validated opportunities.",
       "cta_start": "Start Scanning",
       "cta_how": "How It Works",
       "trust": "Trusted by traders scanning {count} markets in real time"
@@ -834,7 +834,7 @@
       "title": "How Crypto Sense Works",
       "subtitle": "Three simple steps from raw market data to validated trading opportunities.",
       "step1_title": "Scan the Markets",
-      "step1_desc": "Crypto Sense continuously monitors 45+ cryptocurrency pairs across all major timeframes, analyzing price action, volume, and market structure in real time.",
+      "step1_desc": "Crypto Sense continuously monitors 80+ cryptocurrency pairs across all major timeframes, analyzing price action, volume, and market structure in real time.",
       "step2_title": "Analyze with Precision",
       "step2_desc": "Our multi-factor engine evaluates momentum indicators, trend strength, volume profile, and support/resistance levels to qualify every setup.",
       "step3_title": "Get Clear Signals",
@@ -858,7 +858,7 @@
       "title": "Everything You Need to Trade Smarter",
       "subtitle": "A complete scanning toolkit designed for serious traders who demand precision.",
       "realtime_title": "Real-time Scanning",
-      "realtime_desc": "Continuous 24/7 market monitoring across 45+ cryptocurrency pairs. Never miss a move.",
+      "realtime_desc": "Continuous 24/7 market monitoring across 80+ cryptocurrency pairs. Never miss a move.",
       "momentum_title": "Momentum Detection",
       "momentum_desc": "Advanced indicator engine combining volume, trend strength, and pattern recognition.",
       "multitf_title": "Multi-timeframe",
@@ -896,6 +896,9 @@
         "success_message": "Thank you for reaching out. We'll get back to you as soon as possible.",
         "send_another": "Send Another Message"
       }
+    },
+    "ticker": {
+      "loading": "Connecting..."
     }
   }
 }

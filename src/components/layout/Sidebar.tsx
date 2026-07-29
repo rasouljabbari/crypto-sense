@@ -2,12 +2,12 @@
 
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useI18n } from "@/i18n/context";
-import { useTheme } from "@/lib/theme";
 import { useTimeframe, TIMEFRAME_OPTIONS, type TimeframeOption } from "@/lib/timeframe";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -32,7 +32,7 @@ function useNavItems(): NavItem[] {
   const { t } = useI18n();
   return [
     {
-      href: "/",
+      href: "/overview",
       label: t("nav.overview"),
       icon: <LayoutDashboardIcon />,
     },
@@ -57,7 +57,7 @@ function useNavItems(): NavItem[] {
 /* ── Helpers ──────────────────────────────────────────────────────────── */
 
 function isActive(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+  return pathname === href || pathname.startsWith(href + "/");
 }
 
 /* ── Main Sidebar Component ───────────────────────────────────────────── */
@@ -66,7 +66,6 @@ export function Sidebar() {
   const { mobileOpen, setMobileOpen } = useSidebar();
   const pathname = usePathname();
   const { t, dir } = useI18n();
-  const { theme, toggleTheme } = useTheme();
   const { timeframe, setTimeframe } = useTimeframe();
   const { data: session, status } = useSession();
   const navItems = useNavItems();
@@ -118,24 +117,7 @@ export function Sidebar() {
         {/* ── Brand ──────────────────────────────────────────────── */}
         <div className="flex items-center gap-3 px-5 h-16 shrink-0 border-b border-theme">
           <Link href="/" className="flex items-center gap-3 group flex-1 min-w-0">
-            <div className="relative shrink-0">
-              <Image
-                src="/logo.svg"
-                alt={t("brand.alt")}
-                width={32}
-                height={32}
-                className="w-8 h-8 rounded-xl"
-              />
-              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-theme-secondary" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-sm font-bold text-theme-text group-hover:text-emerald-400 transition-colors duration-200 truncate">
-                {t("brand.name")}
-              </h1>
-              <p className="text-[10px] text-theme-secondary leading-tight truncate">
-                {t("brand.tagline")}
-              </p>
-            </div>
+            <Logo showTagline />
           </Link>
           <button
             onClick={() => setMobileOpen(false)}
@@ -238,24 +220,12 @@ export function Sidebar() {
           {/* Language */}
           <LanguageSwitcher mode="sidebar" />
 
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
+          <ThemeToggle
+            showLabel
+            labelLight={t("header.light_mode")}
+            labelDark={t("header.dark_mode")}
             className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs text-theme-secondary hover:text-theme-text hover:bg-theme-hover transition-all duration-200"
-          >
-            <span className="w-5 h-5 shrink-0 flex items-center justify-center">
-              {theme === "dark" ? (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-              )}
-            </span>
-            <span className="truncate">{theme === "dark" ? t("header.light_mode") : t("header.dark_mode")}</span>
-          </button>
+          />
 
           {/* User section */}
           {status === "authenticated" ? (

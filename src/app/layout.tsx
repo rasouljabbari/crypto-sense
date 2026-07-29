@@ -1,18 +1,15 @@
 import { SessionProvider } from "@/components/SessionProvider";
-import { AnalysisProvider } from "@/components/AnalysisProvider";
-import { CountdownProviderWithRefresh } from "@/lib/countdown-context";
 import { I18nProvider } from "@/i18n/context";
 import { ThemeProvider } from "@/lib/theme";
-import { TimeframeProvider } from "@/lib/timeframe";
 import { QueryProvider } from "@/components/QueryProvider";
-import { ToastContainer } from "@/components/OpportunityToast";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Vazirmatn } from "next/font/google";
+import { Inter, Geist_Mono, Vazirmatn } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -42,24 +39,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className={`${geistSans.variable} ${geistMono.variable} ${vazirmatn.variable}`}>
+    <html className={`${inter.variable} ${geistMono.variable} ${vazirmatn.variable}`}>
       <body className="min-h-screen bg-theme-bg text-theme-text antialiased font-sans">
         <QueryProvider>
-            <ThemeProvider>
-              <TimeframeProvider>
-                <AnalysisProvider>
-                  <CountdownProviderWithRefresh>
-                    <I18nProvider>
-                      <SessionProvider>
-                        {children}
-                        <ToastContainer />
-                      </SessionProvider>
-                    </I18nProvider>
-                  </CountdownProviderWithRefresh>
-                </AnalysisProvider>
-              </TimeframeProvider>
-            </ThemeProvider>
-          </QueryProvider>
+          <ThemeProvider>
+            <I18nProvider>
+              <SessionProvider>
+                {children}
+              </SessionProvider>
+            </I18nProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );
