@@ -2,6 +2,8 @@
 
 import { useI18n } from "@/i18n/context";
 import { useBinanceMarket } from "@/hooks/useBinanceMarket";
+import { CoinImage } from "@/components/CoinImage";
+import { getCryptoLogoUrl } from "@/api/binance";
 import { Sparkline } from "@/components/landing/Sparkline";
 import { FEATURED_SYMBOLS } from "@/config/featured-coins";
 import { motion } from "framer-motion";
@@ -36,10 +38,14 @@ export function MarketTicker() {
             className="bg-gray-900/50 border border-gray-800 rounded-xl p-3 transition-all duration-300 hover:border-gray-700"
           >
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gray-800 flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-gray-300">{base}</span>
-                </div>
+                <div className="flex items-center gap-2">
+                <CoinImage
+                  src={getCryptoLogoUrl(base)}
+                  alt={base}
+                  symbol={base}
+                  className="w-7 h-7 rounded-full shrink-0"
+                  size={28}
+                />
                 <span className="text-sm font-semibold text-white">{base}</span>
               </div>
               {sparkline && sparkline.length >= 2 && (
