@@ -53,3 +53,13 @@ model ChartDrawing {
 
   @@unique([userId, coinId])
 }
+
+model SignalState {
+  coinId         String
+  timeframe      String
+  recommendation String
+  direction      String?
+  updatedAt      DateTime @default(now()) @updatedAt
+
+  @@id([coinId, timeframe])
+}

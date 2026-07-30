@@ -122,6 +122,13 @@ function TimeframeLoop({ tf }: { tf: TimeframeOption }) {
         if (!cancelled) {
           publishTimeframe(tf, snapshots);
           setError(null); // clear on success
+
+          // Fire-and-forget: notify server for transition detection + email
+          fetch("/api/check-signals", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ timeframe: tf }),
+          }).catch(() => { /* background — failures are silent */ });
         }
       } catch (err) {
         if (!cancelled) {

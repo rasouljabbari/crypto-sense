@@ -77,19 +77,23 @@ export class ChartPaneManager {
 
   /** Sync pane state with a list of visible indicator IDs. */
   sync(visibleIds: IndicatorId[], data: readonly ChartDataPoint[]): void {
-    // Remove panes that are no longer visible
-    const toRemove = Array.from(this.panes.keys()).filter(
-      (id) => !visibleIds.includes(id)
-    );
-    for (const id of toRemove) {
-      this.remove(id);
-    }
+    const currentOrder = Array.from(this.panes.keys());
+    const needsRebuild =
+      currentOrder.length !== visibleIds.length ||
+      !currentOrder.every((id, i) => id === visibleIds[i]);
 
-    // Add panes that should be visible but aren't yet
-    for (const id of visibleIds) {
-      if (!this.panes.has(id)) {
+    if (needsRebuild) {
+      // Rebuild all panes in correct order (fixes order jumble on re-add)
+      this.removeAll();
+      for (const id of visibleIds) {
         this.add(id, data);
       }
+      return;
+    }
+
+    // Same visible set — just update data on existing panes
+    for (const id of visibleIds) {
+      this.updatePaneData(id, data);
     }
   }
 
@@ -100,9 +104,48 @@ export class ChartPaneManager {
 
   // ── Private: Indicator Implementations ──────────────────────────────────
 
+  /** Update existing pane data (called on timeframe/coin switch). */
+  private updatePaneData(id: IndicatorId, data: readonly ChartDataPoint[]): void {
+    const pane = this.panes.get(id);
+    if (!pane) return;
+
+    switch (id) {
+      case "volume": {
+        const series = pane.series[0];
+        if (!series) return;
+        series.setData(
+          data.map((k) => ({
+            time: toChartTime(k.timestamp),
+            value: k.volume,
+            color: k.close >= k.open ? "rgba(52, 211, 153, 0.8)" : "rgba(239, 68, 68, 0.8)",
+          }))
+        );
+        break;
+      }
+      case "rsi": {
+        const series = pane.series[0];
+        if (!series) return;
+        const rsiData = computeRSI(data);
+        if (rsiData.length > 0) {
+          series.setData(rsiData);
+        }
+        break;
+      }
+      case "dmi": {
+        const dmiData = computeDMI(data);
+        if (dmiData.plusDI.length > 0) {
+          pane.series[0]?.setData(dmiData.plusDI);
+          pane.series[1]?.setData(dmiData.minusDI);
+          pane.series[2]?.setData(dmiData.adx);
+        }
+        break;
+      }
+    }
+  }
+
   private addVolume(data: readonly ChartDataPoint[]): void {
     const pane = this.chart.addPane();
-    pane.setStretchFactor(0.4);
+    pane.setStretchFactor(0.2);
 
     const series = this.chart.addSeries(
       HistogramSeries,
@@ -120,8 +163,8 @@ export class ChartPaneManager {
         value: k.volume,
         color:
           k.close >= k.open
-            ? "rgba(52, 211, 153, 0.5)"
-            : "rgba(239, 68, 68, 0.5)",
+            ? "rgba(52, 211, 153, 0.8)"
+            : "rgba(239, 68, 68, 0.8)",
       }))
     );
 

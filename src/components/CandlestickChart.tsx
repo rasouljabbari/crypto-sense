@@ -372,7 +372,7 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       width,
       height,
       layout: {
-        background: { type: ColorType.Solid, color: "#0d1117" },
+        background: { type: ColorType.Solid, color: isDark ? "#0d1117" : "#ffffff" },
         textColor: "#9ca3af",
         fontSize: 11,
       },
@@ -387,7 +387,7 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       },
       timeScale: {
         borderColor: "#374151",
-        timeVisible: globalTf === "15m" || globalTf === "1h" || globalTf === "4h",
+        timeVisible: globalTf !== "1d",
         secondsVisible: false,
       },
       rightPriceScale: { borderColor: "#374151" },
@@ -516,7 +516,7 @@ export function CandlestickChart({ coinId, srLines }: Props) {
   useEffect(() => {
     chartRef.current?.applyOptions({
       timeScale: {
-        timeVisible: globalTf === "15m" || globalTf === "1h" || globalTf === "4h",
+        timeVisible: globalTf !== "1d",
         secondsVisible: false,
       },
     });
@@ -539,10 +539,14 @@ export function CandlestickChart({ coinId, srLines }: Props) {
       }))
     );
 
-    // Update SMA series (use memoized values)
+    // Update SMA series — recreate on every data change to prevent leaks
     const { sma7: sma7Data, sma25: sma25Data, sma99: sma99Data } = smaMemo;
-    const smaArr = smaSeriesArrRef.current;
-    if (smaArr.length === 0 && data.length > 7) {
+    const oldSmaArr = smaSeriesArrRef.current;
+    if (oldSmaArr.length > 0) {
+      oldSmaArr.forEach((s) => chart.removeSeries(s));
+      smaSeriesArrRef.current = [];
+    }
+    if (data.length > 7) {
       const smaVisible = indicator.isEnabled("sma");
       const newSeries: ISeriesApi<"Line">[] = [];
       if (sma7Data.length > 0) {
@@ -561,10 +565,6 @@ export function CandlestickChart({ coinId, srLines }: Props) {
         newSeries.push(s);
       }
       smaSeriesArrRef.current = newSeries;
-    } else if (smaArr.length > 0) {
-      smaArr[0].setData(sma7Data);
-      if (smaArr.length > 1) smaArr[1].setData(sma25Data.length > 0 ? sma25Data : []);
-      if (smaArr.length > 2) smaArr[2].setData(sma99Data.length > 0 ? sma99Data : []);
     }
 
     // Sync indicator panes (deferred to avoid layout thrashing)

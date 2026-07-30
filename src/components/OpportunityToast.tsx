@@ -2,7 +2,7 @@
 
 import { useI18n } from "@/i18n/context";
 import { useSnapshotStore, type AnalysisSnapshot } from "@/store/useAnalysisSnapshot";
-import { useTimeframe } from "@/lib/timeframe";
+import type { TimeframeOption } from "@/lib/timeframe";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -44,17 +44,39 @@ const NON_READY_KEYS: ReadonlySet<OppKey> = new Set(["watch", "wait", "weakening
 const READY_KEYS: ReadonlySet<OppKey> = new Set(["ready_long", "ready_short"]);
 
 function useOpportunityWatcher(
-  onTransition: (coinId: string, symbol: string, oppKey: "ready_long" | "ready_short") => void
+  onTransition: (coinId: string, symbol: string, oppKey: "ready_long" | "ready_short") => void,
 ) {
-  const { timeframe } = useTimeframe();
-  const collection = useSnapshotStore((s) => s.collections[timeframe]);
-  const entries = useMemo(() => Object.values(collection), [collection]);
+  const ALL_TF: TimeframeOption[] = ["15m", "1h", "4h", "1d"];
+  const collections = useSnapshotStore((s) => s.collections);
+  const onTransitionRef = useRef(onTransition);
+  useEffect(() => { onTransitionRef.current = onTransition; }, [onTransition]);
+
+  // Aggregate: best opportunity per coin across ALL timeframes
+  const entries = useMemo(() => {
+    const best = new Map<string, AnalysisSnapshot>();
+    for (const tf of ALL_TF) {
+      for (const snap of Object.values(collections[tf])) {
+        const existing = best.get(snap.coin);
+        if (!existing) {
+          best.set(snap.coin, snap);
+        } else {
+          const currRec = snap.opportunity.recommendation;
+          const existRec = existing.opportunity.recommendation;
+          const currPrio = currRec === "ready" ? 3 : currRec === "wait" ? 2 : 1;
+          const existPrio = existRec === "ready" ? 3 : existRec === "wait" ? 2 : 1;
+          if (currPrio > existPrio || (currPrio === existPrio && snap.opportunity.confidence > existing.opportunity.confidence)) {
+            best.set(snap.coin, snap);
+          }
+        }
+      }
+    }
+    return Array.from(best.values());
+  }, [collections]);
+
   const prevSnap = useRef<Map<string, OppKey>>(new Map());
   const lastNotif = useRef<Map<string, OppKey>>(new Map());
   const checkRef = useRef<(() => void) | null>(null);
-  const onTransitionRef = useRef(onTransition);
   const firstCheckDone = useRef(false);
-  useEffect(() => { onTransitionRef.current = onTransition; }, [onTransition]);
 
   const check = useCallback(() => {
     const curr = new Map<string, OppKey>();
@@ -63,12 +85,20 @@ function useOpportunityWatcher(
       curr.set(c.coin, key);
 
       const prev = prevSnap.current.get(c.coin);
-      // Transition: any non-ready → ready
-      if (prev !== undefined && NON_READY_KEYS.has(prev) && READY_KEYS.has(key)) {
-        // Duplicate protection: skip if we already notified for this exact state
-        if (lastNotif.current.get(c.coin) !== key) {
-          lastNotif.current.set(c.coin, key);
-          onTransitionRef.current(c.coin, c.symbol, key as "ready_long" | "ready_short");
+      if (prev !== undefined) {
+        // Transition: non-ready → ready
+        if (NON_READY_KEYS.has(prev) && READY_KEYS.has(key)) {
+          if (lastNotif.current.get(c.coin) !== key) {
+            lastNotif.current.set(c.coin, key);
+            onTransitionRef.current(c.coin, c.symbol, key as "ready_long" | "ready_short");
+          }
+        }
+        // Transition: ready → different ready (direction flip)
+        if (READY_KEYS.has(prev) && READY_KEYS.has(key) && prev !== key) {
+          if (lastNotif.current.get(c.coin) !== key) {
+            lastNotif.current.set(c.coin, key);
+            onTransitionRef.current(c.coin, c.symbol, key as "ready_long" | "ready_short");
+          }
         }
       }
       // Clear lastNotif if state moved away from notified state
@@ -78,7 +108,7 @@ function useOpportunityWatcher(
     }
     prevSnap.current = curr;
 
-    // First load: notify top-3 ready coins that were ready at mount
+    // First load: notify top-3 ready coins across all timeframes
     if (!firstCheckDone.current && entries.length > 0) {
       firstCheckDone.current = true;
       const ready = entries

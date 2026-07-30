@@ -3,7 +3,7 @@ import type { IndicatorId, IndicatorConfig } from "./types";
 // ─── Default Configurations ────────────────────────────────────────────────
 
 const DEFAULT_CONFIGS: IndicatorConfig[] = [
-  { id: "volume", label: "Volume", enabled: true, alwaysVisible: false, order: 0, stretchFactor: 0.4 },
+  { id: "volume", label: "Volume", enabled: true, alwaysVisible: false, order: 0, stretchFactor: 0.2 },
   { id: "rsi", label: "RSI", enabled: false, alwaysVisible: false, order: 1, stretchFactor: 0.15 },
   { id: "dmi", label: "DMI", enabled: false, alwaysVisible: false, order: 2, stretchFactor: 0.18 },
   { id: "sma", label: "SMA", enabled: true, alwaysVisible: false, order: 3, stretchFactor: 0 },
