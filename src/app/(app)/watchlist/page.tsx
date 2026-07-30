@@ -72,8 +72,9 @@ function formatPrice(p: number): string {
   return `$${p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function formatUpdated(ts: string): string {
-  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+function formatUpdated(ts: string | number): string {
+  const ms = typeof ts === "number" ? ts : new Date(ts).getTime();
+  const diff = Math.floor((Date.now() - ms) / 1000);
   if (diff < 60) return `${diff}s`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
@@ -187,6 +188,23 @@ function CoinCard({
         </div>
       </div>
 
+      {/* Analysis Summary footer */}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-gray-600 leading-tight">
+        <span className={`px-1 py-0.5 rounded text-[9px] font-bold ${opConf.bg} ${opConf.color}`}>
+          {t(`coin_row.rec_${coin.opportunity.recommendation}`)}
+        </span>
+        <span className="font-mono">{coin.opportunity.confidence}%</span>
+        {(coin.opportunity.reasons ?? []).length > 0 && (
+          <span className="truncate max-w-[120px]" title={(coin.opportunity.reasons ?? []).join(", ")}>
+            {(coin.opportunity.reasons ?? [])[0]}
+          </span>
+        )}
+        <span className="ml-auto">{coin.timeframe}</span>
+        <span>·</span>
+        <span>{formatUpdated(coin.generatedAt)}</span>
+        <span>·</span>
+        <span>v{coin.version}</span>
+      </div>
     </div>
   );
 }

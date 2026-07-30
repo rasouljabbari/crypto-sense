@@ -41,6 +41,9 @@ export interface AnalysisSnapshot {
     readonly confidence: number;
     readonly recommendation: string;
     readonly reasonCode: string;
+    readonly reasons: readonly string[];
+    readonly warnings: readonly string[];
+    readonly analysisVersion: string;
   };
   readonly strength: {
     readonly trend: number;
@@ -257,6 +260,9 @@ export function buildSnapshotFromLegacy(
       confidence: c.confidence ?? 50,
       recommendation: c.recommendation ?? "",
       reasonCode: c.recommendationReasonCode ?? "",
+      reasons: c.reasons ?? [],
+      warnings: c.warnings ?? [],
+      analysisVersion: c.analysisVersion ?? "",
     },
     strength: {
       trend: c.trendScore ?? c.overallScore ?? 50,

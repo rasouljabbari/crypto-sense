@@ -53,7 +53,7 @@
     "last_month": "Geçen Ay",
     "fg_label": "F&G",
     "btc_label": "BTC",
-    "volume_label": "Hacim",
+    "vol_label": "Hacim",
     "price_label": "Fiyat",
     "h24_label": "24s",
     "updated": "Güncellendi {date}",
@@ -521,6 +521,9 @@
     },
     "active": "Aktif",
     "trend_analysis_title": "Trend Analizi",
+    "warnings": {
+      "title": "Uyarılar"
+    },
     "signal_reasons": {
       "title": "Bu Sinyalin Sebebi",
       "no_reasons": "Sinyal sebebi mevcut değil",
@@ -606,6 +609,44 @@
       "rr_below_min": "TP1 için risk/getiri ({value}R) minimumun ({min}R) altında",
       "quality_below_min": "İşlem kalitesi ({value}) minimumun ({min}) altında",
       "no_valid_setup": "Geçerli işlem kurulumu yok."
+    },
+    "reason_codes": {
+      "REASON_MARKET_DATA_VALIDATED": "✓ Piyasa verileri doğrulandı",
+      "REASON_MARKET_CONTEXT_HEALTHY": "✓ Piyasa Bağlamı Sağlıklı",
+      "REASON_NOT_TRADEABLE": "✗ İşlem yapılabilir piyasa değil: {detail}",
+      "REASON_TREND_STRUCTURE_CONFIRMED": "✓ Trend Yapısı Onaylandı",
+      "REASON_TREND_NOT_CONFIRMED": "✗ Trend Yapısı onaylanmadı: {detail}",
+      "REASON_QUALITY_EXCELLENT": "✓ Kurulum kalitesi mükemmel",
+      "REASON_QUALITY_STRONG": "✓ Kurulum kalitesi güçlü",
+      "REASON_QUALITY_MODERATE": "○ Kurulum kalitesi orta",
+      "REASON_QUALITY_WEAK": "○ Kurulum kalitesi zayıf — izleniyor",
+      "REASON_MOMENTUM_EXPANSION": "✓ Momentum Genişlemesi Tespit Edildi",
+      "REASON_MOMENTUM_BUILDING": "○ Momentum oluşuyor",
+      "REASON_VOLUME_EXPANSION": "✓ Hacim Artışı Doğrulandı",
+      "REASON_VOLUME_AVERAGE": "○ Hacim ortalama seviyelerde",
+      "REASON_TREND_ALIGNMENT_POSITIVE": "✓ Trend uyumu pozitif",
+      "REASON_TECHNICAL_STRUCTURE_SOUND": "✓ Teknik yapı sağlam",
+      "REASON_BREAKOUT_TRIGGERED": "✓ Kırılım Tetiklendi",
+      "REASON_BREAKDOWN_TRIGGERED": "✓ Kırılım (Düşüş) Tetiklendi",
+      "REASON_RISK_REWARD_ACCEPTABLE": "✓ Risk / Getiri Kabul Edilebilir",
+      "REASON_RISK_REWARD_BORDERLINE": "○ Risk / Getiri sınırda",
+      "REASON_HIGH_CONFIDENCE": "✓ Yüksek güven seviyesi",
+      "REASON_MODERATE_CONFIDENCE": "○ Orta güven seviyesi",
+      "REASON_TRADE_QUALITY_GOOD": "✓ İşlem kalitesi eşiğin üstünde",
+      "REASON_WATCH_SETUP_FORMING": "○ {direction} kurulum oluşuyor — izleniyor",
+      "REASON_PIPELINE_STOPPED": "✗ {detail}"
+    },
+    "warning_codes": {
+      "WARN_CLOSE_TO_RESISTANCE": "• Direnç yakınında — kırılım riski",
+      "WARN_APPROACHING_RESISTANCE": "• Dirence yaklaşıyor",
+      "WARN_CLOSE_TO_SUPPORT": "• Destek yakınında — kırılım riski",
+      "WARN_APPROACHING_SUPPORT": "• Desteğe yaklaşıyor",
+      "WARN_RSI_OVERBOUGHT": "• RSI aşırı alım — ters dönüş riski",
+      "WARN_RSI_OVERSOLD": "• RSI aşırı satım — ters dönüş riski",
+      "WARN_RISK_HIGH": "• Risk seviyesi yüksek",
+      "WARN_VOLUME_BELOW_AVERAGE": "• Hacim ortalamanın altında — düşük katılım",
+      "WARN_SCORE_BELOW_THRESHOLD": "• Genel puan eşiğin altında",
+      "WARN_LOW_CONFIDENCE": "• Düşük güven — ek onay gerekli"
     },
     "tech_interpret": {
       "rsi": {
@@ -899,6 +940,33 @@
     },
     "ticker": {
       "loading": "Bağlanıyor..."
+    }
+  },
+  "reason_summary": {
+    "show_more": "+{count} Daha",
+    "show_less": "Daha az göster"
+  },
+  "setup_progress": {
+    "aria_label": "Kurulum ilerlemesi — 6 aşama",
+    "stage": {
+      "market_context": "Piyasa Bağlamı",
+      "structure": "Yapı",
+      "momentum": "Momentum",
+      "volume": "Hacim",
+      "trigger": "Tetikleyici",
+      "risk": "Risk"
+    },
+    "state": {
+      "completed": "Tamamlandı",
+      "current": "Devam Ediyor",
+      "pending": "Beklemede",
+      "failed": "Başarısız"
+    },
+    "final": {
+      "ready_long": "UZUN HAZIR",
+      "ready_short": "KISA HAZIR",
+      "watch": "İZLE",
+      "no_trade": "İŞLEM YOK"
     }
   }
 }

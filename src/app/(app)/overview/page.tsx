@@ -7,6 +7,7 @@ import { Sparkline } from "@/components/Sparkline";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useI18n } from "@/i18n/context";
 import { useTimeframe } from "@/lib/timeframe";
+import type { AnalysisSnapshot } from "@/store/useAnalysisSnapshot";
 import { useSnapshotStore } from "@/store/useAnalysisSnapshot";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -53,6 +54,46 @@ function formatPrice(n: number): string {
   if (n >= 1) return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   if (n >= 0.01) return n.toFixed(4);
   return n.toFixed(6);
+}
+
+function formatTimeAgo(ts: number): string {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  return `${Math.floor(hrs / 24)}d`;
+}
+
+function AnalysisFooter({ snapshot, t }: { snapshot: AnalysisSnapshot; t: (key: string, vars?: Record<string, string | number>) => string }) {
+  const rec = snapshot.opportunity.recommendation || "skip";
+  const isReady = rec === "ready";
+  const isWait = rec === "wait";
+  const badgeStyle = isReady
+    ? "bg-emerald-500/15 text-emerald-400"
+    : isWait
+      ? "bg-yellow-500/15 text-yellow-400"
+      : "bg-red-500/15 text-red-400";
+  const reasons = (snapshot.opportunity.reasons ?? []).slice(0, 1);
+  const timeAgo = formatTimeAgo(snapshot.generatedAt);
+
+  return (
+    <div className="px-3.5 pb-3 pt-1.5 space-y-1">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className={`text-[9px] font-bold px-1 py-0.5 rounded ${badgeStyle}`}>
+          {t(`coin_row.rec_${rec}`)}
+        </span>
+        <span className="text-[9px] font-mono text-gray-500">{snapshot.opportunity.confidence}%</span>
+        <span className="text-[9px] text-gray-600">{snapshot.timeframe}</span>
+        <span className="text-[9px] text-gray-600">{timeAgo}</span>
+        <span className="text-[9px] text-gray-600">v{snapshot.version}</span>
+      </div>
+      {reasons.length > 0 && (
+        <p className="text-[9px] text-gray-500 truncate leading-tight">{reasons[0]}</p>
+      )}
+    </div>
+  );
 }
 
 export default function MarketOverviewPage() {
@@ -207,6 +248,7 @@ export default function MarketOverviewPage() {
                       height={56}
                     />
                   </div>
+                  {collection[coin.id] && <AnalysisFooter snapshot={collection[coin.id]!} t={t} />}
                 </Link>
               );
             })}
@@ -244,6 +286,7 @@ export default function MarketOverviewPage() {
                         height={48}
                       />
                     </div>
+                    {collection[coin.id] && <AnalysisFooter snapshot={collection[coin.id]!} t={t} />}
                   </Link>
                 );
               })}
@@ -277,18 +320,19 @@ export default function MarketOverviewPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-1">
-                    <Sparkline
-                      data={coin.weeklyClose.map((c) => ({ close: c }))}
-                      color={sparkColor}
-                      height={56}
-                    />
-                  </div>
-                </Link>
-              );
-            })}
+                    <div className="mt-1">
+                      <Sparkline
+                        data={coin.weeklyClose.map((c) => ({ close: c }))}
+                        color={sparkColor}
+                        height={56}
+                      />
+                    </div>
+                    {collection[coin.id] && <AnalysisFooter snapshot={collection[coin.id]!} t={t} />}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
 
         {/* Key Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

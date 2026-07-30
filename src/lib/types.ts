@@ -90,6 +90,12 @@ export interface CoinAnalysis {
   recommendationColor: string;
   recommendationPriority: number;
   tradeSetup: TradeSetupData;
+  /** Structured reasons for the final decision. */
+  reasons: string[];
+  /** Warnings / risk factors the user should be aware of. */
+  warnings: string[];
+  /** Analysis engine version used to produce this result. */
+  analysisVersion: string;
 }
 
 export type SignalType = "strong_buy" | "buy" | "neutral" | "sell" | "strong_sell";

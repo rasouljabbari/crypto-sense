@@ -3,6 +3,15 @@
 // No AI. No random. Same input → same output always.
 // All modules consume this output. No component makes its own decision.
 
+import {
+  buildSetupReasons, buildSetupWarnings, ANALYSIS_VERSION,
+  REASON_MARKET_CONTEXT_HEALTHY, REASON_TREND_STRUCTURE_CONFIRMED,
+  REASON_NOT_TRADEABLE, REASON_TREND_NOT_CONFIRMED, REASON_PIPELINE_STOPPED,
+  REASON_QUALITY_EXCELLENT, REASON_QUALITY_STRONG, REASON_QUALITY_MODERATE,
+  REASON_QUALITY_WEAK,
+} from "./reason-builder";
+import type { ReasonBuilderParams } from "./reason-builder";
+
 // ─── Types ────────────────────────────────────────────────────────────────
 
 export type Position = "long" | "short" | "neutral";
@@ -218,6 +227,17 @@ export interface SetupResult {
   reason: string;
   color: string;
   priority: number;
+  // ─── Explainable Model (v2) ──────────────────────────────────────────
+  /** Structured reasons for the final decision. Every status has explanations. */
+  reasons: string[];
+  /** Warnings / risk factors the user should be aware of. */
+  warnings: string[];
+  /** ISO timestamp when this analysis was produced. */
+  updatedAt: string;
+  /** Candle timeframe this analysis applies to. */
+  timeframe: string;
+  /** Analysis engine version. */
+  analysisVersion: string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────
@@ -1579,6 +1599,7 @@ export function evaluateSetup(input: SetupInput): SetupResult {
       riskScore: 0, riskLevel: "high", confidence: 0, tradeQuality: 0, riskRewardString: null,
       tradeSetup: { hasTrade: false, reason, direction: null, entry: 0, stopLoss: 0, risk: 0, takeProfit: emptyTp, riskReward: emptyTp, expectedProfit: emptyTp, tradeQuality: 0 },
       recommendation: "skip", reasonCode, reason, color: "#6b7280", priority: 0,
+      reasons: [REASON_PIPELINE_STOPPED + ": " + reason], warnings: [], updatedAt: new Date().toISOString(), timeframe: input.timeframe ?? "unknown", analysisVersion: ANALYSIS_VERSION,
     };
   }
 
@@ -1594,6 +1615,9 @@ export function evaluateSetup(input: SetupInput): SetupResult {
   // If NO, pipeline stops — no direction/quality/signal generation.
   const stage1 = determineTradeability(input);
   if (stage1.tradeable === "NO") {
+    const stage1Reasons = [
+      REASON_NOT_TRADEABLE + ": " + (stage1.reason ?? "unknown reason"),
+    ];
     return {
       ...unavailableResult(stage1.reason ?? "Market not tradeable", "SKIP_WEAK_TREND"),
       marketDataStatus: "VALID",
@@ -1603,6 +1627,7 @@ export function evaluateSetup(input: SetupInput): SetupResult {
       setupQuality: "WEAK",
       setupQualityReason: null,
       finalStatus: "NO_TRADE",
+      reasons: stage1Reasons,
     };
   }
 
@@ -1611,6 +1636,10 @@ export function evaluateSetup(input: SetupInput): SetupResult {
   // If UNKNOWN, pipeline stops — no further analysis.
   const stage2 = determineDirection(input);
   if (stage2.direction === "unknown") {
+    const stage2Reasons = [
+      REASON_MARKET_CONTEXT_HEALTHY,
+      REASON_TREND_NOT_CONFIRMED + ": " + (stage2.reason ?? "mixed signals"),
+    ];
     return {
       ...unavailableResult("Stage 2: " + (stage2.reason ?? "Direction unknown"), "SKIP_WEAK_TREND"),
       marketDataStatus: "VALID",
@@ -1622,6 +1651,7 @@ export function evaluateSetup(input: SetupInput): SetupResult {
       setupQuality: "WEAK",
       setupQualityReason: null,
       finalStatus: "NO_TRADE",
+      reasons: stage2Reasons,
     };
   }
 
@@ -1630,6 +1660,11 @@ export function evaluateSetup(input: SetupInput): SetupResult {
   // If WEAK, pipeline stops — no further analysis.
   const stage3 = determineSetupQuality(input, stage2.direction);
   if (stage3.quality === "WEAK") {
+    const stage3Reasons = [
+      REASON_MARKET_CONTEXT_HEALTHY,
+      REASON_TREND_STRUCTURE_CONFIRMED,
+      REASON_QUALITY_WEAK,
+    ];
     return {
       ...unavailableResult("Stage 3: " + (stage3.reason ?? "Setup quality too weak"), "SKIP_WEAK_TREND"),
       marketDataStatus: "VALID",
@@ -1641,6 +1676,7 @@ export function evaluateSetup(input: SetupInput): SetupResult {
       setupQuality: "WEAK",
       setupQualityReason: stage3.reason,
       finalStatus: "WATCH",
+      reasons: stage3Reasons,
     };
   }
 
@@ -1770,6 +1806,35 @@ export function evaluateSetup(input: SetupInput): SetupResult {
     stage3.quality,
   );
 
+  // ═══ Build explainable reasons & warnings ═════════════════════════════
+  const reasonParams: ReasonBuilderParams = {
+    marketDataStatus: "VALID",
+    tradeable: "YES",
+    marketDirection: stage2.direction,
+    setupQuality: stage3.quality,
+    overallScore,
+    volumeScore,
+    trendScore,
+    technicalScore,
+    momentumScore,
+    position,
+    signal,
+    trendLabel,
+    riskLevel,
+    confidence,
+    tradeQuality,
+    riskRewardString,
+    input: {
+      currentPrice: input.currentPrice,
+      rsi: input.rsi,
+      resistanceLevels: input.resistanceLevels,
+      supportLevels: input.supportLevels,
+    },
+    finalStatus: stage4.finalStatus,
+  };
+  const reasons = buildSetupReasons(reasonParams);
+  const warnings = buildSetupWarnings(reasonParams);
+
   return {
     marketDataStatus: "VALID",
     marketDataReason: null,
@@ -1800,5 +1865,10 @@ export function evaluateSetup(input: SetupInput): SetupResult {
     reason: rec.reason,
     color: rec.color,
     priority: rec.priority,
+    reasons,
+    warnings,
+    updatedAt: new Date().toISOString(),
+    timeframe: input.timeframe ?? "unknown",
+    analysisVersion: ANALYSIS_VERSION,
   };
 }

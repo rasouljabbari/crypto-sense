@@ -53,7 +53,7 @@
     "last_month": "Last Month",
     "fg_label": "F&G",
     "btc_label": "BTC",
-    "volume_label": "Volume",
+    "vol_label": "Volume",
     "price_label": "Price",
     "h24_label": "24h",
     "updated": "Updated {date}",
@@ -521,6 +521,9 @@
     },
     "active": "Active",
     "trend_analysis_title": "Trend Analysis",
+    "warnings": {
+      "title": "Warnings"
+    },
     "signal_reasons": {
       "title": "Why This Signal",
       "no_reasons": "No signal reasons available",
@@ -606,6 +609,44 @@
       "rr_below_min": "Risk/reward for TP1 ({value}R) is below minimum ({min}R)",
       "quality_below_min": "Trade quality ({value}) is below minimum ({min})",
       "no_valid_setup": "No valid trade setup."
+    },
+    "reason_codes": {
+      "REASON_MARKET_DATA_VALIDATED": "✓ Market data validated",
+      "REASON_MARKET_CONTEXT_HEALTHY": "✓ Market Context is Healthy",
+      "REASON_NOT_TRADEABLE": "✗ Market Context not tradeable: {detail}",
+      "REASON_TREND_STRUCTURE_CONFIRMED": "✓ Trend Structure Confirmed",
+      "REASON_TREND_NOT_CONFIRMED": "✗ Trend Structure not confirmed: {detail}",
+      "REASON_QUALITY_EXCELLENT": "✓ Setup quality is excellent",
+      "REASON_QUALITY_STRONG": "✓ Setup quality is strong",
+      "REASON_QUALITY_MODERATE": "○ Setup quality is moderate",
+      "REASON_QUALITY_WEAK": "○ Setup quality is weak — monitoring",
+      "REASON_MOMENTUM_EXPANSION": "✓ Momentum Expansion Detected",
+      "REASON_MOMENTUM_BUILDING": "○ Momentum building",
+      "REASON_VOLUME_EXPANSION": "✓ Volume Expansion Confirmed",
+      "REASON_VOLUME_AVERAGE": "○ Volume at average levels",
+      "REASON_TREND_ALIGNMENT_POSITIVE": "✓ Trend alignment positive",
+      "REASON_TECHNICAL_STRUCTURE_SOUND": "✓ Technical structure sound",
+      "REASON_BREAKOUT_TRIGGERED": "✓ Breakout Trigger Activated",
+      "REASON_BREAKDOWN_TRIGGERED": "✓ Breakdown Trigger Activated",
+      "REASON_RISK_REWARD_ACCEPTABLE": "✓ Risk / Reward Acceptable",
+      "REASON_RISK_REWARD_BORDERLINE": "○ Risk / Reward borderline",
+      "REASON_HIGH_CONFIDENCE": "✓ High confidence setup",
+      "REASON_MODERATE_CONFIDENCE": "○ Moderate confidence",
+      "REASON_TRADE_QUALITY_GOOD": "✓ Trade quality above threshold",
+      "REASON_WATCH_SETUP_FORMING": "○ {direction} setup forming — monitoring",
+      "REASON_PIPELINE_STOPPED": "✗ {detail}"
+    },
+    "warning_codes": {
+      "WARN_CLOSE_TO_RESISTANCE": "• Close to Resistance — breakout risk",
+      "WARN_APPROACHING_RESISTANCE": "• Approaching Resistance",
+      "WARN_CLOSE_TO_SUPPORT": "• Close to Support — breakdown risk",
+      "WARN_APPROACHING_SUPPORT": "• Approaching Support",
+      "WARN_RSI_OVERBOUGHT": "• RSI overbought — potential reversal",
+      "WARN_RSI_OVERSOLD": "• RSI oversold — potential reversal",
+      "WARN_RISK_HIGH": "• Risk level is high",
+      "WARN_VOLUME_BELOW_AVERAGE": "• Volume below average — low participation",
+      "WARN_SCORE_BELOW_THRESHOLD": "• Overall score below threshold",
+      "WARN_LOW_CONFIDENCE": "• Low confidence — additional confirmation needed"
     },
     "tech_interpret": {
       "rsi": {
@@ -799,6 +840,29 @@
     "short_4h": "4H",
     "short_1d": "1D"
   },
+  "setup_progress": {
+    "aria_label": "Setup progress — 6 stages",
+    "stage": {
+      "market_context": "Market Context",
+      "structure": "Structure",
+      "momentum": "Momentum",
+      "volume": "Volume",
+      "trigger": "Trigger",
+      "risk": "Risk"
+    },
+    "state": {
+      "completed": "Completed",
+      "current": "In Progress",
+      "pending": "Pending",
+      "failed": "Failed"
+    },
+    "final": {
+      "ready_long": "READY LONG",
+      "ready_short": "READY SHORT",
+      "watch": "WATCH",
+      "no_trade": "NO TRADE"
+    }
+  },
   "notification": {
     "ready_long": "Ready for LONG",
     "ready_short": "Ready for SHORT",
@@ -900,5 +964,9 @@
     "ticker": {
       "loading": "Connecting..."
     }
+  },
+  "reason_summary": {
+    "show_more": "+{count} More",
+    "show_less": "Show less"
   }
 }

@@ -53,7 +53,7 @@
     "last_month": "ماه گذشته",
     "fg_label": "F&G",
     "btc_label": "BTC",
-    "volume_label": "حجم",
+    "vol_label": "حجم",
     "price_label": "قیمت",
     "h24_label": "۲۴h",
     "updated": "بروزرسانی در {date}",
@@ -521,6 +521,9 @@
     },
     "active": "فعال",
     "trend_analysis_title": "تحلیل روند",
+    "warnings": {
+      "title": "هشدارها"
+    },
     "signal_reasons": {
       "title": "علت این سیگنال",
       "no_reasons": "دلیلی برای سیگنال موجود نیست",
@@ -606,6 +609,44 @@
       "rr_below_min": "نسبت ریسک به پاداش TP1 ({value}R) کمتر از حداقل ({min}R) است",
       "quality_below_min": "کیفیت معامله ({value}) کمتر از حداقل ({min}) است",
       "no_valid_setup": "تنظیمات معامله معتبری وجود ندارد"
+    },
+    "reason_codes": {
+      "REASON_MARKET_DATA_VALIDATED": "✓ داده‌های بازار تأیید شد",
+      "REASON_MARKET_CONTEXT_HEALTHY": "✓ بستر بازار سالم است",
+      "REASON_NOT_TRADEABLE": "✗ بازار قابل معامله نیست: {detail}",
+      "REASON_TREND_STRUCTURE_CONFIRMED": "✓ ساختار روند تأیید شد",
+      "REASON_TREND_NOT_CONFIRMED": "✗ ساختار روند تأیید نشد: {detail}",
+      "REASON_QUALITY_EXCELLENT": "✓ کیفیت تنظیمات عالی است",
+      "REASON_QUALITY_STRONG": "✓ کیفیت تنظیمات قوی است",
+      "REASON_QUALITY_MODERATE": "○ کیفیت تنظیمات متوسط است",
+      "REASON_QUALITY_WEAK": "○ کیفیت تنظیمات ضعیف است — درحال نظارت",
+      "REASON_MOMENTUM_EXPANSION": "✓ شتاب بازار شناسایی شد",
+      "REASON_MOMENTUM_BUILDING": "○ شتاب در حال شکل‌گیری",
+      "REASON_VOLUME_EXPANSION": "✓ افزایش حجم تأیید شد",
+      "REASON_VOLUME_AVERAGE": "○ حجم در سطح متوسط",
+      "REASON_TREND_ALIGNMENT_POSITIVE": "✓ هم‌راستایی روند مثبت",
+      "REASON_TECHNICAL_STRUCTURE_SOUND": "✓ ساختار تکنیکال سالم",
+      "REASON_BREAKOUT_TRIGGERED": "✓ شکست مقاومت فعال شد",
+      "REASON_BREAKDOWN_TRIGGERED": "✓ شکست حمایت فعال شد",
+      "REASON_RISK_REWARD_ACCEPTABLE": "✓ نسبت ریسک به پاداش قابل قبول",
+      "REASON_RISK_REWARD_BORDERLINE": "○ نسبت ریسک به پاداش مرزی",
+      "REASON_HIGH_CONFIDENCE": "✓ اطمینان بالا",
+      "REASON_MODERATE_CONFIDENCE": "○ اطمینان متوسط",
+      "REASON_TRADE_QUALITY_GOOD": "✓ کیفیت معامله بالاتر از آستانه",
+      "REASON_WATCH_SETUP_FORMING": "○ تنظیمات {direction} در حال شکل‌گیری — نظارت",
+      "REASON_PIPELINE_STOPPED": "✗ {detail}"
+    },
+    "warning_codes": {
+      "WARN_CLOSE_TO_RESISTANCE": "• نزدیک به مقاومت — خطر شکست",
+      "WARN_APPROACHING_RESISTANCE": "• نزدیک‌شونده به مقاومت",
+      "WARN_CLOSE_TO_SUPPORT": "• نزدیک به حمایت — خطر شکست",
+      "WARN_APPROACHING_SUPPORT": "• نزدیک‌شونده به حمایت",
+      "WARN_RSI_OVERBOUGHT": "• RSI اشباع خرید — احتمال بازگشت",
+      "WARN_RSI_OVERSOLD": "• RSI اشباع فروش — احتمال بازگشت",
+      "WARN_RISK_HIGH": "• سطح ریسک بالا است",
+      "WARN_VOLUME_BELOW_AVERAGE": "• حجم پایین‌تر از میانگین — مشارکت کم",
+      "WARN_SCORE_BELOW_THRESHOLD": "• امتیاز کلی پایین‌تر از آستانه",
+      "WARN_LOW_CONFIDENCE": "• اطمینان پایین — تأیید اضافی لازم است"
     },
     "tech_interpret": {
       "rsi": {
@@ -899,6 +940,33 @@
     },
     "ticker": {
       "loading": "در حال اتصال..."
+    }
+  },
+  "reason_summary": {
+    "show_more": "+{count} بیشتر",
+    "show_less": "نمایش کمتر"
+  },
+  "setup_progress": {
+    "aria_label": "پیشرفت تنظیمات — ۶ مرحله",
+    "stage": {
+      "market_context": "زمینه بازار",
+      "structure": "ساختار",
+      "momentum": "مومنتوم",
+      "volume": "حجم",
+      "trigger": "تریگر",
+      "risk": "ریسک"
+    },
+    "state": {
+      "completed": "تکمیل شده",
+      "current": "در حال انجام",
+      "pending": "در انتظار",
+      "failed": "ناموفق"
+    },
+    "final": {
+      "ready_long": "آماده لانگ",
+      "ready_short": "آماده شورت",
+      "watch": "نظارت",
+      "no_trade": "بدون معامله"
     }
   }
 }

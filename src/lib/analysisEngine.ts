@@ -101,6 +101,9 @@ export function analyzeCoin(
     recommendationColor: r.color,
     recommendationPriority: r.priority,
     tradeSetup: mapTradeSetup(r.tradeSetup),
+    reasons: r.reasons ?? [],
+    warnings: r.warnings ?? [],
+    analysisVersion: r.analysisVersion ?? "",
   };
 }
 
